@@ -1,6 +1,6 @@
-# marca-página
+# babel
 
-Minha estante pessoal para aprender inglês lendo: os 177 *graded readers* da [ELi Publishing](https://www.elipublishing.com/catalog) em ordem de dificuldade (Pre-A1 → C1), com:
+Meu app pessoal de idiomas, começando pelo inglês. A primeira parte é uma estante para aprender lendo: os 177 *graded readers* da [ELi Publishing](https://www.elipublishing.com/catalog) em ordem de dificuldade (Pre-A1 → C1), com:
 
 - **Início**: painel com a pilha de leitura, palavras anotadas na semana, revisões do dia, calendário dos dias estudados, progresso por nível e o mapa de leitura animado.
 - **Estante**: as capas em prateleiras por nível, gênero ou status, com busca, filtros e a ficha de cada livro.
