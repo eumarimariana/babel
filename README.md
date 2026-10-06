@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# marca-página
 
-## Getting Started
+Minha estante pessoal para aprender inglês lendo: os 177 *graded readers* da [ELi Publishing](https://www.elipublishing.com/catalog) em ordem de dificuldade (Pre-A1 → C1), com:
 
-First, run the development server:
+- **Início**: painel com a pilha de leitura, palavras anotadas na semana, revisões do dia, calendário dos dias estudados, progresso por nível e a escada de leitura animada.
+- **Estante**: as capas em prateleiras por nível, gênero ou status, com busca, filtros e a ficha de cada livro.
+- **Vocabulário**: caderno de palavras, com tradução, definição e exemplo gerados pela IA.
+- **Revisar**: flashcards com repetição espaçada (1, 2, 4, 8, 16 e 32 dias).
+- **Estudar um livro**: kit de pré-leitura (palavras-chave, gramática, perguntas) e correção do seu resumo em inglês.
+- Animações em [Remotion](https://www.remotion.dev/): a escada de leitura e a comemoração ao terminar um livro.
+
+Feito com Next.js, [shadcn/ui](https://ui.shadcn.com/), Tailwind, Motion, Phosphor Icons e o SDK da Anthropic. Capas carregadas do site da ELi.
+O progresso fica salvo no navegador (localStorage). Use **Configurações → Exportar** para fazer backup.
+
+## IA: cada pessoa usa a própria chave
+
+O site não tem chave de API embutida. Quem quiser os recursos de IA abre **Configurações**,
+escolhe um provedor e cola a própria chave:
+
+| Provedor | Custo | Onde gerar a chave |
+|---|---|---|
+| Gemini (Google) | grátis, sem cartão | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| Groq | grátis | [console.groq.com/keys](https://console.groq.com/keys) |
+| OpenRouter | grátis nos modelos `:free` (cerca de 50 pedidos/dia) | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) |
+| Claude (Anthropic) | pago, poucos centavos por pedido | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
+
+- Ao conectar, o app lista os modelos da chave e já escolhe um recomendado (dá para trocar).
+- As chaves ficam salvas só no navegador da pessoa (localStorage).
+- As chamadas vão direto do navegador para o provedor. Nenhuma chave passa pelo servidor do site.
+- No plano grátis do Gemini, o Google pode usar o conteúdo enviado para melhorar os produtos dele.
+- Sem chave, tudo funciona; os botões de IA viram "copiar pedido" para colar em qualquer chat de IA.
+
+## Rodar no computador
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy na Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Suba esta pasta para um repositório no GitHub.
+2. Em [vercel.com/new](https://vercel.com/new), importe o repositório (a Vercel detecta Next.js sozinha).
+3. Clique em **Deploy**. Não precisa configurar nenhuma variável de ambiente.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Ou pelo terminal: `npx vercel`.
 
-## Learn More
+O site é 100% estático: não tem rota de servidor, então não gera custo de função na Vercel.
 
-To learn more about Next.js, take a look at the following resources:
+## Remotion
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Remotion é gratuito para uso individual. Empresas com mais de 3 pessoas precisam de licença: veja remotion.dev/license.

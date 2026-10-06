@@ -1,0 +1,295 @@
+"use client";
+
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { motion } from "motion/react";
+import { IconContext, BooksIcon, CardsIcon, GearSixIcon, GraduationCapIcon, HouseIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BOOKS, BOOK_BY_ID, STAGES, type Book } from "@/lib/books";
+import { EstanteProvider, useEstante } from "@/lib/store";
+import { activeProviderName, subscribeAi } from "@/lib/ai-client";
+import { BooksTab } from "./books-tab";
+import { VocabTab } from "./vocab-tab";
+import { ReviewTab } from "./review-tab";
+import { StudyTab } from "./study-tab";
+import { SettingsDialog } from "./settings-dialog";
+import { CelebrationPlayer } from "./players";
+import { HomeTab } from "./home-tab";
+import { BookPanel, BookScreen } from "./book-screen";
+import { useMediaQuery } from "./common";
+import { cn } from "@/lib/utils";
+
+const ICONS = { weight: "regular" as const, size: "1em" };
+
+export function EstanteApp() {
+  return (
+    <EstanteProvider>
+      <IconContext.Provider value={ICONS}>
+        <Shell />
+      </IconContext.Provider>
+    </EstanteProvider>
+  );
+}
+
+function Shell() {
+  const { data, ready, status, streak, due } = useEstante();
+  const [tab, setTab] = useState("home");
+  const [openBook, setOpenBook] = useState<number | null>(null);
+  const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [studyId, setStudyId] = useState<number | null>(null);
+  const [vocabBook, setVocabBook] = useState("none");
+  const [celebrate, setCelebrate] = useState<Book | null>(null);
+  const prevDone = useRef<Set<string> | null>(null);
+  const [query, setQuery] = useState("");
+  const wideXl = useMediaQuery("(min-width: 1280px)", false);
+
+  // Celebrate any book that just became "done".
+  useEffect(() => {
+    if (!ready) return;
+    const now = new Set(Object.entries(data.progress).filter(([, p]) => p.st === "done").map(([id]) => id));
+    if (prevDone.current) {
+      const fresh = [...now].find((id) => !prevDone.current!.has(id));
+      if (fresh) setCelebrate(BOOK_BY_ID.get(Number(fresh)) ?? null);
+    }
+    prevDone.current = now;
+  }, [data.progress, ready]);
+
+  const done = BOOKS.filter((b) => status(b.id) === "done").length;
+  const reading = BOOKS.filter((b) => status(b.id) === "reading");
+  const nextBook = reading[0] ?? BOOKS.find((b) => status(b.id) !== "done");
+  const studyBook = studyId ?? nextBook?.id ?? BOOKS[0].id;
+
+  const go = (t: string) => {
+    setTab(t);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const goStudy = (id: number) => {
+    setStudyId(id);
+    go("study");
+  };
+  const goAddWord = (id: number) => {
+    setVocabBook(String(id));
+    go("vocab");
+    setTimeout(() => document.getElementById("w-word")?.focus({ preventScroll: true }), 400);
+  };
+
+  const journey = {
+    stages: STAGES.map((s) => ({ lv: s.lv, label: s.label, total: s.ids.length, done: s.ids.filter((id) => data.progress[id]?.st === "done").length })),
+    done,
+    total: BOOKS.length,
+    words: data.words.length,
+    streak,
+  };
+
+  const subtitle: Record<string, string> = {
+    home: todayLong(),
+    books: `${done} de ${BOOKS.length} lidos`,
+    vocab: `${data.words.length} ${data.words.length === 1 ? "palavra" : "palavras"} no caderno`,
+    review: due.length ? `${due.length} para hoje` : "tudo em dia",
+    study: "antes, durante e depois da leitura",
+  };
+  const search = (q: string) => {
+    setQuery(q);
+    if (tab !== "books") setTab("books");
+  };
+  const docked = tab === "books" && wideXl;
+  const panelBook = openBook ?? nextBook?.id ?? null;
+
+  return (
+    <Tabs value={tab} onValueChange={(v) => go(String(v))} className="min-h-dvh gap-0 pb-24 lg:pb-0">
+      <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-5 lg:p-4">
+        {/* sidebar */}
+        <aside className="sticky top-4 hidden h-[calc(100dvh-2rem)] flex-col gap-6 rounded-[1.75rem] bg-ink p-4 text-ink-foreground lg:flex">
+          <button onClick={() => go("home")} className="flex items-center gap-2.5 px-2 pt-2" aria-label="Início">
+            <span className="grid size-9 place-items-center rounded-full bg-sand text-sand-foreground">
+              <BooksIcon weight="fill" className="size-5" />
+            </span>
+            <span className="text-lg font-bold tracking-tight">Estante</span>
+          </button>
+
+          <TabsList className="h-auto! w-full flex-col items-stretch gap-1 rounded-none bg-transparent p-0">
+            {NAV.map((n) => (
+              <TabsTrigger
+                key={n.value}
+                value={n.value}
+                className="relative h-11! min-h-11 w-full flex-none! justify-start! gap-3 rounded-full! border-0! px-4 py-3 text-sm font-medium text-ink-muted! after:hidden hover:text-ink-foreground! data-active:bg-transparent! data-active:text-sand-foreground! data-active:hover:text-sand-foreground!"
+              >
+                {tab === n.value && <motion.span layoutId="side-pill" className="absolute inset-0 -z-10 rounded-full bg-sand" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+                <n.icon weight={tab === n.value ? "fill" : "regular"} className="size-5" />
+                {n.label}
+                <CountBadge n={n.value === "review" ? due.length : n.value === "vocab" ? data.words.length : 0} active={tab === n.value} />
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <div className="mt-auto grid gap-3">
+            <div className="grid gap-3 rounded-[1.25rem] bg-sand p-4 text-sand-foreground">
+              <span className="grid size-9 place-items-center rounded-full bg-ink text-ink-foreground">
+                <TranslateIcon weight="bold" className="size-4" />
+              </span>
+              <p className="text-sm leading-snug font-semibold">{aiName ? `IA ligada: ${aiName}` : "Ligue a IA para traduzir palavras e corrigir resumos"}</p>
+              <button onClick={() => setSettingsOpen(true)} className="w-fit rounded-full bg-ink px-3.5 py-1.5 text-xs font-medium text-ink-foreground hover:opacity-90">
+                {aiName ? "Configurar" : "Ligar a IA"}
+              </button>
+            </div>
+            <div className="flex items-center justify-between px-1">
+              <ThemeToggle />
+              <Button variant="ghost" size="icon" aria-label="Configurações" className="text-ink-foreground hover:bg-white/10 hover:text-ink-foreground" onClick={() => setSettingsOpen(true)}>
+                <GearSixIcon className="size-5" />
+              </Button>
+            </div>
+          </div>
+        </aside>
+
+        <div className="min-w-0">
+          {/* mobile header */}
+          <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-ink px-4 text-ink-foreground lg:hidden">
+            <button onClick={() => go("home")} className="flex items-center gap-2" aria-label="Início">
+              <span className="grid size-8 place-items-center rounded-full bg-sand text-sand-foreground">
+                <BooksIcon weight="fill" className="size-4" />
+              </span>
+              <span className="font-bold tracking-tight">Estante</span>
+            </button>
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <Button variant="ghost" size="icon" aria-label="Configurações" className="text-ink-foreground hover:bg-white/10 hover:text-ink-foreground" onClick={() => setSettingsOpen(true)}>
+                <GearSixIcon className="size-5" />
+              </Button>
+            </div>
+          </header>
+          <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+          <div className="px-4 sm:px-6 lg:px-2">
+            {/* top bar: title + search */}
+            <div className="flex flex-col gap-4 pt-6 pb-6 sm:flex-row sm:items-end sm:justify-between lg:pt-4">
+              <div className="min-w-0">
+                <h1 className="font-display text-3xl sm:text-4xl">{tab === "home" ? "Boa leitura hoje" : TAB_TITLE[tab]}</h1>
+                <p className="mt-1 font-mono text-xs text-muted-foreground first-letter:uppercase">{subtitle[tab]}</p>
+              </div>
+              <label className="relative w-full sm:w-80">
+                <span className="sr-only">Buscar livro</span>
+                <MagnifyingGlassIcon weight="bold" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  id="book-search"
+                  value={query}
+                  onChange={(e) => search(e.target.value)}
+                  placeholder="Título, autor ou tema"
+                  className="h-11 w-full rounded-full border border-border bg-card pr-4 pl-11 font-mono text-[13px] outline-none placeholder:text-muted-foreground focus-visible:border-foreground"
+                />
+              </label>
+            </div>
+
+            <div className={cn("min-w-0", docked && "xl:grid xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start xl:gap-5")}>
+              <div className="min-w-0">
+                <TabsContent value="home">
+                  <HomeTab journey={journey} nextBook={nextBook} reading={reading} onGo={go} onOpen={setOpenBook} onStudy={goStudy} />
+                </TabsContent>
+                <TabsContent value="books">
+                  <BooksTab q={query} onQ={setQuery} onOpen={setOpenBook} selected={docked ? panelBook : null} />
+                </TabsContent>
+                <TabsContent value="vocab">
+                  <VocabTab aiName={aiName} bookId={vocabBook} onBookChange={setVocabBook} />
+                </TabsContent>
+                <TabsContent value="review">{ready && <ReviewTab key={String(ready)} onGoVocab={() => go("vocab")} />}</TabsContent>
+                <TabsContent value="study">
+                  <StudyTab aiName={aiName} bookId={studyBook} onBookChange={setStudyId} />
+                </TabsContent>
+              </div>
+              {docked && panelBook != null && <BookPanel bookId={panelBook} onGo={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} />}
+            </div>
+
+            <footer className="mt-16 flex flex-col gap-2 border-t border-border py-6 text-xs leading-relaxed text-muted-foreground sm:flex-row sm:justify-between">
+              <p className="max-w-xl">
+                Catálogo e capas de{" "}
+                <a className="underline underline-offset-2" href="https://www.elipublishing.com/catalog" target="_blank" rel="noopener noreferrer">
+                  elipublishing.com
+                </a>{" "}
+                (copiado em 05/10/2026). Projeto pessoal de estudo, sem vínculo com a editora. Seus dados e suas chaves de IA ficam só neste navegador.
+              </p>
+              <p className="label shrink-0">Estante · graded readers</p>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      {/* mobile tab bar */}
+      <nav aria-label="Seções" className="fixed inset-x-0 bottom-0 z-40 bg-ink pb-safe text-ink-foreground lg:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1 px-2 py-2">
+          {NAV.map((n) => {
+            const active = tab === n.value;
+            const count = n.value === "review" ? due.length : 0;
+            return (
+              <button
+                key={n.value}
+                onClick={() => go(n.value)}
+                aria-current={active ? "page" : undefined}
+                className={cn("relative grid justify-items-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-medium transition-colors", active ? "text-sand-foreground" : "text-ink-muted")}
+              >
+                {active && <motion.span layoutId="tabbar-pill" className="absolute inset-0 rounded-2xl bg-sand" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+                <n.icon weight={active ? "fill" : "regular"} className="relative size-[1.3rem]" />
+                <span className="relative">{n.short}</span>
+                {count > 0 && <span className="absolute top-1 right-[calc(50%-1.2rem)] size-1.5 rounded-full bg-sand ring-2 ring-ink" aria-label={`${count} revisões`} />}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      <BookScreen bookId={docked ? null : openBook} onOpenChange={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} />
+
+      <Dialog open={!!celebrate} onOpenChange={(o) => !o && setCelebrate(null)}>
+        <DialogContent className="gap-3 p-3 sm:max-w-2xl">
+          <DialogTitle className="sr-only">Livro concluído</DialogTitle>
+          {celebrate && <CelebrationPlayer title={celebrate.t} level={`${celebrate.lv} · ${celebrate.hw} headwords`} done={done} total={BOOKS.length} />}
+          {celebrate && (
+            <div className="flex flex-wrap justify-end gap-2 px-1 pb-1">
+              <Button variant="outline" onClick={() => setCelebrate(null)}>
+                Fechar
+              </Button>
+              <Button
+                onClick={() => {
+                  setCelebrate(null);
+                  goStudy(celebrate.id);
+                }}
+              >
+                Escrever o resumo
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </Tabs>
+  );
+}
+
+function todayLong() {
+  return new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+}
+
+const TAB_TITLE: Record<string, string> = { home: "Início", books: "Estante", vocab: "Vocabulário", review: "Revisar", study: "Estudar um livro" };
+
+const NAV = [
+  { value: "home", label: "Início", short: "Início", icon: HouseIcon },
+  { value: "books", label: "Estante", short: "Estante", icon: BooksIcon },
+  { value: "vocab", label: "Vocabulário", short: "Palavras", icon: NotePencilIcon },
+  { value: "review", label: "Revisar", short: "Revisar", icon: CardsIcon },
+  { value: "study", label: "Estudar", short: "Estudar", icon: GraduationCapIcon },
+];
+
+function CountBadge({ n, active }: { n: number; active?: boolean }) {
+  if (!n) return null;
+  return <span className={cn("ml-auto rounded-full px-2 font-mono text-[10px] leading-5 tabular", active ? "bg-ink text-ink-foreground" : "bg-ink-border text-ink-foreground")}>{n}</span>;
+}
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  return (
+    <Button variant="ghost" size="icon" aria-label="Alternar tema claro/escuro" className="text-ink-foreground hover:bg-white/10 hover:text-ink-foreground" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+      <SunIcon className="hidden size-5 dark:block" />
+      <MoonIcon className="size-5 dark:hidden" />
+    </Button>
+  );
+}
