@@ -18,6 +18,7 @@ import { SettingsDialog } from "./settings-dialog";
 import { CelebrationPlayer } from "./players";
 import { HomeTab } from "./home-tab";
 import { BookPanel, BookScreen } from "./book-screen";
+import { BabelLogo } from "./logo";
 import { useMediaQuery } from "./common";
 import { cn } from "@/lib/utils";
 
@@ -103,11 +104,8 @@ function Shell() {
       <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-5 lg:p-4">
         {/* sidebar */}
         <aside className="sticky top-4 hidden h-[calc(100dvh-2rem)] flex-col gap-6 rounded-[1.75rem] bg-ink p-4 text-ink-foreground lg:flex">
-          <button onClick={() => go("home")} className="flex items-center gap-2.5 px-2 pt-2" aria-label="Início">
-            <span className="grid size-9 place-items-center rounded-full bg-sand text-sand-foreground">
-              <BooksIcon weight="fill" className="size-5" />
-            </span>
-            <span className="text-lg font-bold tracking-tight">Estante</span>
+          <button onClick={() => go("home")} className="px-2 pt-2" aria-label="Babel, início">
+            <BabelLogo />
           </button>
 
           <TabsList className="h-auto! w-full flex-col items-stretch gap-1 rounded-none bg-transparent p-0">
@@ -147,11 +145,8 @@ function Shell() {
         <div className="min-w-0">
           {/* mobile header */}
           <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-ink px-4 text-ink-foreground lg:hidden">
-            <button onClick={() => go("home")} className="flex items-center gap-2" aria-label="Início">
-              <span className="grid size-8 place-items-center rounded-full bg-sand text-sand-foreground">
-                <BooksIcon weight="fill" className="size-4" />
-              </span>
-              <span className="font-bold tracking-tight">Estante</span>
+            <button onClick={() => go("home")} aria-label="Babel, início">
+              <BabelLogo size="sm" />
             </button>
             <div className="flex items-center gap-1">
               <ThemeToggle />
@@ -209,7 +204,7 @@ function Shell() {
                 </a>{" "}
                 (copiado em 05/10/2026). Projeto pessoal de estudo, sem vínculo com a editora. Seus dados e suas chaves de IA ficam só neste navegador.
               </p>
-              <p className="label shrink-0">Estante · graded readers</p>
+              <p className="label shrink-0">Babel · aprender idiomas lendo</p>
             </footer>
           </div>
         </div>

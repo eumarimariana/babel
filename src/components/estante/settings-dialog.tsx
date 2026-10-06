@@ -20,10 +20,10 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const file = useRef<HTMLInputElement>(null);
 
   function exportData() {
-    const blob = new Blob([JSON.stringify({ app: "estante-eli", ...data, at: new Date().toISOString() }, null, 1)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ app: "babel", ...data, at: new Date().toISOString() }, null, 1)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `estante-eli-backup-${today()}.json`;
+    a.download = `babel-backup-${today()}.json`;
     document.body.append(a);
     a.click();
     a.remove();
@@ -33,12 +33,13 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   async function importData(f: File) {
     try {
       const raw = JSON.parse(await f.text());
-      if (raw.app !== "estante-eli") throw new Error();
+      // "estante-eli" is what backups were tagged before the app became Babel
+      if (raw.app !== "babel" && raw.app !== "estante-eli") throw new Error();
       const d = normalize(raw);
       replaceAll(d);
       toast.success(`Backup${raw.at ? ` de ${brDate(String(raw.at).slice(0, 10))}` : ""} importado: ${d.words.length} palavras, ${Object.keys(d.progress).length} livros marcados.`);
     } catch {
-      toast.error("Esse arquivo não é um backup da Estante ELi.");
+      toast.error("Esse arquivo não é um backup do Babel.");
     }
   }
 

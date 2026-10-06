@@ -9,8 +9,8 @@ import "./globals.css";
 const figtree = Figtree({ variable: "--font-body", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Estante ELi",
-  description: "Graded readers em inglês em ordem de dificuldade, com caderno de vocabulário, flashcards e kits de estudo.",
+  title: "Babel",
+  description: "Meu app de idiomas: graded readers em inglês em ordem de dificuldade, caderno de vocabulário, flashcards e kits de estudo.",
 };
 
 export const viewport: Viewport = {
