@@ -2,12 +2,12 @@
 
 Minha estante pessoal para aprender inglês lendo: os 177 *graded readers* da [ELi Publishing](https://www.elipublishing.com/catalog) em ordem de dificuldade (Pre-A1 → C1), com:
 
-- **Início**: painel com a pilha de leitura, palavras anotadas na semana, revisões do dia, calendário dos dias estudados, progresso por nível e a escada de leitura animada.
+- **Início**: painel com a pilha de leitura, palavras anotadas na semana, revisões do dia, calendário dos dias estudados, progresso por nível e o mapa de leitura animado.
 - **Estante**: as capas em prateleiras por nível, gênero ou status, com busca, filtros e a ficha de cada livro.
 - **Vocabulário**: caderno de palavras, com tradução, definição e exemplo gerados pela IA.
 - **Revisar**: flashcards com repetição espaçada (1, 2, 4, 8, 16 e 32 dias).
 - **Estudar um livro**: kit de pré-leitura (palavras-chave, gramática, perguntas) e correção do seu resumo em inglês.
-- Animações em [Remotion](https://www.remotion.dev/): a escada de leitura e a comemoração ao terminar um livro.
+- Animações em [Remotion](https://www.remotion.dev/): o mapa de leitura (um aviãozinho percorre as cidades Pre-A1 → C1) e a comemoração ao terminar um livro.
 
 Feito com Next.js, [shadcn/ui](https://ui.shadcn.com/), Tailwind, Motion, Phosphor Icons e o SDK da Anthropic. Capas carregadas do site da ELi.
 O progresso fica salvo no navegador (localStorage). Use **Configurações → Exportar** para fazer backup.

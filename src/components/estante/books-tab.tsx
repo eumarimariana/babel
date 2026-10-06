@@ -92,7 +92,7 @@ export function BooksTab({ q, onQ, onOpen, selected }: { q: string; onQ: (q: str
             ]}
           />
         ) : (
-          <span className="font-mono text-[11px] text-muted-foreground">Lista na ordem da escada</span>
+          <span className="font-mono text-[11px] text-muted-foreground">Lista na ordem da trilha</span>
         )}
         <div className="col-span-2 row-start-2 -mx-4 flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-4 scrollbar-none sm:order-none sm:mx-0 sm:px-0">
           {STATUS_FILTERS.map((f) => (

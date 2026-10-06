@@ -108,12 +108,12 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
           </article>
         </section>
 
-        {/* the ladder (Remotion) */}
+        {/* the travel map (Remotion) */}
         <section className="overflow-hidden rounded-[1.5rem] border border-border bg-[#e9e5df] text-[#1c1d1f]">
           <div className="flex items-end justify-between gap-4 px-5 pt-5 sm:px-6">
             <div>
-              <h2 className="font-display text-lg">Escada de leitura</h2>
-              <p className="font-mono text-[11px] text-[#6b6863]">do Pre-A1 ao C1, um prédio por degrau</p>
+              <h2 className="font-display text-lg">Mapa de leitura</h2>
+              <p className="font-mono text-[11px] text-[#6b6863]">do Pre-A1 ao C1, uma cidade por degrau</p>
             </div>
             <p className="text-right">
               <span className="font-display text-2xl tabular">{journey.done}</span>
@@ -161,7 +161,7 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
       <aside className="grid content-start gap-5 md:grid-cols-2 xl:grid-cols-1">
         {nextBook && (
           <article className="relative overflow-hidden rounded-[1.5rem] bg-ink p-5 text-ink-foreground md:col-span-2 xl:col-span-1">
-            <p className="font-mono text-[10.5px] text-ink-muted">{reading.length ? "Lendo agora" : "Próximo da escada"}</p>
+            <p className="font-mono text-[10.5px] text-ink-muted">{reading.length ? "Lendo agora" : "Próxima parada"}</p>
             <h2 className="mt-2 max-w-[11rem] font-display text-2xl leading-tight">{nextBook.t}</h2>
             <p className="mt-1 max-w-[11rem] font-mono text-[10.5px] text-ink-muted">
               {nextBook.lv} · {nextBook.hw} headwords

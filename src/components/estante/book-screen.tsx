@@ -153,7 +153,7 @@ function BookBody({ book: b, onStudy, onAddWord, onGo, wide, split = wide }: { b
           Ver no site da ELi <ArrowSquareOutIcon className="size-3.5" />
         </a>
 
-        <nav aria-label="Navegar na escada" className="grid grid-cols-2 gap-2 border-t border-ink-border pt-4">
+        <nav aria-label="Navegar na trilha" className="grid grid-cols-2 gap-2 border-t border-ink-border pt-4">
           {prev ? <Neighbor book={prev} dir="prev" onGo={onGo} /> : <span />}
           {next && <Neighbor book={next} dir="next" onGo={onGo} />}
         </nav>
