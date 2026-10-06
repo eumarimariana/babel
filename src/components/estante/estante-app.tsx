@@ -167,7 +167,7 @@ function Shell() {
             <div className="flex flex-col gap-4 pt-6 pb-6 sm:flex-row sm:items-end sm:justify-between lg:pt-4">
               <div className="min-w-0">
                 <h1 className="font-display text-3xl sm:text-4xl">{tab === "home" ? "Boa leitura hoje" : TAB_TITLE[tab]}</h1>
-                <p className="mt-1 font-mono text-xs text-muted-foreground first-letter:uppercase">{subtitle[tab]}</p>
+                <p className="mt-1 text-xs text-muted-foreground first-letter:uppercase tabular">{subtitle[tab]}</p>
               </div>
               <label className="relative w-full sm:w-80">
                 <span className="sr-only">Buscar livro</span>
@@ -177,7 +177,7 @@ function Shell() {
                   value={query}
                   onChange={(e) => search(e.target.value)}
                   placeholder="Título, autor ou tema"
-                  className="h-11 w-full rounded-full border border-border bg-card pr-4 pl-11 font-mono text-[13px] outline-none placeholder:text-muted-foreground focus-visible:border-foreground"
+                  className="h-11 w-full rounded-full border border-border bg-card pr-4 pl-11 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-foreground tabular"
                 />
               </label>
             </div>
@@ -281,7 +281,7 @@ const NAV = [
 
 function CountBadge({ n, active }: { n: number; active?: boolean }) {
   if (!n) return null;
-  return <span className={cn("ml-auto rounded-full px-2 font-mono text-[10px] leading-5 tabular", active ? "bg-ink text-ink-foreground" : "bg-ink-border text-ink-foreground")}>{n}</span>;
+  return <span className={cn("ml-auto rounded-full px-2 text-[11px] leading-5 tabular", active ? "bg-ink text-ink-foreground" : "bg-ink-border text-ink-foreground")}>{n}</span>;
 }
 
 function ThemeToggle() {

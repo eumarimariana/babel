@@ -2,7 +2,7 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Eas
 
 export type CelebrationProps = { title: string; level: string; done: number; total: number };
 
-const MONO = "var(--font-geist-mono), ui-monospace, monospace";
+const FONT = "var(--font-body), system-ui, sans-serif";
 
 export const CELEBRATION = { width: 800, height: 450, fps: 30, durationInFrames: 105 };
 
@@ -75,7 +75,7 @@ export function Celebration({ title, level, done, total }: CelebrationProps) {
         >
           ✓
         </div>
-        <div style={{ fontFamily: MONO, fontSize: 14, letterSpacing: "0.22em", textTransform: "uppercase", opacity: titleIn, color: "#777777" }}>Livro concluído</div>
+        <div style={{ fontFamily: FONT, fontSize: 14, letterSpacing: "0.22em", textTransform: "uppercase", opacity: titleIn, color: "#777777" }}>Livro concluído</div>
         <div
           style={{
             fontFamily: "var(--font-display), Georgia, serif",
@@ -88,12 +88,12 @@ export function Celebration({ title, level, done, total }: CelebrationProps) {
         >
           {title}
         </div>
-        <div style={{ fontFamily: MONO, opacity: titleIn, fontSize: 15, color: "#333333" }}>{level}</div>
+        <div style={{ fontFamily: FONT, opacity: titleIn, fontSize: 15, color: "#333333" }}>{level}</div>
         <div style={{ width: 420, marginTop: 10, opacity: interpolate(frame, [32, 42], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) }}>
           <div style={{ height: 14, borderRadius: 7, border: "1.5px solid #1c1d1f", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${bar * 100}%`, background: "#1c1d1f" }} />
           </div>
-          <div style={{ marginTop: 10, fontFamily: MONO, fontSize: 14, color: "#777777", fontVariantNumeric: "tabular-nums" }}>
+          <div style={{ marginTop: 10, fontFamily: FONT, fontSize: 14, color: "#777777", fontVariantNumeric: "tabular-nums" }}>
             {shown} de {total} livros lidos
           </div>
         </div>

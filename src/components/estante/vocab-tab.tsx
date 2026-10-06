@@ -75,7 +75,7 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
           </span>
           <div>
             <h2 className="font-display text-xl">Nova palavra</h2>
-            <p className="font-mono text-[10.5px] text-ink-muted">anote enquanto lê</p>
+            <p className="text-xs text-ink-muted tabular">anote enquanto lê</p>
           </div>
         </div>
         <form onSubmit={save} className="mt-5 grid gap-3.5">
@@ -111,7 +111,7 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
           {stats.map((x) => (
             <div key={x.label} className="rounded-[1.25rem] border border-border bg-card p-4">
               <p className="text-3xl leading-none font-bold tabular">{x.value}</p>
-              <p className="mt-1.5 font-mono text-[10.5px] text-muted-foreground">{x.label}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground tabular">{x.label}</p>
             </div>
           ))}
         </div>
@@ -120,7 +120,7 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
           <label className="relative min-w-[12rem] flex-1">
             <span className="sr-only">Buscar palavra</span>
             <MagnifyingGlassIcon weight="bold" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input id="w-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar no caderno" className="h-10 bg-card pl-11 font-mono text-[13px]" />
+            <Input id="w-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar no caderno" className="h-10 bg-card pl-11 text-sm tabular" />
           </label>
           <Segmented
             id="sort"
@@ -163,7 +163,7 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
 function Field({ id, label, children }: { id?: string; label: string; children: React.ReactNode }) {
   return (
     <div className="grid gap-1.5">
-      <Label htmlFor={id} className="font-mono text-[10.5px] font-normal text-ink-muted">
+      <Label htmlFor={id} className="text-xs font-normal text-ink-muted tabular">
         {label}
       </Label>
       {children}
@@ -178,7 +178,7 @@ export function WordCard({ word: w, onDelete, action }: { word: Pick<Word, "w" |
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-xl leading-tight font-bold">{w.w}</p>
-          {w.pos && <p className="font-mono text-[10.5px] text-muted-foreground">{w.pos}</p>}
+          {w.pos && <p className="text-xs text-muted-foreground tabular">{w.pos}</p>}
         </div>
         <div className="-mt-1 -mr-1 flex shrink-0">
           <SpeakButton text={w.w} />
@@ -193,7 +193,7 @@ export function WordCard({ word: w, onDelete, action }: { word: Pick<Word, "w" |
       {w.en && <p className="text-sm text-muted-foreground">{w.en}</p>}
       {w.ex && <p className="border-l-2 border-border pl-3 text-sm italic">“{w.ex}”</p>}
       {(w.box !== undefined || book) && (
-        <div className="mt-1 flex items-center justify-between gap-2 border-t border-border pt-3 font-mono text-[10.5px] text-muted-foreground">
+        <div className="mt-1 flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground tabular">
           {w.box !== undefined && (
             <span className="flex items-center gap-2">
               <MemoryBoxes box={w.box} /> memória {w.box}/6

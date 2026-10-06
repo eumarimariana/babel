@@ -45,7 +45,7 @@ export function SimpleSelect({
 
 export function LevelTag({ lv, className }: { lv: string; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 font-mono text-xs whitespace-nowrap", className)}>
+    <span className={cn("inline-flex items-center gap-1.5 text-xs whitespace-nowrap", className)}>
       <span className="size-2 rounded-[2px] ring-1 ring-foreground/20" style={{ background: levelColor(lv) }} />
       {lv}
     </span>
@@ -165,7 +165,7 @@ export function BookCover({ book, status, size = "md", className, priority }: { 
         <Image src={src} alt={`Capa de ${book.t}`} width={w} height={Math.round((w * 400) / 274)} unoptimized priority={priority} loading={priority ? undefined : "lazy"} className="size-full object-cover" />
       ) : (
         <div className="flex size-full flex-col justify-between bg-secondary p-3">
-          <span className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">{book.lv}</span>
+          <span className="text-[11px] tracking-wider text-muted-foreground uppercase tabular">{book.lv}</span>
           <span className="font-display text-base leading-tight">{book.t}</span>
         </div>
       )}
@@ -212,7 +212,7 @@ export function Segmented<T extends string>({ value, onChange, options, label, i
             role="radio"
             aria-checked={on}
             onClick={() => onChange(o.value)}
-            className={cn("relative flex h-7 items-center gap-1.5 rounded-full px-3 font-mono text-[11px] tracking-wide uppercase transition-colors [&_svg]:size-4", on ? "text-background" : "text-muted-foreground hover:text-foreground")}
+            className={cn("relative flex h-7 items-center gap-1.5 rounded-full px-3 text-xs tracking-wide uppercase transition-colors [&_svg]:size-4", on ? "text-background" : "text-muted-foreground hover:text-foreground")}
           >
             {on && <motion.span layoutId={`seg-${id}`} className="absolute inset-0 rounded-full bg-foreground" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
             <span className="relative flex items-center gap-1.5">

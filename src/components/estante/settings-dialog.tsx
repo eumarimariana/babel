@@ -167,7 +167,7 @@ function AiSection() {
 
         {savedKey && (
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-mono text-xs">
+            <span className="text-xs tabular">
               {savedKey.slice(0, 8)}…{savedKey.slice(-4)}
             </span>
             <div className="flex gap-1">

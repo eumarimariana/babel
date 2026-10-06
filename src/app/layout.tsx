@@ -1,13 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Figtree, Space_Mono } from "next/font/google";
+import { Figtree } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-// Figtree (round and friendly) for everything, Space Mono for the bookish details (authors, numbers, metadata).
+// Figtree everywhere: round and friendly, from the big titles down to the small metadata.
 const figtree = Figtree({ variable: "--font-body", subsets: ["latin"] });
-const mono = Space_Mono({ variable: "--font-geist-mono", subsets: ["latin"], weight: ["400", "700"] });
 
 export const metadata: Metadata = {
   title: "Estante ELi",
@@ -24,7 +23,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning className={`${figtree.variable} ${mono.variable} h-full antialiased`}>
+    <html lang="pt-BR" suppressHydrationWarning className={`${figtree.variable} h-full antialiased`}>
       <body className="min-h-full">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>

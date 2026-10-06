@@ -113,7 +113,7 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
           <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
             <span className="block h-full rounded-full bg-ink transition-all" style={{ width: `${total ? (Math.min(doneCount, total) / total) * 100 : 0}%` }} />
           </span>
-          <span className="font-mono text-[11px] text-muted-foreground tabular">
+          <span className="text-xs text-muted-foreground tabular">
             {Math.min(doneCount, total)}/{total}
           </span>
         </div>
@@ -123,11 +123,11 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
         <div className={cn("relative min-h-[22rem] transition-transform duration-500 [transform-style:preserve-3d]", shown && mode === "en" && "[transform:rotateY(180deg)]")}>
           {/* front: graphite */}
           <div className="absolute inset-0 grid content-center justify-items-center gap-4 rounded-[2rem] bg-ink p-6 text-center text-ink-foreground [backface-visibility:hidden]">
-            <p className="font-mono text-[11px] text-ink-muted">{mode === "en" ? (book?.t ?? "Caderno") : "Como se diz em inglês?"}</p>
+            <p className="text-xs text-ink-muted tabular">{mode === "en" ? (book?.t ?? "Caderno") : "Como se diz em inglês?"}</p>
             {mode === "en" ? (
               <>
                 <p className="text-5xl leading-none font-bold tracking-tight sm:text-6xl">{current.w}</p>
-                {current.pos && <p className="font-mono text-xs text-ink-muted">{current.pos}</p>}
+                {current.pos && <p className="text-xs text-ink-muted tabular">{current.pos}</p>}
                 <div className="flex items-center gap-2 pt-3">
                   <span className="rounded-full bg-white/10 text-ink-foreground [&_button]:text-ink-foreground [&_button:hover]:bg-white/10">
                     <SpeakButton text={current.w} />
@@ -136,7 +136,7 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
                     Mostrar resposta
                   </button>
                 </div>
-                <p className="font-mono text-[10.5px] text-ink-muted">espaço vira · 1 errei · 2 difícil · 3 acertei</p>
+                <p className="text-xs text-ink-muted tabular">espaço vira · 1 errei · 2 difícil · 3 acertei</p>
               </>
             ) : (
               <>
@@ -166,7 +166,7 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
                   </form>
                 ) : (
                   <div className="grid justify-items-center gap-2 pt-2">
-                    <p className={cn("rounded-full px-3 py-1 font-mono text-xs", right ? "bg-[#9cb88f] text-ink" : "bg-[#d07a64] text-ink")}>{right ? "Certo!" : `Você escreveu “${typed || "…"}”`}</p>
+                    <p className={cn("rounded-full px-3 py-1 text-xs", right ? "bg-[#9cb88f] text-ink" : "bg-[#d07a64] text-ink")}>{right ? "Certo!" : `Você escreveu “${typed || "…"}”`}</p>
                     <p className="text-3xl font-bold">{current.w}</p>
                     {current.ex && <p className="max-w-md text-sm text-ink-muted italic">“{current.ex}”</p>}
                     <Grade onGrade={grade} />
@@ -178,7 +178,7 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
           {/* back (EN mode): sand */}
           {mode === "en" && (
             <div className="absolute inset-0 grid content-center justify-items-center gap-3 rounded-[2rem] bg-sand p-6 text-center text-sand-foreground [backface-visibility:hidden] [transform:rotateY(180deg)]">
-              <p className="font-mono text-xs text-[#6b6863]">{current.w}</p>
+              <p className="text-xs text-[#6b6863] tabular">{current.w}</p>
               <p className="text-4xl leading-tight font-bold tracking-tight">{current.pt || "—"}</p>
               {current.en && <p className="max-w-md text-[#45474b]">{current.en}</p>}
               {current.ex && <p className="max-w-md border-l-2 border-[#1c1d1f]/20 pl-3 text-left text-sm italic">“{current.ex}”</p>}
@@ -195,7 +195,7 @@ function Figure({ value, label }: { value: number; label: string }) {
   return (
     <div className="rounded-[1.25rem] border border-border bg-card p-4">
       <p className="text-3xl leading-none font-bold tabular">{value}</p>
-      <p className="mt-1.5 font-mono text-[10.5px] text-muted-foreground">{label}</p>
+      <p className="mt-1.5 text-xs text-muted-foreground tabular">{label}</p>
     </div>
   );
 }

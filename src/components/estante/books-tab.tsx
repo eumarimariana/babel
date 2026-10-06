@@ -92,7 +92,7 @@ export function BooksTab({ q, onQ, onOpen, selected }: { q: string; onQ: (q: str
             ]}
           />
         ) : (
-          <span className="font-mono text-[11px] text-muted-foreground">Lista na ordem da trilha</span>
+          <span className="text-xs text-muted-foreground tabular">Lista na ordem da trilha</span>
         )}
         <div className="col-span-2 row-start-2 -mx-4 flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-4 scrollbar-none sm:order-none sm:mx-0 sm:px-0">
           {STATUS_FILTERS.map((f) => (
@@ -106,7 +106,7 @@ export function BooksTab({ q, onQ, onOpen, selected }: { q: string; onQ: (q: str
             </button>
           ))}
         </div>
-        <span className="col-span-2 row-start-3 font-mono text-[11px] text-muted-foreground tabular sm:col-auto">{list.length} livros</span>
+        <span className="col-span-2 row-start-3 text-xs text-muted-foreground tabular sm:col-auto">{list.length} livros</span>
         {q && (
           <button onClick={() => onQ("")} className="row-start-3 flex h-8 w-fit items-center gap-1 justify-self-end rounded-full bg-ink px-3 text-xs text-ink-foreground">
             “{q}” <XIcon className="size-3" />
@@ -154,7 +154,7 @@ function ShelfRow({ shelf, onOpen, status, selected }: { shelf: Shelf; onOpen: (
       <header className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
           <h3 className="font-display text-xl whitespace-nowrap">{shelf.title}</h3>
-          <span className="truncate font-mono text-[11px] text-muted-foreground">
+          <span className="truncate text-xs text-muted-foreground tabular">
             {shelf.meta && `${shelf.meta} · `}
             {shelf.done}/{shelf.total} lidos
           </span>
@@ -174,7 +174,7 @@ function ShelfRow({ shelf, onOpen, status, selected }: { shelf: Shelf; onOpen: (
             </span>
           )}
           {shelf.books.length > 3 && (
-            <button onClick={() => setExpanded((e) => !e)} className="px-2 font-mono text-[11px] underline underline-offset-4 hover:text-muted-foreground">
+            <button onClick={() => setExpanded((e) => !e)} className="px-2 text-xs underline underline-offset-4 hover:text-muted-foreground tabular">
               {expanded ? "menos" : "mais"}
             </button>
           )}
@@ -217,8 +217,8 @@ function BookTile({ book: b, status, onOpen, index, fixed, selected }: { book: B
       />
       <span className="grid gap-0.5">
         <span className={cn("line-clamp-2 text-[13px] leading-snug font-medium", status === "done" && "text-muted-foreground")}>{b.t}</span>
-        <span className="truncate font-mono text-[10.5px] text-muted-foreground">{b.a}</span>
-        <span className="mt-1 flex items-center justify-between font-mono text-[10.5px]">
+        <span className="truncate text-xs text-muted-foreground tabular">{b.a}</span>
+        <span className="mt-1 flex items-center justify-between text-xs tabular">
           <span className="font-bold">{b.lv}</span>
           <span className="text-muted-foreground tabular">{b.hw} hw</span>
         </span>
@@ -256,7 +256,7 @@ function BookList({ list, onOpen, status, setStatus }: { list: Book[]; onOpen: (
       <div className="hidden border-t border-foreground sm:block">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent [&_th]:font-mono [&_th]:text-[10px] [&_th]:tracking-[0.16em] [&_th]:text-muted-foreground [&_th]:uppercase">
+            <TableRow className="hover:bg-transparent [&_th]:text-[11px] [&_th]:font-semibold [&_th]:tracking-[0.08em] [&_th]:text-muted-foreground [&_th]:uppercase">
               <TableHead className="w-10 text-right">#</TableHead>
               <TableHead>Título</TableHead>
               <TableHead className="hidden md:table-cell">Autor</TableHead>

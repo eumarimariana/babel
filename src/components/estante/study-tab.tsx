@@ -28,7 +28,7 @@ export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; boo
         <div className="grid min-w-0 content-start gap-4">
           <div className="grid gap-2">
             <label className="flex max-w-md items-center gap-2">
-              <span className="shrink-0 font-mono text-[10.5px] text-ink-muted">Livro</span>
+              <span className="shrink-0 text-xs text-ink-muted tabular">Livro</span>
               <SimpleSelect
                 label="Livro para estudar"
                 value={String(book.id)}
@@ -38,7 +38,7 @@ export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; boo
               />
             </label>
             <h2 className="font-display text-3xl leading-tight sm:text-4xl">{book.t}</h2>
-            <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+            <div className="flex flex-wrap items-center gap-2 text-xs tabular">
               <span className="rounded-full bg-sand px-3 py-1 font-bold text-sand-foreground">{book.lv}</span>
               <span className="rounded-full border border-ink-border px-3 py-1">{book.hw} headwords</span>
               <span className="rounded-full border border-ink-border px-3 py-1">{book.cat}</span>
@@ -49,7 +49,7 @@ export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; boo
             <div className="w-full max-w-md">
               <StatusPicker tone="ink" value={status(book.id)} onChange={(v) => setStatus(book.id, v)} />
             </div>
-            <a href={bookUrl(book)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-mono text-[11px] text-ink-muted underline underline-offset-4 hover:text-ink-foreground">
+            <a href={bookUrl(book)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-ink-muted underline underline-offset-4 hover:text-ink-foreground tabular">
               Ver no site da ELi <ArrowSquareOutIcon className="size-3.5" />
             </a>
           </div>
@@ -74,9 +74,9 @@ function Step({ eyebrow, title, desc, children }: { eyebrow: string; title: stri
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-sand font-mono text-xs font-bold text-sand-foreground">{STEP_NUMBER[eyebrow]}</span>
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-sand text-xs font-bold text-sand-foreground tabular">{STEP_NUMBER[eyebrow]}</span>
           <div className="min-w-0">
-            <p className="font-mono text-[10.5px] text-muted-foreground">{eyebrow}</p>
+            <p className="text-xs text-muted-foreground tabular">{eyebrow}</p>
             <CardTitle>{title}</CardTitle>
           </div>
         </div>
@@ -91,11 +91,11 @@ function Step({ eyebrow, title, desc, children }: { eyebrow: string; title: stri
 function ListRow({ n, title, sub, example }: { n: number; title: string; sub?: string; example?: string }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl bg-muted/70 p-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-card font-mono text-xs font-bold ring-1 ring-border">{String(n).padStart(2, "0")}</span>
+      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-card text-xs font-bold ring-1 ring-border tabular">{String(n).padStart(2, "0")}</span>
       <div className="min-w-0 text-sm">
         <p className="font-semibold">{title}</p>
         {sub && <p className="text-muted-foreground">{sub}</p>}
-        {example && <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">“{example}”</p>}
+        {example && <p className="mt-0.5 text-xs text-muted-foreground tabular">“{example}”</p>}
       </div>
     </div>
   );
@@ -106,7 +106,7 @@ function Questions({ items }: { items: string[] }) {
     <ol className="grid gap-1.5 text-sm">
       {items.map((q, i) => (
         <li key={q} className="flex gap-3">
-          <span className="font-mono text-[11px] text-muted-foreground tabular">{String(i + 1).padStart(2, "0")}</span>
+          <span className="text-xs text-muted-foreground tabular">{String(i + 1).padStart(2, "0")}</span>
           <span>{q}</span>
         </li>
       ))}
@@ -297,7 +297,7 @@ function AfterReading({ book, aiName }: { book: Book; aiName: string }) {
             <CopyIcon data-icon="inline-start" /> Copiar texto + pedido de correção
           </Button>
         )}
-        <span className="font-mono text-[11px] text-muted-foreground tabular">{count} palavras</span>
+        <span className="text-xs text-muted-foreground tabular">{count} palavras</span>
         {busy && !out && <span className="text-sm text-muted-foreground">Pensando… (20–40 s)</span>}
       </div>
       {out && <div className="rounded-2xl bg-ink p-5 text-sm leading-relaxed whitespace-pre-wrap text-ink-foreground">{out}</div>}

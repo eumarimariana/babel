@@ -54,10 +54,10 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
                   <BookCover book={b} size="xs" className="w-11 shrink-0 rounded-[0.35rem] ring-1 ring-foreground" />
                   <div className="min-w-0">
                     <p className="line-clamp-2 text-sm leading-snug font-semibold">{b.t}</p>
-                    <p className="mt-0.5 truncate font-mono text-[10.5px] text-muted-foreground">{b.a}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground tabular">{b.a}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 border-t border-border pt-3 font-mono text-[10.5px]">
+                <div className="grid grid-cols-2 border-t border-border pt-3 text-xs tabular">
                   <span className="grid gap-0.5">
                     <span className="text-muted-foreground">Nível</span>
                     <span className="font-bold">{b.lv}</span>
@@ -78,17 +78,17 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
           <article className="flex flex-col gap-4 rounded-[1.5rem] border border-border bg-card p-5">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-lg">Revisões de hoje</h2>
-              <span className="font-mono text-[11px] text-muted-foreground tabular">{due.length} pendentes</span>
+              <span className="text-xs text-muted-foreground tabular">{due.length} pendentes</span>
             </div>
             {due.length ? (
               <ul className="grid gap-2">
                 {due.slice(0, 4).map((w) => (
                   <li key={w.id}>
                     <button onClick={() => onGo("review")} className="flex w-full items-center gap-3 rounded-2xl p-1.5 text-left hover:bg-muted">
-                      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sand font-mono text-xs font-bold text-sand-foreground uppercase">{w.w.slice(0, 2)}</span>
+                      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sand text-xs font-bold text-sand-foreground uppercase tabular">{w.w.slice(0, 2)}</span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-semibold">{w.w}</span>
-                        <span className="block truncate font-mono text-[10.5px] text-muted-foreground">{w.pt || w.en || "sem tradução"}</span>
+                        <span className="block truncate text-xs text-muted-foreground tabular">{w.pt || w.en || "sem tradução"}</span>
                       </span>
                       <span className="grid size-7 place-items-center rounded-full border border-border">
                         <CaretRightIcon weight="bold" className="size-3" />
@@ -113,11 +113,11 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
           <div className="flex items-end justify-between gap-4 px-5 pt-5 sm:px-6">
             <div>
               <h2 className="font-display text-lg">Mapa de leitura</h2>
-              <p className="font-mono text-[11px] text-[#6b6863]">do Pre-A1 ao C1, uma cidade por degrau</p>
+              <p className="text-xs text-[#6b6863] tabular">do Pre-A1 ao C1, uma cidade por degrau</p>
             </div>
             <p className="text-right">
               <span className="font-display text-2xl tabular">{journey.done}</span>
-              <span className="font-mono text-xs text-[#6b6863]">/{journey.total} · {pct}%</span>
+              <span className="text-xs text-[#6b6863] tabular">/{journey.total} · {pct}%</span>
             </p>
           </div>
           <div className="overflow-x-auto px-2 pb-2 scrollbar-none sm:px-3 sm:pb-3">
@@ -138,9 +138,9 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
                     <BookCover book={b} size="xs" className="w-9 rounded-[0.3rem] ring-1 ring-foreground" />
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-semibold">{b.t}</span>
-                      <span className="block truncate font-mono text-[10.5px] text-muted-foreground">{b.a}</span>
+                      <span className="block truncate text-xs text-muted-foreground tabular">{b.a}</span>
                     </span>
-                    <span className="hidden font-mono text-[10.5px] sm:grid">
+                    <span className="hidden text-xs sm:grid tabular">
                       <span className="text-muted-foreground">Nível</span>
                       <span className="font-bold">
                         {b.lv} · {b.hw} hw
@@ -161,9 +161,9 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
       <aside className="grid content-start gap-5 md:grid-cols-2 xl:grid-cols-1">
         {nextBook && (
           <article className="relative overflow-hidden rounded-[1.5rem] bg-ink p-5 text-ink-foreground md:col-span-2 xl:col-span-1">
-            <p className="font-mono text-[10.5px] text-ink-muted">{reading.length ? "Lendo agora" : "Próxima parada"}</p>
+            <p className="text-xs text-ink-muted tabular">{reading.length ? "Lendo agora" : "Próxima parada"}</p>
             <h2 className="mt-2 max-w-[11rem] font-display text-2xl leading-tight">{nextBook.t}</h2>
-            <p className="mt-1 max-w-[11rem] font-mono text-[10.5px] text-ink-muted">
+            <p className="mt-1 max-w-[11rem] text-xs text-ink-muted tabular">
               {nextBook.lv} · {nextBook.hw} headwords
             </p>
             <button onClick={() => onStudy(nextBook.id)} className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-sand px-4 py-2 text-xs font-semibold text-sand-foreground hover:opacity-90">
@@ -180,11 +180,11 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
         <article className="rounded-[1.5rem] border border-border bg-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-lg">Por nível</h2>
-            <span className="font-mono text-[11px] text-muted-foreground tabular">{pct}%</span>
+            <span className="text-xs text-muted-foreground tabular">{pct}%</span>
           </div>
           <ul className="mt-4 grid gap-3">
             {bands.map((b) => (
-              <li key={b.lv} className="grid grid-cols-[3rem_1fr_2.75rem] items-center gap-3 font-mono text-[11px]">
+              <li key={b.lv} className="grid grid-cols-[3rem_1fr_2.75rem] items-center gap-3 text-xs tabular">
                 <span className="font-bold">{b.lv}</span>
                 <span className="h-2 overflow-hidden rounded-full bg-muted">
                   <span className="block h-full rounded-full bg-ink" style={{ width: `${(b.done / b.ids.length) * 100}%` }} />
@@ -205,7 +205,7 @@ function SectionHead({ title, action, onAction }: { title: string; action: strin
   return (
     <div className="flex items-center justify-between">
       <h2 className="font-display text-lg">{title}</h2>
-      <button onClick={onAction} className="flex items-center gap-1 font-mono text-[11px] underline underline-offset-4 hover:text-muted-foreground">
+      <button onClick={onAction} className="flex items-center gap-1 text-xs underline underline-offset-4 hover:text-muted-foreground tabular">
         {action} <ArrowRightIcon className="size-3" />
       </button>
     </div>
@@ -241,12 +241,12 @@ function WeekChart({ words }: { words: { created: string }[] }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="font-display text-lg">Palavras na semana</h2>
-          <p className="font-mono text-[11px] text-muted-foreground tabular">{total} anotadas nos últimos 7 dias</p>
+          <p className="text-xs text-muted-foreground tabular">{total} anotadas nos últimos 7 dias</p>
         </div>
-        <span className="rounded-full border border-border px-3 py-1 font-mono text-[10.5px]">7 dias</span>
+        <span className="rounded-full border border-border px-3 py-1 text-xs tabular">7 dias</span>
       </div>
       <div className="grid flex-1 grid-cols-[auto_1fr] gap-3">
-        <div className="flex flex-col justify-between pb-6 font-mono text-[10px] text-muted-foreground tabular">
+        <div className="flex flex-col justify-between pb-6 text-[11px] text-muted-foreground tabular">
           {[max, Math.round(max / 2), 0].map((v) => (
             <span key={v}>{v}</span>
           ))}
@@ -257,10 +257,10 @@ function WeekChart({ words }: { words: { created: string }[] }) {
             return (
               <div key={d} className="flex h-full flex-col items-center justify-end gap-2" onMouseEnter={() => setHover(i)}>
                 <div className="relative flex w-full flex-1 flex-col items-center justify-end gap-1.5">
-                  {on && <span className="z-10 rounded-md bg-ink px-1.5 py-0.5 font-mono text-[10px] text-ink-foreground tabular">{counts[i]}</span>}
+                  {on && <span className="z-10 rounded-md bg-ink px-1.5 py-0.5 text-[11px] text-ink-foreground tabular">{counts[i]}</span>}
                   <span className={cn("w-2.5 rounded-full transition-colors sm:w-3", on ? "bg-[#9a8f7f]" : "bg-ink")} style={{ height: `${Math.max(4, (counts[i] / max) * 80)}%` }} />
                 </div>
-                <span className={cn("font-mono text-[10px]", d === t ? "font-bold" : "text-muted-foreground")}>{WEEKDAY[new Date(d + "T12:00:00").getDay()]}</span>
+                <span className={cn("text-[11px]", d === t ? "font-bold" : "text-muted-foreground")}>{WEEKDAY[new Date(d + "T12:00:00").getDay()]}</span>
               </div>
             );
           })}
@@ -295,7 +295,7 @@ function StudyCalendar({ days, streak }: { days: string[]; streak: number }) {
           <CaretRightIcon weight="bold" className="size-3" />
         </button>
       </div>
-      <div className="mt-4 grid grid-cols-7 gap-y-1.5 text-center font-mono text-[11px]">
+      <div className="mt-4 grid grid-cols-7 gap-y-1.5 text-center text-xs tabular">
         {WEEKDAY.map((d) => (
           <span key={d} className="pb-1 text-[10px] text-muted-foreground">
             {d}
@@ -322,7 +322,7 @@ function StudyCalendar({ days, streak }: { days: string[]; streak: number }) {
           );
         })}
       </div>
-      <p className="mt-4 border-t border-border pt-3 font-mono text-[11px] text-muted-foreground">
+      <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground tabular">
         <span className="mr-1.5 inline-block size-2 rounded-full bg-sand align-middle ring-1 ring-foreground/20" />
         dias estudados · {streak} {streak === 1 ? "dia seguido" : "dias seguidos"}
       </p>

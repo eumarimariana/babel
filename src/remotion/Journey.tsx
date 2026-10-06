@@ -12,7 +12,7 @@ const INK = "#1c1d1f";
 const SAND = "#d9d3cb";
 const ROUTE = "#a39d94";
 const DIM = "#6b6863";
-const MONO = "var(--font-geist-mono), ui-monospace, monospace";
+const FONT = "var(--font-body), system-ui, sans-serif";
 
 type Pt = { x: number; y: number };
 
@@ -71,7 +71,7 @@ export function Journey({ stages }: JourneyProps) {
   const bob = Math.sin((frame - 96) / 7) * 3 * arrived;
 
   return (
-    <AbsoluteFill style={{ background: PAPER, color: INK, fontFamily: MONO, overflow: "hidden" }}>
+    <AbsoluteFill style={{ background: PAPER, color: INK, fontFamily: FONT, overflow: "hidden" }}>
       <svg width={W} height={JOURNEY.height} style={{ position: "absolute", inset: 0 }}>
         {/* map paper: graticule, land masses, waves, compass */}
         <g opacity={fade(0, 18)}>
@@ -135,10 +135,10 @@ export function Journey({ stages }: JourneyProps) {
                 </>
               )}
               <g transform={`translate(0 ${below ? 40 : last ? -58 : -42})`} opacity={fade(18 + i * 4)}>
-                <text textAnchor="middle" fontSize={17} fontWeight={700} fill={INK}>
+                <text textAnchor="middle" fontSize={18} fontWeight={700} fill={INK}>
                   {last ? "Fluência" : s.lv}
                 </text>
-                <text y={17} textAnchor="middle" fontSize={11} fill={DIM}>
+                <text y={18} textAnchor="middle" fontSize={13} fill={DIM}>
                   {last ? "destino" : `${s.label} · ${s.done}/${s.total}`}
                 </text>
               </g>
@@ -166,7 +166,7 @@ export function Journey({ stages }: JourneyProps) {
           return (
             <g opacity={arrived} transform={`translate(0 ${(1 - arrived) * (above ? -16 : 16) + bob})`}>
               <rect x={left} y={top} width={170} height={32} rx={16} fill={INK} />
-              <text x={left + 85} y={top + 21} textAnchor="middle" fontSize={14} letterSpacing={2} fill={PAPER}>
+              <text x={left + 85} y={top + 21} textAnchor="middle" fontSize={13} fontWeight={700} letterSpacing={1.5} fill={PAPER}>
                 VOCÊ ESTÁ AQUI
               </text>
               <path d={arrow} fill={INK} />
