@@ -12,6 +12,8 @@ Meu app pessoal de idiomas, começando pelo inglês. A primeira parte é uma est
 Feito com Next.js, [shadcn/ui](https://ui.shadcn.com/), Tailwind, Motion, Phosphor Icons e o SDK da Anthropic. Capas carregadas do site da ELi.
 O progresso fica salvo no navegador (localStorage). Use **Configurações → Exportar** para fazer backup.
 
+**Próximos idiomas:** o plano para francês, alemão, espanhol e mais séries de inglês está em [docs/idiomas](docs/idiomas/README.md).
+
 ## IA: cada pessoa usa a própria chave
 
 O site não tem chave de API embutida. Quem quiser os recursos de IA abre **Configurações**,
