@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowSquareOutIcon, BookmarkSimpleIcon, CaretLeftIcon, CaretRightIcon, GraduationCapIcon, NotePencilIcon } from "@phosphor-icons/react";
+import { ArrowSquareOutIcon, BookmarkSimpleIcon, CaretLeftIcon, CaretRightIcon, GraduationCapIcon, NotePencilIcon, QuotesIcon } from "@phosphor-icons/react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { BOOKS, BOOK_BY_ID, bookNumber, bookUrl, type Book } from "@/lib/books";
@@ -14,10 +14,11 @@ type Props = {
   onOpenChange: (id: number | null) => void;
   onStudy: (id: number) => void;
   onAddWord: (id: number) => void;
+  onAddQuote: (id: number) => void;
 };
 
 /** The book screen: a bottom drawer on phones, a wide dialog on larger screens. */
-export function BookScreen({ bookId, onOpenChange, onStudy, onAddWord }: Props) {
+export function BookScreen({ bookId, onOpenChange, onStudy, onAddWord, onAddQuote }: Props) {
   const wide = useMediaQuery("(min-width: 768px)");
   const book = bookId != null ? BOOK_BY_ID.get(bookId) : undefined;
   const close = () => onOpenChange(null);
@@ -26,6 +27,7 @@ export function BookScreen({ bookId, onOpenChange, onStudy, onAddWord }: Props) 
       book={book}
       onStudy={() => (close(), onStudy(book.id))}
       onAddWord={() => (close(), onAddWord(book.id))}
+      onAddQuote={() => (close(), onAddQuote(book.id))}
       onGo={(id) => onOpenChange(id)}
       wide={wide}
     />
@@ -46,22 +48,23 @@ export function BookScreen({ bookId, onOpenChange, onStudy, onAddWord }: Props) 
 }
 
 /** Book details docked beside the shelf on wide screens, like a library app's side panel. */
-export function BookPanel({ bookId, onGo, onStudy, onAddWord }: { bookId: number; onGo: (id: number) => void; onStudy: (id: number) => void; onAddWord: (id: number) => void }) {
+export function BookPanel({ bookId, onGo, onStudy, onAddWord, onAddQuote }: { bookId: number; onGo: (id: number) => void; onStudy: (id: number) => void; onAddWord: (id: number) => void; onAddQuote: (id: number) => void }) {
   const book = BOOK_BY_ID.get(bookId);
   if (!book) return null;
   return (
     <aside className="sticky top-4 hidden max-h-[calc(100dvh-2rem)] overflow-hidden rounded-[2rem] xl:flex xl:flex-col">
-      <BookBody book={book} wide split={false} onGo={onGo} onStudy={() => onStudy(book.id)} onAddWord={() => onAddWord(book.id)} />
+      <BookBody book={book} wide split={false} onGo={onGo} onStudy={() => onStudy(book.id)} onAddWord={() => onAddWord(book.id)} onAddQuote={() => onAddQuote(book.id)} />
     </aside>
   );
 }
 
-function BookBody({ book: b, onStudy, onAddWord, onGo, wide, split = wide }: { book: Book; onStudy: () => void; onAddWord: () => void; onGo: (id: number) => void; wide: boolean; split?: boolean }) {
+function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split = wide }: { book: Book; onStudy: () => void; onAddWord: () => void; onAddQuote: () => void; onGo: (id: number) => void; wide: boolean; split?: boolean }) {
   /** md: classes only apply in the two-column dialog, not in the stacked drawer or docked panel. */
   const md = (cls: string) => (split ? cls : "");
   const { status, setStatus, data } = useEstante();
   const p = data.progress[b.id];
   const words = data.words.filter((w) => w.book === b.id);
+  const quotes = data.quotes.filter((q) => q.book === b.id);
   const n = bookNumber(b.id);
   const prev = BOOKS[n - 2];
   const next = BOOKS[n];
@@ -119,6 +122,9 @@ function BookBody({ book: b, onStudy, onAddWord, onGo, wide, split = wide }: { b
           <button onClick={onAddWord} className="inline-flex h-11 items-center gap-2 rounded-full border border-ink-border px-5 text-[11px] font-bold tracking-[0.12em] uppercase hover:bg-white/5">
             <NotePencilIcon weight="bold" className="size-4" /> Anotar palavra
           </button>
+          <button onClick={onAddQuote} className="inline-flex h-11 items-center gap-2 rounded-full border border-ink-border px-5 text-[11px] font-bold tracking-[0.12em] uppercase hover:bg-white/5">
+            <QuotesIcon weight="fill" className="size-4" /> Salvar citação
+          </button>
         </div>
 
         {b.tags && (
@@ -148,6 +154,19 @@ function BookBody({ book: b, onStudy, onAddWord, onGo, wide, split = wide }: { b
             <p className="text-sm text-ink-muted">Nenhuma ainda. Use “Anotar palavra” enquanto lê.</p>
           )}
         </section>
+
+        {quotes.length > 0 && (
+          <section className="grid gap-2.5">
+            <h3 className="text-[10px] font-bold tracking-[0.16em] text-ink-muted uppercase">Suas citações deste livro · {quotes.length}</h3>
+            {quotes.slice(0, 3).map((q) => (
+              <figure key={q.id} className="grid gap-1.5 rounded-2xl bg-white/5 p-3.5">
+                <blockquote className="text-sm leading-relaxed">“{q.text}”</blockquote>
+                {q.pt && <figcaption className="text-xs text-ink-muted">{q.pt}</figcaption>}
+                {q.page && <span className="text-[11px] text-ink-muted">p. {q.page}</span>}
+              </figure>
+            ))}
+          </section>
+        )}
 
         <a href={bookUrl(b)} target="_blank" rel="noopener noreferrer" className="inline-flex w-fit items-center gap-1 text-xs text-ink-muted underline underline-offset-4 hover:text-ink-foreground">
           Ver no site da ELi <ArrowSquareOutIcon className="size-3.5" />

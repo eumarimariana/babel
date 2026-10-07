@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Book } from "@/lib/books";
 import { KitSchema, WordInfoSchema, type KitResult, type WordInfo } from "@/lib/ai-schemas";
-import { SYSTEM, correctPrompt, kitPrompt, wordPrompt } from "./prompts";
+import { SYSTEM, cleanTranslation, correctPrompt, kitPrompt, quotePrompt, wordPrompt } from "./prompts";
 
 const MODEL = "claude-opus-5-5";
 // If a safety classifier declines, the API retries on Anthropic's recommended fallback model.
@@ -68,6 +68,28 @@ export async function anthropicKit(apiKey: string, b: Book, signal?: AbortSignal
     );
     if (res.stop_reason === "refusal" || !res.parsed_output) throw new Error("Não consegui montar o kit agora. Tente de novo.");
     return res.parsed_output;
+  } catch (e) {
+    throw friendly(e);
+  }
+}
+
+export async function anthropicTranslate(apiKey: string, text: string, book?: Book, signal?: AbortSignal) {
+  try {
+    const res = await client(apiKey).beta.messages.create(
+      {
+        ...FALLBACK,
+        model: MODEL,
+        max_tokens: 4000,
+        system: SYSTEM,
+        output_config: { effort: "low" },
+        messages: [{ role: "user", content: quotePrompt(text, book) }],
+      },
+      { signal },
+    );
+    if (res.stop_reason === "refusal") throw new Error("O Claude não pôde traduzir este trecho.");
+    const out = res.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
+    if (!out.trim()) throw new Error("A tradução veio vazia. Tente de novo.");
+    return cleanTranslation(out);
   } catch (e) {
     throw friendly(e);
   }

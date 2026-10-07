@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRightIcon, ArrowUpRightIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import { ArrowRightIcon, ArrowUpRightIcon, CaretLeftIcon, CaretRightIcon, QuotesIcon } from "@phosphor-icons/react";
 import { BOOKS, STAGES, type Book } from "@/lib/books";
 import { addDays, today, useEstante, type Status } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { JourneyProps } from "@/remotion/Journey";
 import { BookCover, STATUS_LABEL } from "./common";
 import { JourneyPlayer } from "./players";
+import { QuoteCard } from "./quotes-tab";
 
 type Props = {
   journey: JourneyProps;
@@ -16,6 +17,7 @@ type Props = {
   onGo: (tab: string) => void;
   onOpen: (id: number) => void;
   onStudy: (id: number) => void;
+  aiName: string;
 };
 
 /** CEFR bands for the gauge rows (the ladder has several stages per band). */
@@ -31,8 +33,9 @@ const BANDS = (() => {
 
 const WEEKDAY = ["Do", "Se", "Te", "Qa", "Qi", "Sx", "Sá"];
 
-export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: Props) {
-  const { data, due, streak, status } = useEstante();
+export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiName }: Props) {
+  const { data, due, streak, status, updateQuote } = useEstante();
+  const quote = data.quotes[0];
   const want = BOOKS.filter((b) => status(b.id) === "want");
   const pile = [...reading, ...want];
   const cards = (pile.length >= 3 ? pile : [...pile, ...BOOKS.filter((b) => !status(b.id))]).slice(0, 3);
@@ -174,6 +177,19 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy }: P
             </button>
           </article>
         )}
+
+        {/* latest saved quote */}
+        <section className="grid gap-3 md:col-span-2 xl:col-span-1">
+          <SectionHead title="Última citação" action={quote ? "Ver todas" : "Salvar uma"} onAction={() => onGo("quotes")} />
+          {quote ? (
+            <QuoteCard quote={quote} aiName={aiName} onUpdate={updateQuote} onOpenBook={onOpen} compact />
+          ) : (
+            <button onClick={() => onGo("quotes")} className="grid gap-2 rounded-[1.5rem] border-2 border-dashed border-border p-5 text-left hover:border-foreground">
+              <QuotesIcon weight="fill" className="size-6 text-[#a39d94]" />
+              <span className="text-sm text-muted-foreground">Guarde os trechos que te marcarem, com a tradução ao lado.</span>
+            </button>
+          )}
+        </section>
 
         <StudyCalendar days={data.days} streak={streak} />
 

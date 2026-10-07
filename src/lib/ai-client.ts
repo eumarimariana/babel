@@ -3,8 +3,8 @@
 import { useSyncExternalStore } from "react";
 import type { Book } from "@/lib/books";
 import type { KitResult, WordInfo } from "@/lib/ai-schemas";
-import { anthropicCorrect, anthropicKit, anthropicModels, anthropicWord } from "@/lib/ai/anthropic";
-import { freeCorrect, freeKit, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
+import { anthropicCorrect, anthropicKit, anthropicModels, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
+import { freeCorrect, freeKit, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
 
 /**
  * Bring-your-own-key: each person pastes their own key for one of the providers below.
@@ -165,6 +165,12 @@ export async function explainWord(word: string, book?: Book): Promise<WordInfo> 
 export async function makeKit(book: Book, signal?: AbortSignal): Promise<KitResult> {
   const a = active();
   return a.id === "anthropic" ? anthropicKit(a.key, book, signal) : freeKit(a.id, a.key, a.models, book, signal);
+}
+
+/** Translates a saved quote into Brazilian Portuguese. */
+export async function translateQuote(text: string, book?: Book, signal?: AbortSignal): Promise<string> {
+  const a = active();
+  return a.id === "anthropic" ? anthropicTranslate(a.key, text, book, signal) : freeTranslate(a.id, a.key, a.models, text, book, signal);
 }
 
 export async function correctText(book: Book, text: string, onText: (t: string) => void, signal?: AbortSignal) {

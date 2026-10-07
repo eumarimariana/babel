@@ -16,6 +16,15 @@ export type Word = {
   created: string;
   reps: number;
 };
+export type Quote = {
+  id: string;
+  text: string; // the passage, in the language being studied
+  pt: string; // translation
+  book: number | null;
+  page: string;
+  note: string;
+  created: string;
+};
 export type KitWord = { w: string; pos: string; pt: string; en: string; ex: string };
 export type Kit = {
   words: KitWord[];
@@ -29,11 +38,12 @@ export type Data = {
   words: Word[];
   kits: Record<string, Kit>;
   essays: Record<string, string>;
+  quotes: Quote[];
   days: string[];
 };
 
 const KEY = "estante-eli-app-v1";
-const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, days: [] };
+const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], days: [] };
 export const INTERVALS = [0, 1, 2, 4, 8, 16, 32];
 
 export function today() {
@@ -62,6 +72,7 @@ export function normalize(input: unknown): Data {
     words: (d.words ?? []).map((w) => ({ ...w, box: w.box ?? 0, due: w.due ?? today(), reps: w.reps ?? 0, book: w.book ?? null })),
     kits,
     essays,
+    quotes: (d.quotes ?? []).filter((q) => q && q.text).map((q) => ({ ...q, pt: q.pt ?? "", book: q.book ?? null, page: q.page ?? "", note: q.note ?? "" })),
     days: d.days ?? [],
   };
 }
@@ -88,6 +99,9 @@ type Ctx = {
   deleteWord: (id: string) => void;
   saveKit: (bookId: number, kit: Kit) => void;
   saveEssay: (bookId: number, text: string) => void;
+  addQuote: (q: Pick<Quote, "text" | "pt" | "book" | "page" | "note">) => void;
+  updateQuote: (id: string, patch: Partial<Pick<Quote, "text" | "pt" | "page" | "note">>) => void;
+  deleteQuote: (id: string) => void;
   markDay: () => void;
   replaceAll: (d: Data) => void;
   streak: number;
@@ -176,6 +190,24 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
 
   const deleteWord = useCallback((id: string) => setData((d) => ({ ...d, words: d.words.filter((w) => w.id !== id) })), []);
   const saveKit = useCallback((bookId: number, kit: Kit) => setData((d) => withDay({ ...d, kits: { ...d.kits, [bookId]: kit } })), []);
+  const addQuote = useCallback(
+    (q: Pick<Quote, "text" | "pt" | "book" | "page" | "note">) =>
+      setData((d) =>
+        withDay({
+          ...d,
+          quotes: [
+            { id: "q" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text: q.text.trim(), pt: q.pt.trim(), book: q.book, page: q.page.trim(), note: q.note.trim(), created: new Date().toISOString() },
+            ...d.quotes,
+          ],
+        }),
+      ),
+    [],
+  );
+  const updateQuote = useCallback(
+    (id: string, patch: Partial<Pick<Quote, "text" | "pt" | "page" | "note">>) => setData((d) => ({ ...d, quotes: d.quotes.map((q) => (q.id === id ? { ...q, ...patch } : q)) })),
+    [],
+  );
+  const deleteQuote = useCallback((id: string) => setData((d) => ({ ...d, quotes: d.quotes.filter((q) => q.id !== id) })), []);
   const saveEssay = useCallback((bookId: number, text: string) => setData((d) => ({ ...d, essays: { ...d.essays, [bookId]: text } })), []);
   const markDay = useCallback(() => setData(withDay), []);
   const replaceAll = useCallback((d: Data) => setData(d), []);
@@ -192,12 +224,15 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       deleteWord,
       saveKit,
       saveEssay,
+      addQuote,
+      updateQuote,
+      deleteQuote,
       markDay,
       replaceAll,
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }

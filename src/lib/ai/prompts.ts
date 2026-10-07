@@ -40,6 +40,22 @@ export function correctPrompt(b: Book, text: string) {
   );
 }
 
+export function quotePrompt(text: string, book?: Book) {
+  return (
+    `Translate this passage${book ? ` from ${bookLine(book)}` : ""} into natural Brazilian Portuguese, keeping its tone and line breaks.\n` +
+    `"""${text.slice(0, 3000)}"""\n\n` +
+    "Reply with only the translation: no quotes around it, no notes, no explanations."
+  );
+}
+
+/** Models sometimes wrap a plain answer in quotes or a code fence; strip that. */
+export const cleanTranslation = (t: string) =>
+  t
+    .trim()
+    .replace(/^```[a-z]*\s*|\s*```$/g, "")
+    .replace(/^["“”«»]+|["“”«»]+$/g, "")
+    .trim();
+
 /** JSON shapes spelled out for providers without schema-enforced output. */
 export const WORD_JSON_SHAPE =
   'Reply with only a JSON object, no other text: {"pos": "part of speech in English", "pt": "short Brazilian Portuguese translation, 1-4 words", "en": "simple English definition", "ex": "one natural example sentence"}';

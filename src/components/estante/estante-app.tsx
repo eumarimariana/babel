@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
-import { IconContext, ArrowRightIcon, BooksIcon, CheckIcon, CardsIcon, GearSixIcon, GraduationCapIcon, HouseIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
+import { IconContext, ArrowRightIcon, BooksIcon, CheckIcon, CardsIcon, GearSixIcon, GraduationCapIcon, HouseIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, QuotesIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -14,6 +14,7 @@ import { BooksTab } from "./books-tab";
 import { VocabTab } from "./vocab-tab";
 import { ReviewTab } from "./review-tab";
 import { StudyTab } from "./study-tab";
+import { QuotesTab } from "./quotes-tab";
 import { AiDialog, SettingsDialog } from "./settings-dialog";
 import { CelebrationPlayer } from "./players";
 import { HomeTab } from "./home-tab";
@@ -45,6 +46,7 @@ function Shell() {
   const aiModel = aiConfig.active ? (aiConfig.modelLists[aiConfig.active]?.find((m) => m.id === aiConfig.models[aiConfig.active!])?.label ?? aiConfig.modelLists[aiConfig.active]?.[0]?.label ?? "") : "";
   const [studyId, setStudyId] = useState<number | null>(null);
   const [vocabBook, setVocabBook] = useState("none");
+  const [quoteBook, setQuoteBook] = useState("none");
   const [celebrate, setCelebrate] = useState<Book | null>(null);
   const prevDone = useRef<Set<string> | null>(null);
   const [query, setQuery] = useState("");
@@ -68,11 +70,18 @@ function Shell() {
 
   const go = (t: string) => {
     setTab(t);
+    // A book picked in the docked shelf panel would otherwise pop up as a dialog on the next tab.
+    setOpenBook(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const goStudy = (id: number) => {
     setStudyId(id);
     go("study");
+  };
+  const goAddQuote = (id: number) => {
+    setQuoteBook(String(id));
+    go("quotes");
+    setTimeout(() => document.getElementById("q-text")?.focus({ preventScroll: true }), 400);
   };
   const goAddWord = (id: number) => {
     setVocabBook(String(id));
@@ -94,6 +103,7 @@ function Shell() {
     vocab: `${data.words.length} ${data.words.length === 1 ? "palavra" : "palavras"} no caderno`,
     review: due.length ? `${due.length} para hoje` : "tudo em dia",
     study: "antes, durante e depois da leitura",
+    quotes: `${data.quotes.length} ${data.quotes.length === 1 ? "citação salva" : "citações salvas"}`,
   };
   const search = (q: string) => {
     setQuery(q);
@@ -183,7 +193,7 @@ function Shell() {
             <div className={cn("min-w-0", docked && "xl:grid xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start xl:gap-5")}>
               <div className="min-w-0">
                 <TabsContent value="home">
-                  <HomeTab journey={journey} nextBook={nextBook} reading={reading} onGo={go} onOpen={setOpenBook} onStudy={goStudy} />
+                  <HomeTab journey={journey} nextBook={nextBook} reading={reading} onGo={go} onOpen={setOpenBook} onStudy={goStudy} aiName={aiName} />
                 </TabsContent>
                 <TabsContent value="books">
                   <BooksTab q={query} onQ={setQuery} onOpen={setOpenBook} selected={docked ? panelBook : null} />
@@ -191,12 +201,15 @@ function Shell() {
                 <TabsContent value="vocab">
                   <VocabTab aiName={aiName} bookId={vocabBook} onBookChange={setVocabBook} />
                 </TabsContent>
+                <TabsContent value="quotes">
+                  <QuotesTab aiName={aiName} bookId={quoteBook} onBookChange={setQuoteBook} onOpenBook={setOpenBook} />
+                </TabsContent>
                 <TabsContent value="review">{ready && <ReviewTab key={String(ready)} onGoVocab={() => go("vocab")} />}</TabsContent>
                 <TabsContent value="study">
                   <StudyTab aiName={aiName} bookId={studyBook} onBookChange={setStudyId} />
                 </TabsContent>
               </div>
-              {docked && panelBook != null && <BookPanel bookId={panelBook} onGo={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} />}
+              {docked && panelBook != null && <BookPanel bookId={panelBook} onGo={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} onAddQuote={goAddQuote} />}
             </div>
 
             <footer className="mt-16 flex flex-col gap-2 border-t border-border py-6 text-xs leading-relaxed text-muted-foreground sm:flex-row sm:justify-between">
@@ -215,7 +228,7 @@ function Shell() {
 
       {/* mobile tab bar */}
       <nav aria-label="Seções" className="fixed inset-x-0 bottom-0 z-40 bg-ink pb-safe text-ink-foreground lg:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-5 gap-1 px-2 py-2">
+        <div className="mx-auto grid max-w-lg grid-cols-6 gap-0.5 px-1.5 py-2">
           {NAV.map((n) => {
             const active = tab === n.value;
             const count = n.value === "review" ? due.length : 0;
@@ -224,7 +237,7 @@ function Shell() {
                 key={n.value}
                 onClick={() => go(n.value)}
                 aria-current={active ? "page" : undefined}
-                className={cn("relative grid justify-items-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-medium transition-colors", active ? "text-sand-foreground" : "text-ink-muted")}
+                className={cn("relative grid justify-items-center gap-0.5 rounded-2xl py-1.5 text-[9.5px] font-medium transition-colors", active ? "text-sand-foreground" : "text-ink-muted")}
               >
                 {active && <motion.span layoutId="tabbar-pill" className="absolute inset-0 rounded-2xl bg-sand" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
                 <n.icon weight={active ? "fill" : "regular"} className="relative size-[1.3rem]" />
@@ -236,7 +249,7 @@ function Shell() {
         </div>
       </nav>
 
-      <BookScreen bookId={docked ? null : openBook} onOpenChange={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} />
+      <BookScreen bookId={docked ? null : openBook} onOpenChange={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} onAddQuote={goAddQuote} />
 
       <Dialog open={!!celebrate} onOpenChange={(o) => !o && setCelebrate(null)}>
         <DialogContent className="gap-3 p-3 sm:max-w-2xl">
@@ -312,12 +325,13 @@ function todayLong() {
   return new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 }
 
-const TAB_TITLE: Record<string, string> = { home: "Início", books: "Estante", vocab: "Vocabulário", review: "Revisar", study: "Estudar um livro" };
+const TAB_TITLE: Record<string, string> = { home: "Início", books: "Estante", vocab: "Vocabulário", review: "Revisar", study: "Estudar um livro", quotes: "Citações" };
 
 const NAV = [
   { value: "home", label: "Início", short: "Início", icon: HouseIcon },
   { value: "books", label: "Estante", short: "Estante", icon: BooksIcon },
   { value: "vocab", label: "Vocabulário", short: "Palavras", icon: NotePencilIcon },
+  { value: "quotes", label: "Citações", short: "Citações", icon: QuotesIcon },
   { value: "review", label: "Revisar", short: "Revisar", icon: CardsIcon },
   { value: "study", label: "Estudar", short: "Estudar", icon: GraduationCapIcon },
 ];

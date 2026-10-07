@@ -2,7 +2,7 @@
 
 import type { Book } from "@/lib/books";
 import { KitSchema, WordInfoSchema, type KitResult, type WordInfo } from "@/lib/ai-schemas";
-import { KIT_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, correctPrompt, kitPrompt, wordPrompt } from "./prompts";
+import { KIT_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, correctPrompt, kitPrompt, quotePrompt, wordPrompt } from "./prompts";
 
 /**
  * Gemini (Google AI Studio), Groq and OpenRouter, called straight from the browser with the
@@ -201,6 +201,12 @@ export async function freeKit(provider: FreeProvider, key: string, models: strin
   });
   if (!parsed.success || parsed.data.words.length === 0) throw new Error("Não consegui montar o kit agora. Tente de novo ou escolha outro modelo.");
   return parsed.data;
+}
+
+export async function freeTranslate(provider: FreeProvider, key: string, models: string[], text: string, book?: Book, signal?: AbortSignal) {
+  const out = await withFallback(models, (m) => complete(provider, key, m, quotePrompt(text, book), false, signal), signal);
+  if (!out.trim()) throw new Error("A tradução veio vazia. Tente de novo ou escolha outro modelo.");
+  return cleanTranslation(out);
 }
 
 /* ---------- streamed correction ---------- */
