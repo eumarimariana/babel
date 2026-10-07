@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ArrowSquareOutIcon, CheckCircleIcon, DownloadSimpleIcon, KeyIcon, UploadSimpleIcon } from "@phosphor-icons/react";
+import { ArrowSquareOutIcon, CheckIcon, DownloadSimpleIcon, LockSimpleIcon, UploadSimpleIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { PROVIDERS, connectProvider, removeProvider, setActiveProvider, setModel, useAiConfig, type ProviderId } from "@/lib/ai-client";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { SimpleSelect } from "./common";
 import { brDate, normalize, today, useEstante } from "@/lib/store";
@@ -47,10 +46,11 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">Configurações</DialogTitle>
+          <DialogTitle className="text-2xl font-bold tracking-tight">Configurações</DialogTitle>
           <DialogDescription>Tudo o que você configura aqui fica salvo só neste navegador.</DialogDescription>
         </DialogHeader>
 
+        <p className="text-sm font-semibold">Inteligência artificial</p>
         <AiSection />
 
         <Separator />
@@ -83,7 +83,35 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   );
 }
 
-function AiSection() {
+/** Just the AI setup, opened from the sidebar card and the mobile header. */
+export function AiDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const config = useAiConfig();
+  const on = Boolean(config.active && config.keys[config.active]);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto rounded-[1.75rem] sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold tracking-tight">{on ? "Sua IA" : "Ligar a IA"}</DialogTitle>
+          <DialogDescription>Traduz palavras, monta o kit de pré-leitura e corrige seus resumos. Leva um minuto e pode ser grátis.</DialogDescription>
+        </DialogHeader>
+        <AiSection onDone={() => onOpenChange(false)} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function StepHead({ n, title, done }: { n: number; title: string; done?: boolean }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className={cn("grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold tabular", done ? "bg-good text-white" : "bg-sand text-sand-foreground")}>
+        {done ? <CheckIcon weight="bold" className="size-3.5" /> : String(n).padStart(2, "0")}
+      </span>
+      <p className="text-sm font-semibold">{title}</p>
+    </div>
+  );
+}
+
+function AiSection({ onDone }: { onDone?: () => void }) {
   const config = useAiConfig();
   const [selected, setSelected] = useState<ProviderId>(config.active ?? "gemini");
   const [key, setKey] = useState("");
@@ -91,6 +119,7 @@ function AiSection() {
   const info = PROVIDERS.find((p) => p.id === selected)!;
   const savedKey = config.keys[selected];
   const models = config.modelLists[selected] ?? [];
+  const inUse = config.active === selected && Boolean(savedKey);
 
   async function connect(e: React.FormEvent) {
     e.preventDefault();
@@ -101,6 +130,7 @@ function AiSection() {
       await connectProvider(selected, k);
       setKey("");
       toast.success(`${info.name} conectado. Os botões de IA já usam ele.`);
+      onDone?.();
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -109,121 +139,130 @@ function AiSection() {
   }
 
   return (
-    <div className="grid gap-3">
-      <div className="flex items-center gap-2">
-        <KeyIcon className="size-4" />
-        <p className="text-sm font-medium">Inteligência artificial</p>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        Os botões de IA (preencher palavra, kit de leitura, correção do resumo) usam a <strong>sua própria</strong> chave. Escolha um provedor: os três
-        primeiros têm plano gratuito.
-      </p>
-
-      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Provedor de IA">
-        {PROVIDERS.map((p) => {
-          const connected = Boolean(config.keys[p.id]);
-          const isActive = config.active === p.id && connected;
-          return (
-            <button
-              key={p.id}
-              role="radio"
-              aria-checked={selected === p.id}
-              onClick={() => {
-                setSelected(p.id);
-                setKey("");
-              }}
-              className={cn(
-                "grid gap-1 rounded-lg border bg-card p-2.5 text-left transition-colors hover:border-primary/50",
-                selected === p.id && "border-primary ring-2 ring-primary/25",
-              )}
-            >
-              <span className="flex items-center justify-between gap-2">
-                <span className="font-semibold">{p.name}</span>
-                {p.free ? (
-                  <Badge variant="secondary" className="text-good">
-                    Grátis
-                  </Badge>
-                ) : (
-                  <Badge variant="outline">Pago</Badge>
+    <div className="grid gap-5">
+      {/* 01 · provider */}
+      <section className="grid gap-3">
+        <StepHead n={1} title="Escolha um provedor" />
+        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Provedor de IA">
+          {PROVIDERS.map((p) => {
+            const connected = Boolean(config.keys[p.id]);
+            const active = config.active === p.id && connected;
+            const on = selected === p.id;
+            return (
+              <button
+                key={p.id}
+                role="radio"
+                aria-checked={on}
+                onClick={() => {
+                  setSelected(p.id);
+                  setKey("");
+                }}
+                className={cn(
+                  "grid gap-1.5 rounded-2xl border p-3 text-left transition-colors",
+                  on ? "border-ink bg-ink text-ink-foreground" : "border-border bg-card hover:border-foreground",
                 )}
-              </span>
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                {isActive ? (
-                  <>
-                    <CheckCircleIcon className="size-3.5 text-good" /> Em uso
-                  </>
-                ) : connected ? (
-                  "Conectado"
-                ) : (
-                  "Sem chave"
-                )}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span className="font-bold">{p.name}</span>
+                  <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold", p.free ? "bg-sand text-sand-foreground" : on ? "border border-ink-border" : "border border-border")}>
+                    {p.free ? "Grátis" : "Pago"}
+                  </span>
+                </span>
+                <span className={cn("flex items-center gap-1.5 text-xs", on ? "text-ink-muted" : "text-muted-foreground")}>
+                  <span className={cn("size-1.5 rounded-full", active ? "bg-good" : connected ? "bg-warn" : on ? "bg-ink-border" : "bg-input")} />
+                  {active ? "Em uso" : connected ? "Conectado" : p.id === "gemini" ? "Recomendado" : "Sem chave"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs leading-relaxed text-muted-foreground">{info.note}</p>
+      </section>
 
-      <div className="grid gap-3 rounded-lg bg-muted/60 p-3">
-        <p className="text-xs text-muted-foreground">{info.note}</p>
-
-        {savedKey && (
+      {savedKey ? (
+        /* already connected: status, model, swap or remove */
+        <section className="grid gap-3 rounded-2xl bg-ink p-4 text-ink-foreground">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs tabular">
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              <span className={cn("size-2 rounded-full", inUse ? "bg-good" : "bg-warn")} />
+              {inUse ? `${info.name} em uso` : `${info.name} conectado`}
+            </span>
+            <span className="text-xs text-ink-muted tabular">
               {savedKey.slice(0, 8)}…{savedKey.slice(-4)}
             </span>
-            <div className="flex gap-1">
-              {config.active !== selected && (
-                <Button size="sm" onClick={() => (setActiveProvider(selected), toast.success(`Agora usando ${info.name}.`))}>
-                  Usar este
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive"
-                onClick={() => {
-                  removeProvider(selected);
-                  toast.success(`Chave do ${info.name} removida deste navegador.`);
-                }}
-              >
-                Remover
-              </Button>
+          </div>
+          {models.length > 1 && (
+            <div className="grid gap-1.5">
+              <Label className="text-xs font-normal text-ink-muted">Modelo (o primeiro é o recomendado)</Label>
+              <SimpleSelect
+                label="Modelo"
+                value={config.models[selected] ?? models[0].id}
+                onChange={(m) => setModel(selected, m)}
+                options={models.map((m) => ({ value: m.id, label: m.label }))}
+                className="w-full border-ink-border bg-white/5 text-ink-foreground dark:bg-white/5 [&_svg]:text-ink-muted"
+              />
             </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {!inUse && (
+              <button onClick={() => (setActiveProvider(selected), toast.success(`Agora usando ${info.name}.`))} className="h-9 rounded-full bg-sand px-4 text-sm font-bold text-sand-foreground">
+                Usar este
+              </button>
+            )}
+            <button
+              onClick={() => {
+                removeProvider(selected);
+                toast.success(`Chave do ${info.name} removida deste navegador.`);
+              }}
+              className="h-9 rounded-full border border-ink-border px-4 text-sm hover:bg-white/5"
+            >
+              Remover chave
+            </button>
           </div>
-        )}
+        </section>
+      ) : (
+        <>
+          {/* 02 · get a key */}
+          <section className="grid gap-3">
+            <StepHead n={2} title={`Gere sua chave no ${info.name}`} />
+            <a
+              href={info.keyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-10 w-fit items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium hover:border-foreground"
+            >
+              Abrir {info.keyUrl.replace("https://", "").split("/")[0]} <ArrowSquareOutIcon weight="bold" className="size-4" />
+            </a>
+            <p className="text-xs text-muted-foreground">Faça login, crie uma chave e copie. Ela começa com {info.keyHint}</p>
+          </section>
+        </>
+      )}
 
-        {savedKey && models.length > 1 && (
-          <div className="grid gap-1.5">
-            <Label>Modelo</Label>
-            <SimpleSelect
-              label="Modelo"
-              value={config.models[selected] ?? models[0].id}
-              onChange={(m) => setModel(selected, m)}
-              options={models.map((m) => ({ value: m.id, label: m.label }))}
-              className="w-full"
-            />
-            <p className="text-xs text-muted-foreground">O primeiro da lista é o recomendado. Se um modelo der erro ou bater o limite, troque aqui.</p>
-          </div>
-        )}
+      {/* 03 · paste */}
+      <form onSubmit={connect} className="grid gap-3">
+        <StepHead n={savedKey ? 2 : 3} title={savedKey ? "Trocar a chave" : "Cole a chave e conecte"} />
+        <div className="flex gap-2">
+          <Input
+            id="api-key"
+            type="password"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder={info.keyHint}
+            autoComplete="off"
+            spellCheck={false}
+            className="h-11 bg-card"
+            aria-label={`Chave do ${info.name}`}
+          />
+          <button type="submit" disabled={busy || !key.trim()} className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-5 text-sm font-bold text-ink-foreground disabled:opacity-40">
+            {busy && <Loader2 className="size-4 animate-spin" />}
+            {busy ? "Testando" : "Conectar"}
+          </button>
+        </div>
+      </form>
 
-        <form onSubmit={connect} className="grid gap-2">
-          <Label htmlFor="api-key">{savedKey ? `Trocar chave do ${info.name}` : `Chave do ${info.name}`}</Label>
-          <div className="flex gap-2">
-            <Input id="api-key" type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder={info.keyHint} autoComplete="off" spellCheck={false} />
-            <Button type="submit" disabled={busy || !key.trim()}>
-              {busy && <Loader2 className="animate-spin" data-icon="inline-start" />}
-              {busy ? "Testando" : "Conectar"}
-            </Button>
-          </div>
-          <a className="inline-flex items-center gap-1 text-xs underline underline-offset-2 hover:text-muted-foreground" href={info.keyUrl} target="_blank" rel="noopener noreferrer">
-            Gerar uma chave do {info.name} <ArrowSquareOutIcon className="size-3" />
-          </a>
-        </form>
-      </div>
-
-      <p className="text-xs text-muted-foreground">
-        As chaves ficam guardadas só neste navegador e vão direto para o provedor, sem passar pelo servidor deste site. Em computador compartilhado, clique em
-        Remover ao terminar.
+      <p className="flex gap-2 rounded-2xl bg-muted/70 p-3 text-xs leading-relaxed text-muted-foreground">
+        <LockSimpleIcon weight="bold" className="mt-0.5 size-4 shrink-0" />
+        A chave fica só neste navegador e vai direto para o provedor, sem passar por nenhum servidor do Babel. Em computador compartilhado, remova ao terminar.
       </p>
     </div>
   );

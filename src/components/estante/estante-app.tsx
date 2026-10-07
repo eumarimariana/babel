@@ -2,19 +2,19 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
-import { IconContext, BooksIcon, CardsIcon, GearSixIcon, GraduationCapIcon, HouseIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
+import { IconContext, ArrowRightIcon, BooksIcon, CheckIcon, CardsIcon, GearSixIcon, GraduationCapIcon, HouseIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BOOKS, BOOK_BY_ID, STAGES, type Book } from "@/lib/books";
 import { EstanteProvider, useEstante } from "@/lib/store";
-import { activeProviderName, subscribeAi } from "@/lib/ai-client";
+import { activeProviderName, subscribeAi, useAiConfig } from "@/lib/ai-client";
 import { BooksTab } from "./books-tab";
 import { VocabTab } from "./vocab-tab";
 import { ReviewTab } from "./review-tab";
 import { StudyTab } from "./study-tab";
-import { SettingsDialog } from "./settings-dialog";
+import { AiDialog, SettingsDialog } from "./settings-dialog";
 import { CelebrationPlayer } from "./players";
 import { HomeTab } from "./home-tab";
 import { BookPanel, BookScreen } from "./book-screen";
@@ -40,6 +40,9 @@ function Shell() {
   const [openBook, setOpenBook] = useState<number | null>(null);
   const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const aiConfig = useAiConfig();
+  const aiModel = aiConfig.active ? (aiConfig.modelLists[aiConfig.active]?.find((m) => m.id === aiConfig.models[aiConfig.active!])?.label ?? aiConfig.modelLists[aiConfig.active]?.[0]?.label ?? "") : "";
   const [studyId, setStudyId] = useState<number | null>(null);
   const [vocabBook, setVocabBook] = useState("none");
   const [celebrate, setCelebrate] = useState<Book | null>(null);
@@ -124,15 +127,7 @@ function Shell() {
           </TabsList>
 
           <div className="mt-auto grid gap-3">
-            <div className="grid gap-3 rounded-[1.25rem] bg-sand p-4 text-sand-foreground">
-              <span className="grid size-9 place-items-center rounded-full bg-ink text-ink-foreground">
-                <TranslateIcon weight="bold" className="size-4" />
-              </span>
-              <p className="text-sm leading-snug font-semibold">{aiName ? `IA ligada: ${aiName}` : "Ligue a IA para traduzir palavras e corrigir resumos"}</p>
-              <button onClick={() => setSettingsOpen(true)} className="w-fit rounded-full bg-ink px-3.5 py-1.5 text-xs font-medium text-ink-foreground hover:opacity-90">
-                {aiName ? "Configurar" : "Ligar a IA"}
-              </button>
-            </div>
+            <AiCard name={aiName} model={aiModel} onOpen={() => setAiOpen(true)} />
             <div className="flex items-center justify-between px-1">
               <ThemeToggle />
               <Button variant="ghost" size="icon" aria-label="Configurações" className="text-ink-foreground hover:bg-white/10 hover:text-ink-foreground" onClick={() => setSettingsOpen(true)}>
@@ -149,6 +144,13 @@ function Shell() {
               <BabelLogo size="sm" />
             </button>
             <div className="flex items-center gap-1">
+              <button
+                onClick={() => setAiOpen(true)}
+                className={cn("mr-1 flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-bold", aiName ? "border border-ink-border text-ink-foreground" : "bg-sand text-sand-foreground")}
+              >
+                <span className={cn("size-1.5 rounded-full", aiName ? "bg-good" : "bg-ink")} />
+                {aiName ? "IA" : "Ligar IA"}
+              </button>
               <ThemeToggle />
               <Button variant="ghost" size="icon" aria-label="Configurações" className="text-ink-foreground hover:bg-white/10 hover:text-ink-foreground" onClick={() => setSettingsOpen(true)}>
                 <GearSixIcon className="size-5" />
@@ -156,6 +158,7 @@ function Shell() {
             </div>
           </header>
           <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+          <AiDialog open={aiOpen} onOpenChange={setAiOpen} />
 
           <div className="px-4 sm:px-6 lg:px-2">
             {/* top bar: title + search */}
@@ -257,6 +260,51 @@ function Shell() {
         </DialogContent>
       </Dialog>
     </Tabs>
+  );
+}
+
+/** Sidebar card: what the AI does when it's off, which provider and model when it's on. */
+function AiCard({ name, model, onOpen }: { name: string; model: string; onOpen: () => void }) {
+  if (name)
+    return (
+      <button onClick={onOpen} className="grid gap-2 rounded-[1.25rem] border border-ink-border p-4 text-left transition-colors hover:bg-white/5">
+        <span className="flex items-center justify-between">
+          <span className="flex items-center gap-2 text-sm font-bold">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-good opacity-60 motion-reduce:hidden" />
+              <span className="relative inline-flex size-2 rounded-full bg-good" />
+            </span>
+            IA ligada
+          </span>
+          <span className="text-xs text-ink-muted underline underline-offset-4">trocar</span>
+        </span>
+        <span className="truncate text-sm">{name}</span>
+        {model && <span className="truncate text-xs text-ink-muted">{model}</span>}
+      </button>
+    );
+  return (
+    <div className="grid gap-3 rounded-[1.25rem] bg-sand p-4 text-sand-foreground">
+      <div className="flex items-center gap-2">
+        <span className="grid size-8 place-items-center rounded-full bg-ink text-ink-foreground">
+          <TranslateIcon weight="bold" className="size-4" />
+        </span>
+        <p className="text-sm leading-tight font-bold">IA desligada</p>
+      </div>
+      <ul className="grid gap-1.5 text-xs text-[#45474b]">
+        {["Traduz e explica palavras", "Monta o kit de cada livro", "Corrige seus resumos"].map((t) => (
+          <li key={t} className="flex items-center gap-2">
+            <CheckIcon weight="bold" className="size-3 shrink-0" /> {t}
+          </li>
+        ))}
+      </ul>
+      <button onClick={onOpen} className="group flex h-10 items-center justify-between rounded-full bg-ink pr-1.5 pl-4 text-sm font-bold text-ink-foreground">
+        Ligar a IA
+        <span className="grid size-7 place-items-center rounded-full bg-sand text-sand-foreground transition-transform group-hover:translate-x-0.5">
+          <ArrowRightIcon weight="bold" className="size-3.5" />
+        </span>
+      </button>
+      <p className="text-[11px] text-[#6b6863]">Grátis com Gemini · 1 minuto</p>
+    </div>
   );
 }
 
