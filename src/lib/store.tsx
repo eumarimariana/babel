@@ -28,6 +28,16 @@ export type Quote = {
   note: string;
   created: string;
 };
+export type QuizQuestion = {
+  kind: "story" | "vocab" | "grammar" | "meaning" | "say" | "cloze";
+  q: string;
+  options: string[];
+  answer: number;
+  why: string;
+  wordId?: string; // set when the question comes from a word in the notebook
+};
+export type SavedQuiz = { questions: QuizQuestion[]; at: string };
+export type QuizScore = { best: number; last: number; total: number; times: number; at: string };
 export type KitWord = { w: string; pos: string; pt: string; en: string; ex: string };
 export type Kit = {
   words: KitWord[];
@@ -42,11 +52,13 @@ export type Data = {
   kits: Record<string, Kit>;
   essays: Record<string, string>;
   quotes: Quote[];
+  quizzes: Record<string, SavedQuiz>; // AI quizzes, by book id
+  scores: Record<string, QuizScore>; // by book id, or "words-<lang>" for notebook quizzes
   days: string[];
 };
 
 const KEY = "estante-eli-app-v1";
-const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], days: [] };
+const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, days: [] };
 export const INTERVALS = [0, 1, 2, 4, 8, 16, 32];
 
 export function today() {
@@ -76,6 +88,8 @@ export function normalize(input: unknown): Data {
     kits,
     essays,
     quotes: (d.quotes ?? []).filter((q) => q && q.text).map((q) => ({ ...q, pt: q.pt ?? "", book: q.book ?? null, page: q.page ?? "", note: q.note ?? "" })),
+    quizzes: d.quizzes ?? {},
+    scores: d.scores ?? {},
     days: d.days ?? [],
   };
 }
@@ -105,6 +119,8 @@ type Ctx = {
   addQuote: (q: Pick<Quote, "text" | "pt" | "book" | "page" | "note"> & { ln?: Lang }) => void;
   updateQuote: (id: string, patch: Partial<Pick<Quote, "text" | "pt" | "page" | "note">>) => void;
   deleteQuote: (id: string) => void;
+  saveQuiz: (bookId: number, quiz: SavedQuiz) => void;
+  recordScore: (key: string, correct: number, total: number) => void;
   markDay: () => void;
   replaceAll: (d: Data) => void;
   streak: number;
@@ -214,6 +230,16 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
     [],
   );
   const deleteQuote = useCallback((id: string) => setData((d) => ({ ...d, quotes: d.quotes.filter((q) => q.id !== id) })), []);
+  const saveQuiz = useCallback((bookId: number, quiz: SavedQuiz) => setData((d) => ({ ...d, quizzes: { ...d.quizzes, [bookId]: quiz } })), []);
+  const recordScore = useCallback(
+    (key: string, correct: number, total: number) =>
+      setData((d) => {
+        const prev = d.scores[key];
+        const best = prev && prev.best / prev.total >= correct / total ? prev : { best: correct, total };
+        return withDay({ ...d, scores: { ...d.scores, [key]: { best: best.best, total: best.total, last: correct, times: (prev?.times ?? 0) + 1, at: today() } } });
+      }),
+    [],
+  );
   const saveEssay = useCallback((bookId: number, text: string) => setData((d) => ({ ...d, essays: { ...d.essays, [bookId]: text } })), []);
   const markDay = useCallback(() => setData(withDay), []);
   const replaceAll = useCallback((d: Data) => setData(d), []);
@@ -233,12 +259,14 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       addQuote,
       updateQuote,
       deleteQuote,
+      saveQuiz,
+      recordScore,
       markDay,
       replaceAll,
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }

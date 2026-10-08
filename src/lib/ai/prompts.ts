@@ -15,6 +15,7 @@ const L = (b?: Book) => LANG_EN[b ? langOf(b) : studyLang];
 export const bookLine = (b: Book) => {
   const kind = kindOf(b);
   if (kind === "storyweaver") return `"${b.t}" by ${b.a} (a free illustrated ${L(b)} story from StoryWeaver, level ${b.lv})`;
+  if (kind === "librivox") return `"${b.t}" by ${b.a} (a free ${L(b)} audiobook from LibriVox, roughly level ${b.lv} for listening)`;
   if (kind === "gutenberg")
     return BASE_INFO[baseOf(b)].graded
       ? `"${b.t}" by ${b.a} (a public-domain ${L(b)} reader for language learners, roughly level ${b.lv})`
@@ -63,6 +64,25 @@ export function quotePrompt(text: string, book?: Book) {
     "Reply with only the translation: no quotes around it, no notes, no explanations."
   );
 }
+
+/** A 10-question multiple-choice quiz on the book and on the language the learner met in it. */
+export function quizPrompt(b: Book, words: string[], grammar: string[]) {
+  return [
+    `Language being studied: ${L(b)}.`,
+    `The learner just read ${bookLine(b)}.`,
+    b.s ? `Book summary: ${b.s}` : "",
+    "Write a 10-question multiple-choice quiz, every question with exactly 4 options and one correct answer:",
+    `- 4 "story" questions about what happens in the book, written in simple ${L(b)} at level ${b.lv};`,
+    `- 3 "vocab" questions about words in context${words.length ? ` (prefer these words the learner noted: ${words.slice(0, 20).join(", ")})` : ""};`,
+    `- 3 "grammar" questions in ${L(b)} on points typical of ${b.lv}${grammar.length ? ` such as ${grammar.join("; ")}` : ""}.`,
+    "Wrong options must be plausible. Vary the position of the correct answer. Explanations go in Brazilian Portuguese, one or two sentences.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+export const QUIZ_JSON_SHAPE =
+  'Reply with only a JSON object, no other text, in exactly this shape: {"questions": [{"kind": "story | vocab | grammar", "q": "question", "options": ["a", "b", "c", "d"], "answer": 0, "why": "explicação curta em português"}]}';
 
 /** Models sometimes wrap a plain answer in quotes or a code fence; strip that. */
 export const cleanTranslation = (t: string) =>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
-import { IconContext, ArrowRightIcon, BooksIcon, CheckIcon, CardsIcon, GearSixIcon, GraduationCapIcon, HouseIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, QuotesIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
+import { IconContext, ArrowRightIcon, BooksIcon, CheckIcon, CardsIcon, GearSixIcon, GraduationCapIcon, HouseIcon, ExamIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, QuotesIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -16,6 +16,7 @@ import { VocabTab } from "./vocab-tab";
 import { ReviewTab } from "./review-tab";
 import { StudyTab } from "./study-tab";
 import { QuotesTab } from "./quotes-tab";
+import { QuizTab } from "./quiz-tab";
 import { AiDialog, SettingsDialog } from "./settings-dialog";
 import { CelebrationPlayer } from "./players";
 import { HomeTab } from "./home-tab";
@@ -69,6 +70,7 @@ function Shell() {
   const [studyId, setStudyId] = useState<number | null>(null);
   const [vocabBook, setVocabBook] = useState("none");
   const [quoteBook, setQuoteBook] = useState("none");
+  const [quizId, setQuizId] = useState<number | null>(null);
   const [celebrate, setCelebrate] = useState<Book | null>(null);
   const prevDone = useRef<Set<string> | null>(null);
   const [query, setQuery] = useState("");
@@ -79,6 +81,7 @@ function Shell() {
     setStudyId(null);
     setVocabBook("none");
     setQuoteBook("none");
+    setQuizId(null);
     try {
       localStorage.setItem(LANG_KEY, l);
     } catch {
@@ -115,6 +118,10 @@ function Shell() {
     setStudyId(id);
     go("study");
   };
+  const goQuiz = (id: number) => {
+    setQuizId(id);
+    go("quiz");
+  };
   const goAddQuote = (id: number) => {
     setQuoteBook(String(id));
     go("quotes");
@@ -147,6 +154,7 @@ function Shell() {
     review: due.length ? `${due.length} para hoje` : "tudo em dia",
     study: "antes, durante e depois da leitura",
     quotes: `${quotes.length} ${quotes.length === 1 ? "citação salva" : "citações salvas"}`,
+    quiz: "o que você aprendeu do livro e do idioma",
   };
   const search = (q: string) => {
     setQuery(q);
@@ -253,12 +261,15 @@ function Shell() {
                 <TabsContent value="quotes">
                   <QuotesTab aiName={aiName} bookId={quoteBook} onBookChange={setQuoteBook} onOpenBook={setOpenBook} />
                 </TabsContent>
+                <TabsContent value="quiz">
+                  <QuizTab aiName={aiName} bookId={quizId && BOOK_BY_ID.get(quizId) && langOf(BOOK_BY_ID.get(quizId)!) === lang ? quizId : studyBook} onBookChange={setQuizId} onGoVocab={() => go("vocab")} />
+                </TabsContent>
                 <TabsContent value="review">{ready && <ReviewTab key={`${ready}-${lang}`} onGoVocab={() => go("vocab")} />}</TabsContent>
                 <TabsContent value="study">
                   <StudyTab aiName={aiName} bookId={studyBook} onBookChange={setStudyId} />
                 </TabsContent>
               </div>
-              {docked && panelBook != null && <BookPanel bookId={panelBook} onGo={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} onAddQuote={goAddQuote} />}
+              {docked && panelBook != null && <BookPanel bookId={panelBook} onGo={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} onAddQuote={goAddQuote} onQuiz={goQuiz} />}
             </div>
 
             <footer className="mt-16 flex flex-col gap-2 border-t border-border py-6 text-xs leading-relaxed text-muted-foreground sm:flex-row sm:justify-between">
@@ -277,7 +288,7 @@ function Shell() {
 
       {/* mobile tab bar */}
       <nav aria-label="Seções" className="fixed inset-x-0 bottom-0 z-40 bg-ink pb-safe text-ink-foreground lg:hidden">
-        <div className="mx-auto grid max-w-lg grid-cols-6 gap-0.5 px-1.5 py-2">
+        <div className="mx-auto grid max-w-xl grid-cols-7 gap-0.5 px-1 py-2">
           {NAV.map((n) => {
             const active = tab === n.value;
             const count = n.value === "review" ? due.length : 0;
@@ -298,7 +309,7 @@ function Shell() {
         </div>
       </nav>
 
-      <BookScreen bookId={docked ? null : openBook} onOpenChange={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} onAddQuote={goAddQuote} />
+      <BookScreen bookId={docked ? null : openBook} onOpenChange={setOpenBook} onStudy={goStudy} onAddWord={goAddWord} onAddQuote={goAddQuote} onQuiz={goQuiz} />
 
       <Dialog open={!!celebrate} onOpenChange={(o) => !o && setCelebrate(null)}>
         <DialogContent className="gap-3 p-3 sm:max-w-2xl">
@@ -402,7 +413,7 @@ function todayLong() {
   return new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 }
 
-const TAB_TITLE: Record<string, string> = { home: "Início", books: "Estante", vocab: "Vocabulário", review: "Revisar", study: "Estudar um livro", quotes: "Citações" };
+const TAB_TITLE: Record<string, string> = { home: "Início", books: "Estante", vocab: "Vocabulário", review: "Revisar", study: "Estudar um livro", quotes: "Citações", quiz: "Quiz" };
 
 const NAV = [
   { value: "home", label: "Início", short: "Início", icon: HouseIcon },
@@ -411,6 +422,7 @@ const NAV = [
   { value: "quotes", label: "Citações", short: "Citações", icon: QuotesIcon },
   { value: "review", label: "Revisar", short: "Revisar", icon: CardsIcon },
   { value: "study", label: "Estudar", short: "Estudar", icon: GraduationCapIcon },
+  { value: "quiz", label: "Quiz", short: "Quiz", icon: ExamIcon },
 ];
 
 function CountBadge({ n, active }: { n: number; active?: boolean }) {

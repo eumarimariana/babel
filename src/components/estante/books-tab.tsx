@@ -68,7 +68,7 @@ export function BooksTab({ q, onQ, onOpen, selected, base, onBase }: { q: string
     });
     if (group === "level")
       return base !== "eli"
-        ? levelsOf(BOOKS).map((lv) => make(lv, lv, LEVEL_META[lv]?.[info.kind === "storyweaver" ? "storyweaver" : "gutenberg"] ?? "", BOOKS.filter((b) => b.lv === lv)))
+        ? levelsOf(BOOKS).map((lv) => make(lv, lv, (info.kind === "librivox" ? "" : LEVEL_META[lv]?.[info.kind === "storyweaver" ? "storyweaver" : "gutenberg"]) ?? "", BOOKS.filter((b) => b.lv === lv)))
         : STAGES.map((s) => make(s.key, s.lv, `${s.label} palavras`, s.ids.map((id) => BOOKS.find((b) => b.id === id)!)));
     if (group === "cat") return CATEGORIES.map((c) => make(c, c, "", BOOKS.filter((b) => b.cat === c)));
     const order: (Status | "")[] = ["reading", "want", "", "done"];
@@ -267,7 +267,7 @@ function BookTile({ book: b, status, onOpen, index, fixed, selected }: { book: B
         <span className="truncate text-xs text-muted-foreground tabular">{b.a}</span>
         <span className="mt-1 flex items-center justify-between text-xs tabular">
           <span className="font-bold">{b.lv}</span>
-          <span className="text-muted-foreground tabular">{b.hw ? `${b.hw} hw` : kindOf(b) === "storyweaver" ? (b.audio ? "com áudio" : "ilustrada") : "grátis"}</span>
+          <span className="text-muted-foreground tabular">{b.hw ? `${b.hw} hw` : kindOf(b) === "librivox" ? (b.time ?? "áudio") : kindOf(b) === "storyweaver" ? (b.audio ? "com áudio" : "ilustrada") : "grátis"}</span>
         </span>
       </span>
     </motion.button>

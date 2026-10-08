@@ -3,8 +3,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Book } from "@/lib/books";
-import { KitSchema, WordInfoSchema, type KitResult, type WordInfo } from "@/lib/ai-schemas";
-import { SYSTEM, cleanTranslation, correctPrompt, kitPrompt, quotePrompt, wordPrompt } from "./prompts";
+import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
+import { SYSTEM, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt } from "./prompts";
 
 const MODEL = "claude-opus-5-5";
 // If a safety classifier declines, the API retries on Anthropic's recommended fallback model.
@@ -67,6 +67,26 @@ export async function anthropicKit(apiKey: string, b: Book, signal?: AbortSignal
       { signal },
     );
     if (res.stop_reason === "refusal" || !res.parsed_output) throw new Error("Não consegui montar o kit agora. Tente de novo.");
+    return res.parsed_output;
+  } catch (e) {
+    throw friendly(e);
+  }
+}
+
+export async function anthropicQuiz(apiKey: string, b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
+  try {
+    const res = await client(apiKey).beta.messages.parse(
+      {
+        ...FALLBACK,
+        model: MODEL,
+        max_tokens: 8000,
+        system: SYSTEM,
+        output_config: { effort: "medium", format: betaZodOutputFormat(QuizSchema) },
+        messages: [{ role: "user", content: quizPrompt(b, words, grammar) }],
+      },
+      { signal },
+    );
+    if (res.stop_reason === "refusal" || !res.parsed_output) throw new Error("Não consegui montar o quiz agora. Tente de novo.");
     return res.parsed_output;
   } catch (e) {
     throw friendly(e);

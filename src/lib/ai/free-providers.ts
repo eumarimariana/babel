@@ -1,8 +1,8 @@
 "use client";
 
 import type { Book } from "@/lib/books";
-import { KitSchema, WordInfoSchema, type KitResult, type WordInfo } from "@/lib/ai-schemas";
-import { KIT_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, correctPrompt, kitPrompt, quotePrompt, wordPrompt } from "./prompts";
+import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
+import { KIT_JSON_SHAPE, QUIZ_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt } from "./prompts";
 
 /**
  * Gemini (Google AI Studio), Groq and OpenRouter, called straight from the browser with the
@@ -207,6 +207,26 @@ export async function freeTranslate(provider: FreeProvider, key: string, models:
   const out = await withFallback(models, (m) => complete(provider, key, m, quotePrompt(text, book), false, signal), signal);
   if (!out.trim()) throw new Error("A tradução veio vazia. Tente de novo ou escolha outro modelo.");
   return cleanTranslation(out);
+}
+
+export async function freeQuiz(provider: FreeProvider, key: string, models: string[], b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
+  const prompt = `${quizPrompt(b, words, grammar)}\n\n${QUIZ_JSON_SHAPE}`;
+  const raw = await withFallback(models, async (m) => parseLoose(await complete(provider, key, m, prompt, true, signal)) as Record<string, unknown>, signal);
+  const kinds = ["story", "vocab", "grammar"];
+  const parsed = QuizSchema.safeParse({
+    questions: (Array.isArray(raw.questions) ? raw.questions : [])
+      .map((x: Record<string, unknown>) => ({
+        kind: kinds.includes(str(x.kind)) ? str(x.kind) : "story",
+        q: str(x.q ?? x.question),
+        options: (Array.isArray(x.options) ? x.options : []).map(str).slice(0, 4),
+        answer: Number(x.answer),
+        why: str(x.why ?? x.explanation),
+      }))
+      // keep only questions a learner can actually answer
+      .filter((x) => x.q && x.options.length === 4 && Number.isInteger(x.answer) && x.answer >= 0 && x.answer < 4),
+  });
+  if (!parsed.success || parsed.data.questions.length < 4) throw new Error("Não consegui montar o quiz agora. Tente de novo ou escolha outro modelo.");
+  return parsed.data;
 }
 
 /* ---------- streamed correction ---------- */

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowSquareOutIcon, BankIcon, BookOpenTextIcon, BookmarkSimpleIcon, CaretLeftIcon, CaretRightIcon, DownloadSimpleIcon, GraduationCapIcon, HeadphonesIcon, NotePencilIcon, QuotesIcon, StorefrontIcon } from "@phosphor-icons/react";
+import { ArrowSquareOutIcon, BankIcon, BookOpenTextIcon, BookmarkSimpleIcon, CaretLeftIcon, CaretRightIcon, DownloadSimpleIcon, ExamIcon, GraduationCapIcon, HeadphonesIcon, NotePencilIcon, QuotesIcon, StorefrontIcon } from "@phosphor-icons/react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { BASE_INFO, BOOK_BY_ID, type Book, baseBooks, baseOf, bookLinks, bookNumber, bookUrl, isFree, kindOf } from "@/lib/books";
@@ -15,10 +15,11 @@ type Props = {
   onStudy: (id: number) => void;
   onAddWord: (id: number) => void;
   onAddQuote: (id: number) => void;
+  onQuiz: (id: number) => void;
 };
 
 /** The book screen: a bottom drawer on phones, a wide dialog on larger screens. */
-export function BookScreen({ bookId, onOpenChange, onStudy, onAddWord, onAddQuote }: Props) {
+export function BookScreen({ bookId, onOpenChange, onStudy, onAddWord, onAddQuote, onQuiz }: Props) {
   const wide = useMediaQuery("(min-width: 768px)");
   const book = bookId != null ? BOOK_BY_ID.get(bookId) : undefined;
   const close = () => onOpenChange(null);
@@ -28,6 +29,7 @@ export function BookScreen({ bookId, onOpenChange, onStudy, onAddWord, onAddQuot
       onStudy={() => (close(), onStudy(book.id))}
       onAddWord={() => (close(), onAddWord(book.id))}
       onAddQuote={() => (close(), onAddQuote(book.id))}
+      onQuiz={() => (close(), onQuiz(book.id))}
       onGo={(id) => onOpenChange(id)}
       wide={wide}
     />
@@ -48,17 +50,17 @@ export function BookScreen({ bookId, onOpenChange, onStudy, onAddWord, onAddQuot
 }
 
 /** Book details docked beside the shelf on wide screens, like a library app's side panel. */
-export function BookPanel({ bookId, onGo, onStudy, onAddWord, onAddQuote }: { bookId: number; onGo: (id: number) => void; onStudy: (id: number) => void; onAddWord: (id: number) => void; onAddQuote: (id: number) => void }) {
+export function BookPanel({ bookId, onGo, onStudy, onAddWord, onAddQuote, onQuiz }: { bookId: number; onGo: (id: number) => void; onStudy: (id: number) => void; onAddWord: (id: number) => void; onAddQuote: (id: number) => void; onQuiz: (id: number) => void }) {
   const book = BOOK_BY_ID.get(bookId);
   if (!book) return null;
   return (
     <aside className="sticky top-4 hidden max-h-[calc(100dvh-2rem)] overflow-hidden rounded-[2rem] xl:flex xl:flex-col">
-      <BookBody book={book} wide split={false} onGo={onGo} onStudy={() => onStudy(book.id)} onAddWord={() => onAddWord(book.id)} onAddQuote={() => onAddQuote(book.id)} />
+      <BookBody book={book} wide split={false} onGo={onGo} onStudy={() => onStudy(book.id)} onAddWord={() => onAddWord(book.id)} onAddQuote={() => onAddQuote(book.id)} onQuiz={() => onQuiz(book.id)} />
     </aside>
   );
 }
 
-function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split = wide }: { book: Book; onStudy: () => void; onAddWord: () => void; onAddQuote: () => void; onGo: (id: number) => void; wide: boolean; split?: boolean }) {
+function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onQuiz, onGo, wide, split = wide }: { book: Book; onStudy: () => void; onAddWord: () => void; onAddQuote: () => void; onQuiz: () => void; onGo: (id: number) => void; wide: boolean; split?: boolean }) {
   /** md: classes only apply in the two-column dialog, not in the stacked drawer or docked panel. */
   const md = (cls: string) => (split ? cls : "");
   const { status, setStatus, data } = useEstante();
@@ -113,7 +115,7 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
             {b.hw ? (
               <span className="rounded-full border border-ink-border px-3 py-1 text-xs tabular">{b.hw} headwords</span>
             ) : (
-              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{kindOf(b) === "storyweaver" ? "história ilustrada, grátis" : BASE_INFO[base].graded ? "livro de leitura graduado" : "texto original, sem adaptação"}</span>
+              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{kindOf(b) === "librivox" ? `audiolivro · ${b.time ?? ""}` : kindOf(b) === "storyweaver" ? "história ilustrada, grátis" : BASE_INFO[base].graded ? "livro de leitura graduado" : "texto original, sem adaptação"}</span>
             )}
             {p?.st === "done" && <span className="rounded-full border border-ink-border px-3 py-1 text-xs">lido em {brDate(p.d)}</span>}
           </div>
@@ -126,7 +128,7 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
         <div className="flex flex-wrap items-center gap-2">
           {free && b.read && (
             <a href={b.read} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center gap-2 rounded-full bg-sand px-5 text-[11px] font-bold tracking-[0.12em] text-sand-foreground uppercase transition-transform hover:scale-[1.03]">
-              <BookOpenTextIcon weight="bold" className="size-4" /> Ler grátis
+              {kindOf(b) === "librivox" ? <HeadphonesIcon weight="bold" className="size-4" /> : <BookOpenTextIcon weight="bold" className="size-4" />} {kindOf(b) === "librivox" ? "Ouvir grátis" : "Ler grátis"}
             </a>
           )}
           <button onClick={onStudy} className="inline-flex h-11 items-center gap-2 rounded-full bg-sand px-5 text-[11px] font-bold tracking-[0.12em] text-sand-foreground uppercase transition-transform hover:scale-[1.03]">
@@ -137,6 +139,9 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
           </button>
           <button onClick={onAddQuote} className="inline-flex h-11 items-center gap-2 rounded-full border border-ink-border px-5 text-[11px] font-bold tracking-[0.12em] uppercase hover:bg-white/5">
             <QuotesIcon weight="fill" className="size-4" /> Salvar citação
+          </button>
+          <button onClick={onQuiz} className="inline-flex h-11 items-center gap-2 rounded-full border border-ink-border px-5 text-[11px] font-bold tracking-[0.12em] uppercase hover:bg-white/5">
+            <ExamIcon weight="fill" className="size-4" /> Fazer quiz
           </button>
         </div>
 
@@ -204,6 +209,8 @@ function WhereToRead({ b, links }: { b: Book; links: ReturnType<typeof bookLinks
       title: "Ouvir",
       items: [
         { href: links.eliAudio, icon: <HeadphonesIcon weight="bold" />, label: "Áudio MP3 da ELi", sub: "grátis, na área “Resources for students”" },
+        { href: links.listen, icon: <HeadphonesIcon weight="bold" />, label: "Ouvir no LibriVox", sub: b.time ? `audiolivro completo · ${b.time}` : "audiolivro completo" },
+        { href: links.listenZip, icon: <DownloadSimpleIcon weight="bold" />, label: "Baixar os MP3", sub: "arquivo ZIP do Internet Archive" },
         { href: links.storyAudio, icon: <HeadphonesIcon weight="bold" />, label: "Versão com áudio", sub: "leitura narrada no StoryWeaver" },
         { href: links.librivox, icon: <HeadphonesIcon weight="bold" />, label: "Audiolivro na LibriVox", sub: free ? "leitura voluntária do original, grátis" : "do texto original, grátis" },
       ],
@@ -212,6 +219,7 @@ function WhereToRead({ b, links }: { b: Book; links: ReturnType<typeof bookLinks
       title: "Ler",
       items: [
         { href: links.eliSample, icon: <BookOpenTextIcon weight="bold" />, label: "Amostra no site da ELi", sub: "algumas páginas, online" },
+        { href: links.listenText, icon: <BookOpenTextIcon weight="bold" />, label: "Ler o texto junto", sub: "o livro que está sendo narrado" },
         { href: kindOf(b) === "storyweaver" ? b.read : null, icon: <BookOpenTextIcon weight="bold" />, label: "Ler no StoryWeaver", sub: "grátis, ilustrado, licença aberta" },
         { href: free ? null : links.original, icon: <BookOpenTextIcon weight="bold" />, label: "Original grátis no Gutenberg", sub: "texto completo, sem adaptação" },
         { href: free ? b.epub : null, icon: <DownloadSimpleIcon weight="bold" />, label: "Baixar EPUB", sub: "para Kindle, Kobo ou o app de livros" },

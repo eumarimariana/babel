@@ -2,9 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 import type { Book } from "@/lib/books";
-import type { KitResult, WordInfo } from "@/lib/ai-schemas";
-import { anthropicCorrect, anthropicKit, anthropicModels, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
-import { freeCorrect, freeKit, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
+import type { KitResult, QuizResult, WordInfo } from "@/lib/ai-schemas";
+import { anthropicCorrect, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
+import { freeCorrect, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
 
 /**
  * Bring-your-own-key: each person pastes their own key for one of the providers below.
@@ -165,6 +165,12 @@ export async function explainWord(word: string, book?: Book): Promise<WordInfo> 
 export async function makeKit(book: Book, signal?: AbortSignal): Promise<KitResult> {
   const a = active();
   return a.id === "anthropic" ? anthropicKit(a.key, book, signal) : freeKit(a.id, a.key, a.models, book, signal);
+}
+
+/** A multiple-choice quiz on the book (story, words in context, grammar of the level). */
+export async function makeQuiz(book: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
+  const a = active();
+  return a.id === "anthropic" ? anthropicQuiz(a.key, book, words, grammar, signal) : freeQuiz(a.id, a.key, a.models, book, words, grammar, signal);
 }
 
 /** Translates a saved quote into Brazilian Portuguese. */

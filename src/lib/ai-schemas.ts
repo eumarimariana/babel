@@ -21,5 +21,18 @@ export const KitSchema = z.object({
   questions: z.array(z.string()),
 });
 
+export const QuizSchema = z.object({
+  questions: z.array(
+    z.object({
+      kind: z.enum(["story", "vocab", "grammar"]).describe("story = comprehension, vocab = word in context, grammar = grammar of the level"),
+      q: z.string().describe("the question, in simple language at the learner's level"),
+      options: z.array(z.string()).describe("exactly 4 answer options"),
+      answer: z.number().int().describe("index (0-3) of the correct option"),
+      why: z.string().describe("short explanation in Brazilian Portuguese of why that answer is right"),
+    }),
+  ),
+});
+
 export type WordInfo = z.infer<typeof WordInfoSchema>;
+export type QuizResult = z.infer<typeof QuizSchema>;
 export type KitResult = z.infer<typeof KitSchema>;

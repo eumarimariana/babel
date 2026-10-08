@@ -5,10 +5,11 @@ Plano para levar o Babel além do inglês (francês, alemão e espanhol), amplia
 > **Status — já implementado:**
 > - **Perfil por idioma (versão simples):** seletor EN · FR · DE · ES no menu. Estante, caderno, citações, revisões, mapa, voz e pedidos da IA seguem o idioma escolhido, que fica salvo no navegador. Palavras e citações antigas contam como inglês.
 > - **Bases grátis por idioma:**
->   - Inglês: ELi Readers (177), Histórias grátis (StoryWeaver, 80, graded 1–4), Readers grátis (McGuffey e outros, 12), Clássicos grátis (Gutenberg, 38).
+>   - Inglês: ELi Readers (177), Histórias grátis (StoryWeaver, 80, graded 1–4), Readers grátis (McGuffey e outros, 12), Infantis grátis (Potter, Milne, Kipling…, 14), Audiolivros grátis (LibriVox, 16), Clássicos grátis (Gutenberg, 38).
 >   - Francês: Histoires gratuites (StoryWeaver, 80), Readers grátis (9), Clássicos grátis (10).
 >   - Alemão: Geschichten gratis (StoryWeaver, 69), Readers grátis (6), Clássicos grátis (9).
 >   - Espanhol: Historias gratis (StoryWeaver, 80), Readers grátis (14), Clássicos grátis (8).
+> - **Aba Quiz:** quiz do livro gerado pela IA (história, palavras no contexto e gramática do nível, com explicação) e quiz das suas palavras sem IA; as palavras erradas voltam para as revisões.
 > - **"Onde ler e ouvir"** em cada livro: áudio e amostra da ELi, original grátis no Gutenberg (75 livros da ELi ligados), LibriVox, EPUB, StoryWeaver, Estante Virtual, Amazon pelo ISBN, WorldCat e Open Library.
 >
 > **Ainda não:** séries pagas (Oxford, Penguin, Hachette, Klett, Edinumen…), porque não há fonte de dados confiável para elas; precisam de uma lista feita à mão com ISBN. Também falta separar backup e IA preferida por perfil.
