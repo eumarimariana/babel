@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { ArrowSquareOutIcon, BankIcon, BookOpenTextIcon, BookmarkSimpleIcon, CaretLeftIcon, CaretRightIcon, DownloadSimpleIcon, ExamIcon, GraduationCapIcon, HeadphonesIcon, NotePencilIcon, QuotesIcon, StorefrontIcon } from "@phosphor-icons/react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
-import { BASE_INFO, BOOK_BY_ID, type Book, baseBooks, baseOf, bookLinks, bookNumber, bookUrl, isFree, kindOf } from "@/lib/books";
+import { BASE_INFO, BOOK_BY_ID, type Book, baseBooks, baseOf, bookLinks, bookNumber, bookUrl, isFree, kindOf, levelNote } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { BookCover, StatusPicker, useMediaQuery } from "./common";
@@ -111,11 +111,13 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onQuiz, onGo, wide,
           <Title className={cn("caps font-sans text-[1.9rem]", md("md:text-[2.2rem]"))}>{b.t}</Title>
           <Desc className="text-sm text-ink-muted">{b.a}</Desc>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-sand px-3 py-1 text-xs font-bold text-sand-foreground">{b.lv}</span>
+            <span className="rounded-full bg-sand px-3 py-1 text-xs font-bold text-sand-foreground" title={levelNote(b)}>
+              {b.lv} <span className="font-normal opacity-70">· {levelNote(b)}</span>
+            </span>
             {b.hw ? (
               <span className="rounded-full border border-ink-border px-3 py-1 text-xs tabular">{b.hw} headwords</span>
             ) : (
-              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{kindOf(b) === "librivox" ? `audiolivro · ${b.time ?? ""}` : kindOf(b) === "storyweaver" ? "história ilustrada, grátis" : BASE_INFO[base].graded ? "livro de leitura graduado" : "texto original, sem adaptação"}</span>
+              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{kindOf(b) === "librivox" ? `audiolivro · ${b.time ?? ""}` : kindOf(b) === "storyweaver" || kindOf(b) === "gsb" ? "livro ilustrado, grátis" : BASE_INFO[base].graded ? "livro de leitura graduado" : "texto original, sem adaptação"}</span>
             )}
             {p?.st === "done" && <span className="rounded-full border border-ink-border px-3 py-1 text-xs">lido em {brDate(p.d)}</span>}
           </div>
@@ -209,6 +211,8 @@ function WhereToRead({ b, links }: { b: Book; links: ReturnType<typeof bookLinks
       title: "Ouvir",
       items: [
         { href: links.eliAudio, icon: <HeadphonesIcon weight="bold" />, label: "Áudio MP3 da ELi", sub: "grátis, na área “Resources for students”" },
+        { href: links.gsbRead, icon: <HeadphonesIcon weight="bold" />, label: "Ler e ouvir no Global Storybooks", sub: "texto, ilustrações e narração" },
+        { href: links.gsbMp3, icon: <DownloadSimpleIcon weight="bold" />, label: "Baixar o MP3", sub: "a história inteira narrada" },
         { href: links.listen, icon: <HeadphonesIcon weight="bold" />, label: "Ouvir no LibriVox", sub: b.time ? `audiolivro completo · ${b.time}` : "audiolivro completo" },
         { href: links.listenZip, icon: <DownloadSimpleIcon weight="bold" />, label: "Baixar os MP3", sub: "arquivo ZIP do Internet Archive" },
         { href: links.storyAudio, icon: <HeadphonesIcon weight="bold" />, label: "Versão com áudio", sub: "leitura narrada no StoryWeaver" },

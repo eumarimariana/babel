@@ -101,8 +101,8 @@ function Shell() {
     prevDone.current = now;
   }, [data.progress, ready]);
 
-  // English keeps the ELi headword ladder; other languages climb their graded bases by CEFR level.
-  const ladder = lang === "en" ? BOOKS : basesFor(lang).filter((d) => d.graded).flatMap((d) => d.books).sort((a, b) => cefrRank(a.lv) - cefrRank(b.lv));
+  // The reading map follows the base chosen in the shelf: the ELi headword ladder, or that base's levels.
+  const ladder = base === "eli" ? BOOKS : [...baseBooks(base)].sort((a, b) => cefrRank(a.lv) - cefrRank(b.lv));
   const done = ladder.filter((b) => status(b.id) === "done").length;
   const reading = ALL_BOOKS.filter((b) => status(b.id) === "reading" && langOf(b) === lang);
   const nextBook = reading[0] ?? ladder.find((b) => status(b.id) !== "done");
@@ -135,7 +135,7 @@ function Shell() {
 
   const journey = {
     stages:
-      lang === "en"
+      base === "eli"
         ? STAGES.map((s) => ({ lv: s.lv, label: s.label, total: s.ids.length, done: s.ids.filter((id) => data.progress[id]?.st === "done").length }))
         : [...new Set(ladder.map((b) => b.lv))].map((lv) => {
             const at = ladder.filter((b) => b.lv === lv);
@@ -250,7 +250,7 @@ function Shell() {
             <div className={cn("min-w-0", docked && "xl:grid xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start xl:gap-5")}>
               <div className="min-w-0">
                 <TabsContent value="home">
-                  <HomeTab journey={journey} nextBook={nextBook} reading={reading} onGo={go} onOpen={setOpenBook} onStudy={goStudy} aiName={aiName} />
+                  <HomeTab journey={journey} nextBook={nextBook} reading={reading} onGo={go} onOpen={setOpenBook} onStudy={goStudy} aiName={aiName} base={base} onBase={setBase} />
                 </TabsContent>
                 <TabsContent value="books">
                   <BooksTab q={query} onQ={setQuery} onOpen={setOpenBook} selected={docked ? panelBook : null} base={base} onBase={setBase} />

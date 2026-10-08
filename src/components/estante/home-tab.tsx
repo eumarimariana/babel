@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRightIcon, ArrowUpRightIcon, CaretLeftIcon, CaretRightIcon, QuotesIcon } from "@phosphor-icons/react";
-import { ALL_BOOKS, basesFor, bookExtra, cefrRank, langOf, type Book } from "@/lib/books";
+import { ALL_BOOKS, BASE_INFO, basesFor, bookExtra, cefrRank, langOf, type Base, type Book } from "@/lib/books";
 import { addDays, today, useEstante, type Status } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { JourneyProps } from "@/remotion/Journey";
@@ -18,11 +18,19 @@ type Props = {
   onOpen: (id: number) => void;
   onStudy: (id: number) => void;
   aiName: string;
+  base: Base;
+  onBase: (b: Base) => void;
+};
+
+/** One line on where a base's levels come from. */
+const levelSource = (base: Base) => {
+  const kind = BASE_INFO[base].kind;
+  return kind === "storyweaver" ? "níveis 1–4 do StoryWeaver" : kind === "gsb" ? "níveis 1–5 do Global Storybooks" : "nível estimado";
 };
 
 const WEEKDAY = ["Do", "Se", "Te", "Qa", "Qi", "Sx", "Sá"];
 
-export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiName }: Props) {
+export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiName, base, onBase }: Props) {
   const { data: all, due: allDue, streak, status, updateQuote } = useEstante();
   const lang = useLang();
   // everything on the home screen belongs to the language being studied
@@ -119,14 +127,27 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiN
         {/* the travel map (Remotion) */}
         <section className="overflow-hidden rounded-[1.5rem] border border-border bg-[#e9e5df] text-[#1c1d1f]">
           <div className="flex items-end justify-between gap-4 px-5 pt-5 sm:px-6">
-            <div>
-              <h2 className="font-display text-lg">Mapa de leitura</h2>
-              <p className="text-xs text-[#6b6863] tabular">do Pre-A1 ao C1, uma cidade por degrau</p>
+            <div className="min-w-0">
+              <h2 className="font-display text-lg">Mapa de leitura · {BASE_INFO[base].name}</h2>
+              <p className="text-xs text-[#6b6863] tabular">{base === "eli" ? "uma cidade por degrau de headwords" : `uma cidade por nível · ${levelSource(base)}`}</p>
             </div>
             <p className="text-right">
               <span className="font-display text-2xl tabular">{journey.done}</span>
               <span className="text-xs text-[#6b6863] tabular">/{journey.total} · {pct}%</span>
             </p>
+          </div>
+          <div role="radiogroup" aria-label="Base do mapa" className="flex gap-1.5 overflow-x-auto px-5 pt-3 scrollbar-none sm:px-6">
+            {basesFor(lang).map((d) => (
+              <button
+                key={d.id}
+                role="radio"
+                aria-checked={d.id === base}
+                onClick={() => onBase(d.id)}
+                className={cn("h-7 shrink-0 rounded-full px-3 text-xs font-semibold transition-colors", d.id === base ? "bg-[#1c1d1f] text-[#e9e5df]" : "border border-[#cfc8be] text-[#6b6863] hover:text-[#1c1d1f]")}
+              >
+                {d.name}
+              </button>
+            ))}
           </div>
           <div className="overflow-x-auto px-2 pb-2 scrollbar-none sm:px-3 sm:pb-3">
             <div className="min-w-[40rem]">
@@ -200,7 +221,7 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiN
 
         <article className="rounded-[1.5rem] border border-border bg-card p-5">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg">Por nível</h2>
+            <h2 className="font-display text-lg">Por nível · {BASE_INFO[base].name}</h2>
             <span className="text-xs text-muted-foreground tabular">{pct}%</span>
           </div>
           <ul className="mt-4 grid gap-3">

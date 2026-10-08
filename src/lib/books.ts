@@ -13,6 +13,10 @@ import pgDe from "@/data/pg-de.json";
 import swEs from "@/data/storyweaver-es.json";
 import rdEs from "@/data/readers-es.json";
 import pgEs from "@/data/pg-es.json";
+import gsbEn from "@/data/gsb-en.json";
+import gsbFr from "@/data/gsb-fr.json";
+import gsbDe from "@/data/gsb-de.json";
+import gsbEs from "@/data/gsb-es.json";
 
 export type Book = {
   id: number; // ELi books use the publisher's id; free books use FREE_ID_BASE + Gutenberg id
@@ -38,6 +42,9 @@ export type Book = {
   zip?: string; // LibriVox: MP3 zip download
   text?: string; // LibriVox: where the text being read comes from
   time?: string; // LibriVox: total running time
+  mp3?: string; // Global Storybooks: full narrated audio
+  ill?: string; // illustrator
+  ol?: number; // level as the source site numbers it (Global Storybooks 1–5)
   cover?: string; // absolute cover URL (free books)
   read?: string; // read-online URL (free books)
   epub?: string; // EPUB download URL (free books)
@@ -59,36 +66,41 @@ export const LANG_EN: Record<Lang, string> = { en: "English", fr: "French", de: 
  * The bases the shelf can show. Ids never collide: ELi ids are small, Gutenberg = 1e6 + id, StoryWeaver = 2e6 + id.
  * `kind` decides how a book is read and linked: the ELi site, Project Gutenberg, or StoryWeaver.
  */
-export type Base = "eli" | "gutenberg" | "storyweaver" | "readers-en" | "kids-en" | "audio-en" | "sw-fr" | "readers-fr" | "pg-fr" | "sw-de" | "readers-de" | "pg-de" | "sw-es" | "readers-es" | "pg-es";
-export type Kind = "eli" | "gutenberg" | "storyweaver" | "librivox";
+export type Base = "eli" | "gutenberg" | "storyweaver" | "gsb-en" | "gsb-fr" | "gsb-de" | "gsb-es" | "readers-en" | "kids-en" | "audio-en" | "sw-fr" | "readers-fr" | "pg-fr" | "sw-de" | "readers-de" | "pg-de" | "sw-es" | "readers-es" | "pg-es";
+export type Kind = "eli" | "gutenberg" | "storyweaver" | "librivox" | "gsb";
 export const FREE_ID_BASE = 1_000_000;
 
 type BaseDef = { id: Base; lang: Lang; kind: Kind; name: string; sub: string; graded: boolean; note?: string; books: Book[] };
 const tag = (list: unknown, id: Base, ln: Lang) => (list as Book[]).map((b) => ({ ...b, src: id, ln }));
 
-const SW_NOTE = "Histórias ilustradas e curtas da Pratham Books e parceiros, com licença aberta (Creative Commons). Leitura grátis no StoryWeaver, muitas com versão narrada. Os níveis 1 a 4 do site viram Pre-A1 a B1.";
+const SW_NOTE = "Livros ilustrados e curtos, escritos para crianças que estão aprendendo a ler, separados por nível de leitura (1 a 4: primeiras leituras, aprendendo a ler, lendo sozinho, lendo com fluência). São da Pratham Books e parceiros, com licença aberta, e muitos têm versão narrada. O CEFR ao lado é uma aproximação: nível 1 ≈ Pre-A1, 2 ≈ A1, 3 ≈ A2, 4 ≈ B1.";
+const GSB_NOTE = "Histórias ilustradas do African Storybook traduzidas para várias línguas, todas com áudio narrado completo. Níveis 1 a 5 do site (primeiras palavras → histórias para ler em voz alta), com licença Creative Commons. O CEFR ao lado é uma aproximação: 1 ≈ Pre-A1, 2 ≈ A1, 3 ≈ A2, 4 e 5 ≈ B1.";
 const READERS_NOTE = "Livros de leitura feitos para estudantes de idioma, em domínio público: cartilhas, coletâneas para iniciantes e literatura com notas e vocabulário. Leitura online ou EPUB, grátis. Os níveis são aproximados.";
 const PG_NOTE = "Textos originais, sem adaptação, em domínio público no Project Gutenberg. Dá para ler online ou baixar em EPUB, de graça e legalmente. Os níveis são aproximados.";
 
 export const BASE_DEFS: BaseDef[] = [
   { id: "eli", lang: "en", kind: "eli", name: "ELi Readers", sub: "Pre-A1 → C1, por headwords", graded: true, books: raw as Book[] },
-  { id: "storyweaver", lang: "en", kind: "storyweaver", name: "StoryWeaver", sub: "histórias ilustradas graduadas", graded: true, note: SW_NOTE, books: tag(swEn, "storyweaver", "en") },
+  { id: "storyweaver", lang: "en", kind: "storyweaver", name: "StoryWeaver", sub: "livros ilustrados por nível de leitura", graded: true, note: SW_NOTE, books: tag(swEn, "storyweaver", "en") },
+  { id: "gsb-en", lang: "en", kind: "gsb", name: "Global Storybooks", sub: "livros ilustrados por nível, com áudio", graded: true, note: GSB_NOTE, books: tag(gsbEn, "gsb-en", "en") },
   { id: "readers-en", lang: "en", kind: "gutenberg", name: "Gutenberg Readers", sub: "livros de leitura · série McGuffey e outros", graded: true, note: READERS_NOTE, books: tag(rdEn, "readers-en", "en") },
   { id: "kids-en", lang: "en", kind: "gutenberg", name: "Gutenberg Infantis", sub: "originais fáceis · Potter, Milne, Kipling…", graded: false, note: "Clássicos infantis em domínio público, curtos e com linguagem simples: um bom passo entre os graded readers e os romances. Leitura online ou EPUB, grátis. Os níveis são aproximados.", books: tag(kidsEn, "kids-en", "en") },
   { id: "audio-en", lang: "en", kind: "librivox", name: "LibriVox", sub: "audiolivros para ouvir", graded: false, note: "Audiolivros gravados por voluntários do LibriVox, em domínio público. Ouça online ou baixe os MP3; cada um tem o link do texto para ler junto. Os níveis são aproximados e pensados para escuta.", books: tag(lvEn, "audio-en", "en") },
   { id: "gutenberg", lang: "en", kind: "gutenberg", name: "Gutenberg Clássicos", sub: "originais completos", graded: false, note: PG_NOTE, books: tag(pgEn, "gutenberg", "en") },
-  { id: "sw-fr", lang: "fr", kind: "storyweaver", name: "StoryWeaver", sub: "histoires illustrées graduées", graded: true, note: SW_NOTE, books: tag(swFr, "sw-fr", "fr") },
+  { id: "sw-fr", lang: "fr", kind: "storyweaver", name: "StoryWeaver", sub: "livres illustrés par niveau de lecture", graded: true, note: SW_NOTE, books: tag(swFr, "sw-fr", "fr") },
+  { id: "gsb-fr", lang: "fr", kind: "gsb", name: "Global Storybooks", sub: "livres illustrés par niveau, avec audio", graded: true, note: GSB_NOTE, books: tag(gsbFr, "gsb-fr", "fr") },
   { id: "readers-fr", lang: "fr", kind: "gutenberg", name: "Gutenberg Readers", sub: "lectures pour débutants", graded: true, note: READERS_NOTE, books: tag(rdFr, "readers-fr", "fr") },
   { id: "pg-fr", lang: "fr", kind: "gutenberg", name: "Gutenberg Clássicos", sub: "Verne, Dumas, Leblanc…", graded: false, note: PG_NOTE, books: tag(pgFr, "pg-fr", "fr") },
-  { id: "sw-de", lang: "de", kind: "storyweaver", name: "StoryWeaver", sub: "illustrierte Geschichten nach Stufen", graded: true, note: SW_NOTE, books: tag(swDe, "sw-de", "de") },
+  { id: "sw-de", lang: "de", kind: "storyweaver", name: "StoryWeaver", sub: "Bilderbücher nach Lesestufen", graded: true, note: SW_NOTE, books: tag(swDe, "sw-de", "de") },
+  { id: "gsb-de", lang: "de", kind: "gsb", name: "Global Storybooks", sub: "Bilderbücher nach Stufen, mit Audio", graded: true, note: GSB_NOTE, books: tag(gsbDe, "gsb-de", "de") },
   { id: "readers-de", lang: "de", kind: "gutenberg", name: "Gutenberg Readers", sub: "Märchen für Anfänger…", graded: true, note: READERS_NOTE, books: tag(rdDe, "readers-de", "de") },
   { id: "pg-de", lang: "de", kind: "gutenberg", name: "Gutenberg Clássicos", sub: "Grimm, Kafka, Busch…", graded: false, note: PG_NOTE, books: tag(pgDe, "pg-de", "de") },
-  { id: "sw-es", lang: "es", kind: "storyweaver", name: "StoryWeaver", sub: "historias ilustradas graduadas", graded: true, note: SW_NOTE, books: tag(swEs, "sw-es", "es") },
+  { id: "sw-es", lang: "es", kind: "storyweaver", name: "StoryWeaver", sub: "libros ilustrados por nivel de lectura", graded: true, note: SW_NOTE, books: tag(swEs, "sw-es", "es") },
+  { id: "gsb-es", lang: "es", kind: "gsb", name: "Global Storybooks", sub: "libros ilustrados por nivel, con audio", graded: true, note: GSB_NOTE, books: tag(gsbEs, "gsb-es", "es") },
   { id: "readers-es", lang: "es", kind: "gutenberg", name: "Gutenberg Readers", sub: "lecturas fáciles", graded: true, note: READERS_NOTE, books: tag(rdEs, "readers-es", "es") },
   { id: "pg-es", lang: "es", kind: "gutenberg", name: "Gutenberg Clássicos", sub: "Cervantes, Quiroga…", graded: false, note: PG_NOTE, books: tag(pgEs, "pg-es", "es") },
 ];
 export const BASE_INFO = Object.fromEntries(
-  BASE_DEFS.map((d) => [d.id, { ...d, site: d.kind === "eli" ? "site da ELi" : d.kind === "storyweaver" ? "StoryWeaver" : d.kind === "librivox" ? "LibriVox" : "Project Gutenberg" }]),
+  BASE_DEFS.map((d) => [d.id, { ...d, site: d.kind === "eli" ? "site da ELi" : d.kind === "storyweaver" ? "StoryWeaver" : d.kind === "librivox" ? "LibriVox" : d.kind === "gsb" ? "Global Storybooks" : "Project Gutenberg" }]),
 ) as Record<Base, BaseDef & { site: string }>;
 export const basesFor = (lang: Lang) => BASE_DEFS.filter((d) => d.lang === lang);
 
@@ -110,14 +122,25 @@ export const cefrRank = (lv: string) => (CEFR.indexOf(lv) + 1 || 99);
 /** How to name the book in Portuguese text (study prompts, labels). */
 export function describeBook(b: Book) {
   const kind = kindOf(b);
+  if (kind === "gsb") return `a história ilustrada "${b.t}" (${b.a}), do Global Storybooks, nível ${b.ol} do site (≈ ${b.lv})`;
   if (kind === "librivox") return `o audiolivro "${b.t}" (${b.a}), do LibriVox, nível aproximado ${b.lv}`;
   if (kind === "storyweaver") return `a história ilustrada "${b.t}" (${b.a}), do StoryWeaver, nível ${b.lv}`;
   if (kind === "gutenberg") return BASE_INFO[baseOf(b)].graded ? `o livro de leitura "${b.t}" (${b.a}), nível aproximado ${b.lv}` : `o clássico original "${b.t}" (${b.a}), sem adaptação, nível aproximado ${b.lv}`;
   return `o graded reader "${b.t}" (${b.a}), nível ${b.lv}, ${b.hw} headwords`;
 }
+/** Where the CEFR level comes from: the publisher, the source site's own scale, or my estimate. */
+const SW_LEVEL: Record<string, number> = { "Pre-A1": 1, A1: 2, A2: 3, B1: 4 };
+export function levelNote(b: Book) {
+  const kind = kindOf(b);
+  if (kind === "eli") return "nível da editora";
+  if (kind === "storyweaver") return `StoryWeaver nível ${SW_LEVEL[b.lv] ?? "?"}`;
+  if (kind === "gsb") return `Global Storybooks nível ${b.ol ?? "?"}`;
+  return "nível estimado";
+}
+
 /** Short tag shown next to the level: headwords for ELi, otherwise what kind of free book it is. */
 export const bookExtra = (b: Book) =>
-  b.hw ? `${b.hw} headwords` : kindOf(b) === "librivox" ? `áudio · ${b.time ?? ""}` : kindOf(b) === "storyweaver" ? "história ilustrada" : BASE_INFO[baseOf(b)].graded ? "livro de leitura" : "original";
+  b.hw ? `${b.hw} headwords` : kindOf(b) === "gsb" ? "com áudio" : kindOf(b) === "librivox" ? `áudio · ${b.time ?? ""}` : kindOf(b) === "storyweaver" ? "história ilustrada" : BASE_INFO[baseOf(b)].graded ? "livro de leitura" : "original";
 
 /** Position within the book's own base. */
 export const bookNumber = (id: number) => {
@@ -125,7 +148,7 @@ export const bookNumber = (id: number) => {
   return (b ? baseBooks(baseOf(b)) : BOOKS).findIndex((x) => x.id === id) + 1;
 };
 export const bookUrl = (b: Book) =>
-  kindOf(b) === "gutenberg" ? `https://www.gutenberg.org/ebooks/${b.pg}` : kindOf(b) === "storyweaver" || kindOf(b) === "librivox" ? (b.read ?? "") : `https://www.elipublishing.com/p/${b.u}`;
+  kindOf(b) === "gutenberg" ? `https://www.gutenberg.org/ebooks/${b.pg}` : kindOf(b) === "storyweaver" || kindOf(b) === "librivox" || kindOf(b) === "gsb" ? (b.read ?? "") : `https://www.elipublishing.com/p/${b.u}`;
 
 /** Where else to get or hear the book. All links are searches or official pages: nothing is downloaded by the app. */
 export function bookLinks(b: Book) {
@@ -138,6 +161,8 @@ export function bookLinks(b: Book) {
     librivox: b.pg && langOf(b) === "en" ? `https://librivox.org/search?q=${encodeURIComponent(b.t.replace(/ - (Young|Teen|Bookmarks)$/, ""))}&search_form=get_results` : null,
     printed: kindOf(b) === "eli" || (kindOf(b) === "gutenberg" && !BASE_INFO[baseOf(b)].graded),
     listen: kindOf(b) === "librivox" ? b.read : null,
+    gsbRead: kindOf(b) === "gsb" ? b.read : null,
+    gsbMp3: kindOf(b) === "gsb" ? b.mp3 : null,
     listenZip: kindOf(b) === "librivox" ? b.zip : null,
     listenText: kindOf(b) === "librivox" ? b.text : null, // StoryWeaver stories are digital only
     estanteVirtual: `https://www.estantevirtual.com.br/busca?q=${q}`,

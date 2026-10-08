@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { CaretLeftIcon, CaretRightIcon, RowsIcon, SquaresFourIcon, XIcon } from "@phosphor-icons/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BASE_INFO, type Base, type Book, STAGES, baseBooks, basesFor, bookNumber, cefrRank, kindOf } from "@/lib/books";
+import { BASE_INFO, type Base, type Book, STAGES, baseBooks, basesFor, bookNumber, cefrRank, kindOf, levelNote } from "@/lib/books";
 import { useEstante, type Status } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { BookCover, LevelTag, STATUS_LABEL, Segmented, StatusSelect, useLang } from "./common";
@@ -31,6 +31,13 @@ const LEVEL_META: Record<string, { storyweaver: string; gutenberg: string }> = {
   B1: { storyweaver: "nível 4 · leitura fluente", gutenberg: "contos, infantojuvenis e novelas" },
   B2: { storyweaver: "", gutenberg: "aventura, mistério e literatura anotada" },
   C1: { storyweaver: "", gutenberg: "romances e teatro completos" },
+};
+/** "X nível 4", "X nível 5" → "X níveis 4 e 5". */
+const joinNotes = (notes: string[]) => {
+  const uniq = [...new Set(notes)];
+  const m = uniq.map((n) => n.match(/^(.*) nível (\w+)$/));
+  if (uniq.length > 1 && m.every((x) => x && x[1] === m[0]![1])) return `${m[0]![1]} níveis ${m.map((x) => x![2]).join(" e ")}`;
+  return uniq.join(" e ");
 };
 const levelsOf = (books: Book[]) => [...new Set(books.map((b) => b.lv))].sort((x, y) => cefrRank(x) - cefrRank(y));
 
@@ -68,7 +75,7 @@ export function BooksTab({ q, onQ, onOpen, selected, base, onBase }: { q: string
     });
     if (group === "level")
       return base !== "eli"
-        ? levelsOf(BOOKS).map((lv) => make(lv, lv, (info.kind === "librivox" ? "" : LEVEL_META[lv]?.[info.kind === "storyweaver" ? "storyweaver" : "gutenberg"]) ?? "", BOOKS.filter((b) => b.lv === lv)))
+        ? levelsOf(BOOKS).map((lv) => make(lv, lv, joinNotes(BOOKS.filter((b) => b.lv === lv).map(levelNote)) + (info.kind === "gutenberg" && LEVEL_META[lv] ? ` · ${LEVEL_META[lv].gutenberg}` : ""), BOOKS.filter((b) => b.lv === lv)))
         : STAGES.map((s) => make(s.key, s.lv, `${s.label} palavras`, s.ids.map((id) => BOOKS.find((b) => b.id === id)!)));
     if (group === "cat") return CATEGORIES.map((c) => make(c, c, "", BOOKS.filter((b) => b.cat === c)));
     const order: (Status | "")[] = ["reading", "want", "", "done"];
@@ -267,7 +274,7 @@ function BookTile({ book: b, status, onOpen, index, fixed, selected }: { book: B
         <span className="truncate text-xs text-muted-foreground tabular">{b.a}</span>
         <span className="mt-1 flex items-center justify-between text-xs tabular">
           <span className="font-bold">{b.lv}</span>
-          <span className="text-muted-foreground tabular">{b.hw ? `${b.hw} hw` : kindOf(b) === "librivox" ? (b.time ?? "áudio") : kindOf(b) === "storyweaver" ? (b.audio ? "com áudio" : "ilustrada") : "grátis"}</span>
+          <span className="text-muted-foreground tabular">{b.hw ? `${b.hw} hw` : kindOf(b) === "librivox" ? (b.time ?? "áudio") : kindOf(b) === "gsb" ? "com áudio" : kindOf(b) === "storyweaver" ? (b.audio ? "com áudio" : "ilustrada") : "grátis"}</span>
         </span>
       </span>
     </motion.button>
