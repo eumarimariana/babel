@@ -7,13 +7,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { AFTER_READING_QUESTIONS, BOOKS, BOOK_BY_ID, GRAMMAR_BY_LEVEL, bookUrl, type Book } from "@/lib/books";
+import { AFTER_READING_QUESTIONS, BASE_INFO, BOOKS, BOOK_BY_ID, type Book, FREE_BOOKS, GRAMMAR_BY_LEVEL, STORY_BOOKS, baseOf, bookUrl, describeBook } from "@/lib/books";
 import { today, useEstante } from "@/lib/store";
 import { correctText, makeKit } from "@/lib/ai-client";
 import { BookCover, SimpleSelect, StatusPicker, copyText } from "./common";
 import { WordCard } from "./vocab-tab";
 
-const BOOK_OPTIONS = BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` }));
+const BOOK_OPTIONS = [...BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` })), ...FREE_BOOKS.map((b) => ({ value: String(b.id), label: `Clássico · ${b.t} (${b.lv})` })), ...STORY_BOOKS.map((b) => ({ value: String(b.id), label: `História · ${b.t} (${b.lv})` }))];
 
 export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; bookId: number; onBookChange: (id: number) => void }) {
   const book = BOOK_BY_ID.get(bookId) ?? BOOKS[0];
@@ -40,7 +40,7 @@ export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; boo
             <h2 className="font-display text-3xl leading-tight sm:text-4xl">{book.t}</h2>
             <div className="flex flex-wrap items-center gap-2 text-xs tabular">
               <span className="rounded-full bg-sand px-3 py-1 font-bold text-sand-foreground">{book.lv}</span>
-              <span className="rounded-full border border-ink-border px-3 py-1">{book.hw} headwords</span>
+              <span className="rounded-full border border-ink-border px-3 py-1">{book.hw ? `${book.hw} headwords` : baseOf(book) === "storyweaver" ? "história ilustrada" : "original, sem adaptação"}</span>
               <span className="rounded-full border border-ink-border px-3 py-1">{book.cat}</span>
             </div>
           </div>
@@ -50,7 +50,7 @@ export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; boo
               <StatusPicker tone="ink" value={status(book.id)} onChange={(v) => setStatus(book.id, v)} />
             </div>
             <a href={bookUrl(book)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-ink-muted underline underline-offset-4 hover:text-ink-foreground tabular">
-              Ver no site da ELi <ArrowSquareOutIcon className="size-3.5" />
+              Ver no {BASE_INFO[baseOf(book)].site} <ArrowSquareOutIcon className="size-3.5" />
             </a>
           </div>
         </div>
@@ -137,7 +137,7 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
     }
   }
 
-  const prompt = `Sou brasileiro e vou ler o graded reader "${book.t}" (${book.a}), nível ${book.lv}, ${book.hw} headwords. Resumo: ${book.s}\nMe dê 12 palavras/expressões em inglês que provavelmente aparecem no livro e são úteis para o meu nível, cada uma com classe gramatical, tradução, definição simples em inglês e uma frase de exemplo ligada à história. Depois, 3 pontos de gramática típicos do ${book.lv} com explicação curta em português.`;
+  const prompt = `Sou brasileiro e vou ler ${describeBook(book)}. Resumo: ${book.s}\nMe dê 12 palavras/expressões em inglês que provavelmente aparecem no livro e são úteis para o meu nível, cada uma com classe gramatical, tradução, definição simples em inglês e uma frase de exemplo ligada à história. Depois, 3 pontos de gramática típicos do ${book.lv} com explicação curta em português.`;
 
   return (
     <Step eyebrow="Antes de ler" title="Kit de pré-leitura" desc="Palavras-chave que devem aparecer no livro, a gramática do nível e perguntas para o fim.">
@@ -267,7 +267,7 @@ function AfterReading({ book, aiName }: { book: Book; aiName: string }) {
     }
   }
 
-  const prompt = `Sou brasileiro, estudo inglês e acabei de ler o graded reader "${book.t}" (nível ${book.lv}). Corrija meu texto abaixo. Responda em português com: 1) versão corrigida mudando o mínimo; 2) cada erro no formato "errado → certo: explicação"; 3) 2 sugestões para soar mais natural; 4) 3 palavras novas úteis com tradução; 5) nota de 0 a 10.\n\n"""${text.trim()}"""`;
+  const prompt = `Sou brasileiro, estudo inglês e acabei de ler ${describeBook(book)}. Corrija meu texto abaixo. Responda em português com: 1) versão corrigida mudando o mínimo; 2) cada erro no formato "errado → certo: explicação"; 3) 2 sugestões para soar mais natural; 4) 3 palavras novas úteis com tradução; 5) nota de 0 a 10.\n\n"""${text.trim()}"""`;
 
   return (
     <Step eyebrow="Depois de ler" title="Responda e escreva um resumo em inglês" desc="Use as perguntas como roteiro e escreva de 4 a 8 frases. O texto fica salvo.">

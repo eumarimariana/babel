@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BOOKS, BOOK_BY_ID, STAGES, type Book } from "@/lib/books";
+import { ALL_BOOKS, BOOKS, BOOK_BY_ID, type Base, type Book, STAGES, baseBooks } from "@/lib/books";
 import { EstanteProvider, useEstante } from "@/lib/store";
 import { activeProviderName, subscribeAi, useAiConfig } from "@/lib/ai-client";
 import { BooksTab } from "./books-tab";
@@ -50,6 +50,7 @@ function Shell() {
   const [celebrate, setCelebrate] = useState<Book | null>(null);
   const prevDone = useRef<Set<string> | null>(null);
   const [query, setQuery] = useState("");
+  const [base, setBase] = useState<Base>("eli");
   const wideXl = useMediaQuery("(min-width: 1280px)", false);
 
   // Celebrate any book that just became "done".
@@ -64,7 +65,7 @@ function Shell() {
   }, [data.progress, ready]);
 
   const done = BOOKS.filter((b) => status(b.id) === "done").length;
-  const reading = BOOKS.filter((b) => status(b.id) === "reading");
+  const reading = ALL_BOOKS.filter((b) => status(b.id) === "reading");
   const nextBook = reading[0] ?? BOOKS.find((b) => status(b.id) !== "done");
   const studyBook = studyId ?? nextBook?.id ?? BOOKS[0].id;
 
@@ -99,7 +100,7 @@ function Shell() {
 
   const subtitle: Record<string, string> = {
     home: todayLong(),
-    books: `${done} de ${BOOKS.length} lidos`,
+    books: base === "gutenberg" ? "clássicos completos, grátis e em domínio público" : base === "storyweaver" ? "histórias ilustradas grátis, do Pre-A1 ao B1" : `${done} de ${BOOKS.length} lidos`,
     vocab: `${data.words.length} ${data.words.length === 1 ? "palavra" : "palavras"} no caderno`,
     review: due.length ? `${due.length} para hoje` : "tudo em dia",
     study: "antes, durante e depois da leitura",
@@ -110,7 +111,7 @@ function Shell() {
     if (tab !== "books") setTab("books");
   };
   const docked = tab === "books" && wideXl;
-  const panelBook = openBook ?? nextBook?.id ?? null;
+  const panelBook = openBook ?? (base === "eli" ? (nextBook?.id ?? null) : baseBooks(base)[0].id);
 
   return (
     <Tabs value={tab} onValueChange={(v) => go(String(v))} className="min-h-dvh gap-0 pb-24 lg:pb-0">
@@ -196,7 +197,7 @@ function Shell() {
                   <HomeTab journey={journey} nextBook={nextBook} reading={reading} onGo={go} onOpen={setOpenBook} onStudy={goStudy} aiName={aiName} />
                 </TabsContent>
                 <TabsContent value="books">
-                  <BooksTab q={query} onQ={setQuery} onOpen={setOpenBook} selected={docked ? panelBook : null} />
+                  <BooksTab q={query} onQ={setQuery} onOpen={setOpenBook} selected={docked ? panelBook : null} base={base} onBase={setBase} />
                 </TabsContent>
                 <TabsContent value="vocab">
                   <VocabTab aiName={aiName} bookId={vocabBook} onBookChange={setVocabBook} />
@@ -254,7 +255,7 @@ function Shell() {
       <Dialog open={!!celebrate} onOpenChange={(o) => !o && setCelebrate(null)}>
         <DialogContent className="gap-3 p-3 sm:max-w-2xl">
           <DialogTitle className="sr-only">Livro concluído</DialogTitle>
-          {celebrate && <CelebrationPlayer title={celebrate.t} level={`${celebrate.lv} · ${celebrate.hw} headwords`} done={done} total={BOOKS.length} />}
+          {celebrate && <CelebrationPlayer title={celebrate.t} level={celebrate.hw ? `${celebrate.lv} · ${celebrate.hw} headwords` : `${celebrate.lv} · clássico original`} done={done} total={BOOKS.length} />}
           {celebrate && (
             <div className="flex flex-wrap justify-end gap-2 px-1 pb-1">
               <Button variant="outline" onClick={() => setCelebrate(null)}>

@@ -1,28 +1,88 @@
 import raw from "@/data/books.json";
+import freeRaw from "@/data/gutenberg.json";
+import storyRaw from "@/data/storyweaver.json";
 
 export type Book = {
-  id: number;
+  id: number; // ELi books use the publisher's id; free books use FREE_ID_BASE + Gutenberg id
   t: string; // title
   a: string; // author
-  lv: string; // CEFR level as published
-  hw: number; // headwords
-  cat: string; // series category
-  u: string; // slug on elipublishing.com
+  lv: string; // CEFR level as published (approximate for free originals)
+  hw?: number; // headwords (graded readers only)
+  cat: string; // series category / genre
+  u?: string; // slug on elipublishing.com
   s: string; // summary
   voc?: string;
   lang?: string;
   ex?: string;
   tags?: string;
   c?: string; // cover on the ELi CDN: "<bookId>/<hash>"
+  isbn?: string;
+  audio?: boolean; // the ELi page has a free MP3
+  sample?: boolean; // the ELi page has a sample to read online
+  pg?: number; // Project Gutenberg id of the original text, when it is in the public domain
+  sw?: number; // StoryWeaver story id
+  src?: Base;
+  cover?: string; // absolute cover URL (free books)
+  read?: string; // read-online URL (free books)
+  epub?: string; // EPUB download URL (free books)
+};
+
+/** The bases the shelf can show. Ids never collide: ELi ids are small, Gutenberg = 1e6 + id, StoryWeaver = 2e6 + id. */
+export type Base = "eli" | "gutenberg" | "storyweaver";
+export const FREE_ID_BASE = 1_000_000;
+
+export const BASE_INFO: Record<Base, { name: string; site: string; kind: string }> = {
+  eli: { name: "ELi Readers", site: "site da ELi", kind: "graded reader" },
+  gutenberg: { name: "Clássicos grátis", site: "Project Gutenberg", kind: "clássico original" },
+  storyweaver: { name: "Histórias grátis", site: "StoryWeaver", kind: "história ilustrada" },
 };
 
 export const BOOKS = raw as Book[];
-export const BOOK_BY_ID = new Map(BOOKS.map((b) => [b.id, b]));
-export const bookNumber = (id: number) => BOOKS.findIndex((b) => b.id === id) + 1;
-export const bookUrl = (b: Book) => `https://www.elipublishing.com/p/${b.u}`;
+/** Public-domain originals from Project Gutenberg: complete, free and legal to read. */
+export const FREE_BOOKS = (freeRaw as Book[]).map((b) => ({ ...b, src: "gutenberg" as const }));
+/** Free illustrated stories from StoryWeaver (Pratham Books and partners), openly licensed, levels 1–4 → Pre-A1…B1. */
+export const STORY_BOOKS = (storyRaw as Book[]).map((b) => ({ ...b, src: "storyweaver" as const }));
+export const ALL_BOOKS = [...BOOKS, ...FREE_BOOKS, ...STORY_BOOKS];
+export const BOOK_BY_ID = new Map(ALL_BOOKS.map((b) => [b.id, b]));
+export const baseOf = (b: Book): Base => b.src ?? "eli";
+/** True for every free, complete book (not an ELi reader). */
+export const isFree = (b: Book) => baseOf(b) !== "eli";
+export const baseBooks = (base: Base) => (base === "gutenberg" ? FREE_BOOKS : base === "storyweaver" ? STORY_BOOKS : BOOKS);
+/** How to name the book in Portuguese text (study prompts, labels). */
+export function describeBook(b: Book) {
+  const base = baseOf(b);
+  if (base === "gutenberg") return `o clássico original "${b.t}" (${b.a}), sem adaptação, nível aproximado ${b.lv}`;
+  if (base === "storyweaver") return `a história ilustrada "${b.t}" (${b.a}), do StoryWeaver, nível ${b.lv}`;
+  return `o graded reader "${b.t}" (${b.a}), nível ${b.lv}, ${b.hw} headwords`;
+}
+/** Position within the book's own base (ELi ladder or free classics). */
+export const bookNumber = (id: number) => {
+  const b = BOOK_BY_ID.get(id);
+  return (b ? baseBooks(baseOf(b)) : BOOKS).findIndex((x) => x.id === id) + 1;
+};
+export const bookUrl = (b: Book) =>
+  baseOf(b) === "gutenberg" ? `https://www.gutenberg.org/ebooks/${b.pg}` : baseOf(b) === "storyweaver" ? (b.read ?? "https://storyweaver.org.in") : `https://www.elipublishing.com/p/${b.u}`;
 
-/** Cover image from the publisher's CDN (274×400 at md). Same file in three sizes. */
+/** Where else to get or hear the book. All links are searches or official pages: nothing is downloaded by the app. */
+export function bookLinks(b: Book) {
+  const q = encodeURIComponent(baseOf(b) === "gutenberg" ? `${b.t} ${b.a}` : b.t);
+  return {
+    eliAudio: baseOf(b) === "eli" && b.audio ? `${bookUrl(b)}#resourcesforstudents` : null,
+    storyAudio: baseOf(b) === "storyweaver" && b.audio ? b.read : null,
+    eliSample: baseOf(b) === "eli" && b.sample ? `${bookUrl(b)}#viewonline` : null,
+    original: b.pg ? `https://www.gutenberg.org/ebooks/${b.pg}` : null,
+    librivox: b.pg ? `https://librivox.org/search?q=${encodeURIComponent(b.t.replace(/ - (Young|Teen|Bookmarks)$/, ""))}&search_form=get_results` : null,
+    printed: baseOf(b) !== "storyweaver", // StoryWeaver stories are digital only
+    estanteVirtual: `https://www.estantevirtual.com.br/busca?q=${q}`,
+    amazon: b.isbn ? `https://www.amazon.com.br/s?k=${b.isbn}` : `https://www.amazon.com.br/s?k=${q}`,
+    worldcat: b.isbn ? `https://search.worldcat.org/search?q=bn%3A${b.isbn}` : null,
+    openLibrary: b.isbn ? `https://openlibrary.org/isbn/${b.isbn}` : null,
+  };
+}
+
+/** Cover image: the ELi CDN (274×400 at md, same file in three sizes) or a free book's own cover URL. */
 export function coverUrl(b: Book, size: "xs" | "md" | "lg" = "md") {
+  if (b.cover) return b.cover;
   if (!b.c) return null;
   const [id, hash] = b.c.split("/");
   return `https://d2xfnexjhce5on.cloudfront.net/eli/book/${id}/${size}/${hash}.webp`;
@@ -46,19 +106,20 @@ export const STAGES: Stage[] = (() => {
   const out: (Stage & { min: number; max: number })[] = [];
   for (const b of BOOKS) {
     const lv = b.lv === "A1.1" ? "A1" : b.lv === "A2/B1" ? "B1" : b.lv;
-    let hw = b.hw;
+    const real = b.hw ?? 0; // every ELi reader has headwords
+    let hw = real;
     if (lv === "A1" && hw === 400) hw = 300;
     if (lv === "A2" && hw >= 700) hw = 800;
     if (lv === "B1") hw = 1000;
     const key = lv + hw;
     let s = out.find((x) => x.key === key);
     if (!s) {
-      s = { key, lv, label: "", ids: [], min: b.hw, max: b.hw };
+      s = { key, lv, label: "", ids: [], min: real, max: real };
       out.push(s);
     }
     s.ids.push(b.id);
-    s.min = Math.min(s.min, b.hw);
-    s.max = Math.max(s.max, b.hw);
+    s.min = Math.min(s.min, real);
+    s.max = Math.max(s.max, real);
   }
   return out.map(({ min, max, ...s }) => ({ ...s, label: min === max ? `${min}` : `${min}–${max}` }));
 })();

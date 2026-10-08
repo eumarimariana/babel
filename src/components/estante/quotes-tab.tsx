@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { BOOKS, BOOK_BY_ID } from "@/lib/books";
+import { BOOKS, BOOK_BY_ID, FREE_BOOKS, STORY_BOOKS } from "@/lib/books";
 import { brDate, useEstante, type Quote } from "@/lib/store";
 import { translateQuote } from "@/lib/ai-client";
 import { quotePrompt } from "@/lib/ai/prompts";
 import { cn } from "@/lib/utils";
 import { BookCover, SimpleSelect, SpeakButton, copyText } from "./common";
 
-const BOOK_OPTIONS = [{ value: "none", label: "Nenhum livro" }, ...BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` }))];
+const BOOK_OPTIONS = [{ value: "none", label: "Nenhum livro" }, ...BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` })), ...FREE_BOOKS.map((b) => ({ value: String(b.id), label: `Clássico · ${b.t} (${b.lv})` })), ...STORY_BOOKS.map((b) => ({ value: String(b.id), label: `História · ${b.t} (${b.lv})` }))];
 
 export function QuotesTab({ aiName, bookId, onBookChange, onOpenBook }: { aiName: string; bookId: string; onBookChange: (v: string) => void; onOpenBook: (id: number) => void }) {
   const { data, addQuote, updateQuote, deleteQuote } = useEstante();

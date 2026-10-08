@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRightIcon, ArrowUpRightIcon, CaretLeftIcon, CaretRightIcon, QuotesIcon } from "@phosphor-icons/react";
-import { BOOKS, STAGES, type Book } from "@/lib/books";
+import { ALL_BOOKS, BOOKS, STAGES, type Book } from "@/lib/books";
 import { addDays, today, useEstante, type Status } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { JourneyProps } from "@/remotion/Journey";
@@ -36,10 +36,10 @@ const WEEKDAY = ["Do", "Se", "Te", "Qa", "Qi", "Sx", "Sá"];
 export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiName }: Props) {
   const { data, due, streak, status, updateQuote } = useEstante();
   const quote = data.quotes[0];
-  const want = BOOKS.filter((b) => status(b.id) === "want");
+  const want = ALL_BOOKS.filter((b) => status(b.id) === "want");
   const pile = [...reading, ...want];
   const cards = (pile.length >= 3 ? pile : [...pile, ...BOOKS.filter((b) => !status(b.id))]).slice(0, 3);
-  const tracked = BOOKS.filter((b) => status(b.id)).slice(0, 5);
+  const tracked = ALL_BOOKS.filter((b) => status(b.id)).slice(0, 5);
   const bands = BANDS.map((b) => ({ ...b, done: b.ids.filter((id) => status(id) === "done").length }));
   const pct = journey.total ? Math.round((journey.done / journey.total) * 100) : 0;
 
@@ -146,7 +146,7 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiN
                     <span className="hidden text-xs sm:grid tabular">
                       <span className="text-muted-foreground">Nível</span>
                       <span className="font-bold">
-                        {b.lv} · {b.hw} hw
+                        {b.lv} · {b.hw ? `${b.hw} hw` : "original"}
                       </span>
                     </span>
                     <StatusPill status={status(b.id)} />
@@ -167,7 +167,7 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiN
             <p className="text-xs text-ink-muted tabular">{reading.length ? "Lendo agora" : "Próxima parada"}</p>
             <h2 className="mt-2 max-w-[11rem] font-display text-2xl leading-tight">{nextBook.t}</h2>
             <p className="mt-1 max-w-[11rem] text-xs text-ink-muted tabular">
-              {nextBook.lv} · {nextBook.hw} headwords
+              {nextBook.lv} · {nextBook.hw ? `${nextBook.hw} headwords` : "original"}
             </p>
             <button onClick={() => onStudy(nextBook.id)} className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-sand px-4 py-2 text-xs font-semibold text-sand-foreground hover:opacity-90">
               Abrir kit de estudo <ArrowUpRightIcon weight="bold" className="size-3.5" />

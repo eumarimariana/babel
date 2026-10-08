@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowSquareOutIcon, BookmarkSimpleIcon, CaretLeftIcon, CaretRightIcon, GraduationCapIcon, NotePencilIcon, QuotesIcon } from "@phosphor-icons/react";
+import { ArrowSquareOutIcon, BankIcon, BookOpenTextIcon, BookmarkSimpleIcon, CaretLeftIcon, CaretRightIcon, DownloadSimpleIcon, GraduationCapIcon, HeadphonesIcon, NotePencilIcon, QuotesIcon, StorefrontIcon } from "@phosphor-icons/react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
-import { BOOKS, BOOK_BY_ID, bookNumber, bookUrl, type Book } from "@/lib/books";
+import { BASE_INFO, BOOK_BY_ID, type Book, baseBooks, baseOf, bookLinks, bookNumber, bookUrl, isFree } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { BookCover, StatusPicker, useMediaQuery } from "./common";
@@ -65,9 +65,13 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
   const p = data.progress[b.id];
   const words = data.words.filter((w) => w.book === b.id);
   const quotes = data.quotes.filter((q) => q.book === b.id);
+  const free = isFree(b);
+  const base = baseOf(b);
+  const list = baseBooks(base);
   const n = bookNumber(b.id);
-  const prev = BOOKS[n - 2];
-  const next = BOOKS[n];
+  const prev = list[n - 2];
+  const next = list[n];
+  const links = bookLinks(b);
   const Title = split ? DialogTitle : wide ? "h2" : DrawerTitle;
   const Desc = split ? DialogDescription : wide ? "p" : DrawerDescription;
 
@@ -91,7 +95,7 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
         <div className="grid gap-2">
           <div className="flex items-start justify-between gap-3">
             <p className="text-[10px] font-bold tracking-[0.16em] text-ink-muted uppercase">
-              Nº {n} de {BOOKS.length} · {b.cat}
+              {free ? `${BASE_INFO[base].name} · ${b.cat}` : `Nº ${n} de ${list.length} · ${b.cat}`}
             </p>
             <button
               onClick={() => setStatus(b.id, status(b.id) === "want" ? "" : "want")}
@@ -106,7 +110,11 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
           <Desc className="text-sm text-ink-muted">{b.a}</Desc>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-sand px-3 py-1 text-xs font-bold text-sand-foreground">{b.lv}</span>
-            <span className="rounded-full border border-ink-border px-3 py-1 text-xs tabular">{b.hw} headwords</span>
+            {b.hw ? (
+              <span className="rounded-full border border-ink-border px-3 py-1 text-xs tabular">{b.hw} headwords</span>
+            ) : (
+              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{base === "storyweaver" ? "história ilustrada, grátis" : "texto original, sem adaptação"}</span>
+            )}
             {p?.st === "done" && <span className="rounded-full border border-ink-border px-3 py-1 text-xs">lido em {brDate(p.d)}</span>}
           </div>
         </div>
@@ -116,6 +124,11 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
         <p className="text-[0.95rem] leading-relaxed text-ink-foreground/85">{b.s}</p>
 
         <div className="flex flex-wrap items-center gap-2">
+          {free && b.read && (
+            <a href={b.read} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center gap-2 rounded-full bg-sand px-5 text-[11px] font-bold tracking-[0.12em] text-sand-foreground uppercase transition-transform hover:scale-[1.03]">
+              <BookOpenTextIcon weight="bold" className="size-4" /> Ler grátis
+            </a>
+          )}
           <button onClick={onStudy} className="inline-flex h-11 items-center gap-2 rounded-full bg-sand px-5 text-[11px] font-bold tracking-[0.12em] text-sand-foreground uppercase transition-transform hover:scale-[1.03]">
             <GraduationCapIcon weight="bold" className="size-4" /> Estudar este livro
           </button>
@@ -168,8 +181,10 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
           </section>
         )}
 
+        <WhereToRead b={b} links={links} />
+
         <a href={bookUrl(b)} target="_blank" rel="noopener noreferrer" className="inline-flex w-fit items-center gap-1 text-xs text-ink-muted underline underline-offset-4 hover:text-ink-foreground">
-          Ver no site da ELi <ArrowSquareOutIcon className="size-3.5" />
+          Ver no {BASE_INFO[base].site} <ArrowSquareOutIcon className="size-3.5" />
         </a>
 
         <nav aria-label="Navegar na trilha" className="grid grid-cols-2 gap-2 border-t border-ink-border pt-4">
@@ -178,6 +193,71 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
         </nav>
       </motion.div>
     </div>
+  );
+}
+
+/** "Where to read and listen": official pages, free originals, audiobooks, shops and libraries. Links only. */
+function WhereToRead({ b, links }: { b: Book; links: ReturnType<typeof bookLinks> }) {
+  const free = isFree(b);
+  const base = baseOf(b);
+  const groups: { title: string; items: { href: string | null | undefined; icon: React.ReactNode; label: string; sub: string }[] }[] = [
+    {
+      title: "Ouvir",
+      items: [
+        { href: links.eliAudio, icon: <HeadphonesIcon weight="bold" />, label: "Áudio MP3 da ELi", sub: "grátis, na área “Resources for students”" },
+        { href: links.storyAudio, icon: <HeadphonesIcon weight="bold" />, label: "Versão com áudio", sub: "leitura narrada no StoryWeaver" },
+        { href: links.librivox, icon: <HeadphonesIcon weight="bold" />, label: "Audiolivro na LibriVox", sub: free ? "leitura voluntária do original, grátis" : "do texto original, grátis" },
+      ],
+    },
+    {
+      title: "Ler",
+      items: [
+        { href: links.eliSample, icon: <BookOpenTextIcon weight="bold" />, label: "Amostra no site da ELi", sub: "algumas páginas, online" },
+        { href: base === "storyweaver" ? b.read : null, icon: <BookOpenTextIcon weight="bold" />, label: "Ler no StoryWeaver", sub: "grátis, ilustrado, licença aberta" },
+        { href: free ? null : links.original, icon: <BookOpenTextIcon weight="bold" />, label: "Original grátis no Gutenberg", sub: "texto completo, sem adaptação" },
+        { href: free ? b.epub : null, icon: <DownloadSimpleIcon weight="bold" />, label: "Baixar EPUB", sub: "para Kindle, Kobo ou o app de livros" },
+      ],
+    },
+    {
+      title: !links.printed ? "" : free ? "Edição impressa" : "Conseguir o livro",
+      items: [
+        { href: links.estanteVirtual, icon: <StorefrontIcon weight="bold" />, label: "Estante Virtual", sub: "novos e usados" },
+        { href: links.amazon, icon: <StorefrontIcon weight="bold" />, label: "Amazon", sub: b.isbn ? `ISBN ${b.isbn}` : "busca pelo título" },
+        { href: links.worldcat, icon: <BankIcon weight="bold" />, label: "Bibliotecas (WorldCat)", sub: "onde emprestar perto de você" },
+        { href: links.openLibrary, icon: <BankIcon weight="bold" />, label: "Open Library", sub: "ficha e empréstimo digital, quando houver" },
+      ],
+    },
+  ];
+  return (
+    <section className="@container grid gap-3">
+      <h3 className="text-[10px] font-bold tracking-[0.16em] text-ink-muted uppercase">Onde ler e ouvir</h3>
+      {groups.map((g) => {
+        const items = g.title ? g.items.filter((i) => i.href) : [];
+        if (!items.length) return null;
+        return (
+          <div key={g.title} className="grid gap-1.5">
+            <p className="text-xs text-ink-muted">{g.title}</p>
+            <div className="grid gap-1.5 @md:grid-cols-2">
+              {items.map((i) => (
+                <a
+                  key={i.label}
+                  href={i.href!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-2xl border border-ink-border p-3 transition-colors hover:bg-white/5 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sand"
+                >
+                  {i.icon}
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold">{i.label}</span>
+                    <span className="block truncate text-xs text-ink-muted">{i.sub}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </section>
   );
 }
 

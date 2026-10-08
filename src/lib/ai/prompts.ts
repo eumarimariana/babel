@@ -2,10 +2,15 @@ import type { Book } from "@/lib/books";
 
 /** Prompt text shared by every AI provider, so Claude, Gemini, Groq and OpenRouter get the same task. */
 export const SYSTEM =
-  "You are a patient English teacher for a Brazilian Portuguese speaker who studies English by reading ELi graded readers. " +
+  "You are a patient English teacher for a Brazilian Portuguese speaker who studies English by reading graded readers and, later, unabridged classics. " +
   "Write explanations meant for the learner in Brazilian Portuguese and English examples at the learner's level.";
 
-export const bookLine = (b: Book) => `"${b.t}" by ${b.a} (ELi Readers, level ${b.lv}, ${b.hw} headwords, ${b.cat})`;
+export const bookLine = (b: Book) =>
+  b.src === "storyweaver"
+    ? `"${b.t}" by ${b.a} (a free illustrated story from StoryWeaver, level ${b.lv})`
+    : b.hw
+      ? `"${b.t}" by ${b.a} (ELi Readers, level ${b.lv}, ${b.hw} headwords, ${b.cat})`
+      : `"${b.t}" by ${b.a} (the unabridged original from Project Gutenberg, roughly level ${b.lv}, ${b.cat})`;
 
 export function wordPrompt(word: string, book?: Book) {
   return (

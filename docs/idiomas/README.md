@@ -2,7 +2,11 @@
 
 Plano para levar o Babel além do inglês (francês, alemão e espanhol), ampliar a estante de inglês com outras editoras e fontes gratuitas, e organizar tudo em **perfis por idioma** com **escolha da base de livros**.
 
-> **Status:** só planejamento, nada disso está implementado.
+> **Status:** a maior parte ainda é planejamento. **Já implementado** (inglês):
+> - **Segunda base de livros na Estante:** "Clássicos grátis", com 38 originais em domínio público do Project Gutenberg (capas, leitura online e EPUB), agrupados por nível aproximado (B1, B2, C1). A troca de base fica no topo da Estante (seção 6, ainda sem perfis).
+> - **"Onde ler e ouvir"** em cada livro: áudio MP3 e amostra no site da ELi, original grátis no Gutenberg, audiolivro na LibriVox, EPUB, Estante Virtual, Amazon (pelo ISBN), bibliotecas pelo WorldCat e Open Library (seção 3).
+> - **ISBN de todos os 177 livros da ELi** guardado no catálogo, e vínculo de cada adaptação da ELi com o original no Gutenberg quando ele existe.
+>
 > As séries e os sites listados abaixo foram reunidos de memória. Antes de usar qualquer um, confira o catálogo atual, os níveis e as regras de uso de cada editora.
 
 ---

@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { BOOKS, BOOK_BY_ID } from "@/lib/books";
+import { BOOKS, BOOK_BY_ID, FREE_BOOKS, STORY_BOOKS } from "@/lib/books";
 import { addDays, today, useEstante, type Word } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { explainWord } from "@/lib/ai-client";
 import { MemoryBoxes, Segmented, SimpleSelect, SpeakButton } from "./common";
 
-const BOOK_OPTIONS = [{ value: "none", label: "Nenhum livro" }, ...BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` }))];
+const BOOK_OPTIONS = [{ value: "none", label: "Nenhum livro" }, ...BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` })), ...FREE_BOOKS.map((b) => ({ value: String(b.id), label: `Clássico · ${b.t} (${b.lv})` })), ...STORY_BOOKS.map((b) => ({ value: String(b.id), label: `História · ${b.t} (${b.lv})` }))];
 
 export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; bookId: string; onBookChange: (v: string) => void }) {
   const { data, addWord, deleteWord } = useEstante();
