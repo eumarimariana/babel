@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
-import { IconContext, ArrowRightIcon, BooksIcon, CheckIcon, CardsIcon, GearSixIcon, GraduationCapIcon, HouseIcon, ExamIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, QuotesIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
+import { IconContext, ArrowRightIcon, BooksIcon, CheckIcon, CardsIcon, CompassIcon, GearSixIcon, GraduationCapIcon, HouseIcon, ExamIcon, MagnifyingGlassIcon, MoonIcon, NotePencilIcon, QuotesIcon, SunIcon, TranslateIcon } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -17,6 +17,7 @@ import { ReviewTab } from "./review-tab";
 import { StudyTab } from "./study-tab";
 import { QuotesTab } from "./quotes-tab";
 import { QuizTab } from "./quiz-tab";
+import { MaterialsTab } from "./materials-tab";
 import { AiDialog, SettingsDialog } from "./settings-dialog";
 import { CelebrationPlayer } from "./players";
 import { HomeTab } from "./home-tab";
@@ -155,6 +156,7 @@ function Shell() {
     study: "antes, durante e depois da leitura",
     quotes: `${quotes.length} ${quotes.length === 1 ? "citação salva" : "citações salvas"}`,
     quiz: "o que você aprendeu do livro e do idioma",
+    materials: "sites e vídeos grátis, por habilidade e nível",
   };
   const search = (q: string) => {
     setQuery(q);
@@ -264,6 +266,9 @@ function Shell() {
                 <TabsContent value="quiz">
                   <QuizTab aiName={aiName} bookId={quizId && BOOK_BY_ID.get(quizId) && langOf(BOOK_BY_ID.get(quizId)!) === lang ? quizId : studyBook} onBookChange={setQuizId} onGoVocab={() => go("vocab")} />
                 </TabsContent>
+                <TabsContent value="materials">
+                  <MaterialsTab level={nextBook?.lv} />
+                </TabsContent>
                 <TabsContent value="review">{ready && <ReviewTab key={`${ready}-${lang}`} onGoVocab={() => go("vocab")} />}</TabsContent>
                 <TabsContent value="study">
                   <StudyTab aiName={aiName} bookId={studyBook} onBookChange={setStudyId} />
@@ -288,7 +293,7 @@ function Shell() {
 
       {/* mobile tab bar */}
       <nav aria-label="Seções" className="fixed inset-x-0 bottom-0 z-40 bg-ink pb-safe text-ink-foreground lg:hidden">
-        <div className="mx-auto grid max-w-xl grid-cols-7 gap-0.5 px-1 py-2">
+        <div className="mx-auto grid max-w-xl grid-cols-8 gap-0.5 px-1 py-2">
           {NAV.map((n) => {
             const active = tab === n.value;
             const count = n.value === "review" ? due.length : 0;
@@ -413,7 +418,7 @@ function todayLong() {
   return new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 }
 
-const TAB_TITLE: Record<string, string> = { home: "Início", books: "Estante", vocab: "Vocabulário", review: "Revisar", study: "Estudar um livro", quotes: "Citações", quiz: "Quiz" };
+const TAB_TITLE: Record<string, string> = { home: "Início", books: "Estante", vocab: "Vocabulário", review: "Revisar", study: "Estudar um livro", quotes: "Citações", quiz: "Quiz", materials: "Materiais" };
 
 const NAV = [
   { value: "home", label: "Início", short: "Início", icon: HouseIcon },
@@ -423,6 +428,7 @@ const NAV = [
   { value: "review", label: "Revisar", short: "Revisar", icon: CardsIcon },
   { value: "study", label: "Estudar", short: "Estudar", icon: GraduationCapIcon },
   { value: "quiz", label: "Quiz", short: "Quiz", icon: ExamIcon },
+  { value: "materials", label: "Materiais", short: "Materiais", icon: CompassIcon },
 ];
 
 function CountBadge({ n, active }: { n: number; active?: boolean }) {

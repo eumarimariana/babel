@@ -38,6 +38,8 @@ export type QuizQuestion = {
 };
 export type SavedQuiz = { questions: QuizQuestion[]; at: string };
 export type QuizScore = { best: number; last: number; total: number; times: number; at: string };
+export type ResourceStatus = "want" | "doing" | "done";
+export type ResourceMark = { st?: ResourceStatus; rating?: number; note?: string; lesson?: number; d: string };
 export type KitWord = { w: string; pos: string; pt: string; en: string; ex: string };
 export type Kit = {
   words: KitWord[];
@@ -54,11 +56,12 @@ export type Data = {
   quotes: Quote[];
   quizzes: Record<string, SavedQuiz>; // AI quizzes, by book id
   scores: Record<string, QuizScore>; // by book id, or "words-<lang>" for notebook quizzes
+  resources: Record<string, ResourceMark>; // study materials, by resource id
   days: string[];
 };
 
 const KEY = "estante-eli-app-v1";
-const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, days: [] };
+const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, days: [] };
 export const INTERVALS = [0, 1, 2, 4, 8, 16, 32];
 
 export function today() {
@@ -90,6 +93,7 @@ export function normalize(input: unknown): Data {
     quotes: (d.quotes ?? []).filter((q) => q && q.text).map((q) => ({ ...q, pt: q.pt ?? "", book: q.book ?? null, page: q.page ?? "", note: q.note ?? "" })),
     quizzes: d.quizzes ?? {},
     scores: d.scores ?? {},
+    resources: d.resources ?? {},
     days: d.days ?? [],
   };
 }
@@ -121,6 +125,7 @@ type Ctx = {
   deleteQuote: (id: string) => void;
   saveQuiz: (bookId: number, quiz: SavedQuiz) => void;
   recordScore: (key: string, correct: number, total: number) => void;
+  markResource: (id: string, patch: Partial<Omit<ResourceMark, "d">>) => void;
   markDay: () => void;
   replaceAll: (d: Data) => void;
   streak: number;
@@ -240,6 +245,18 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       }),
     [],
   );
+  const markResource = useCallback(
+    (id: string, patch: Partial<Omit<ResourceMark, "d">>) =>
+      setData((d) => {
+        const mark = { ...d.resources[id], ...patch, d: today() };
+        const resources = { ...d.resources };
+        if (!mark.st && !mark.rating && !mark.note && !mark.lesson) delete resources[id];
+        else resources[id] = mark;
+        const next = { ...d, resources };
+        return patch.st === "done" ? withDay(next) : next;
+      }),
+    [],
+  );
   const saveEssay = useCallback((bookId: number, text: string) => setData((d) => ({ ...d, essays: { ...d.essays, [bookId]: text } })), []);
   const markDay = useCallback(() => setData(withDay), []);
   const replaceAll = useCallback((d: Data) => setData(d), []);
@@ -261,12 +278,13 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       deleteQuote,
       saveQuiz,
       recordScore,
+      markResource,
       markDay,
       replaceAll,
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }

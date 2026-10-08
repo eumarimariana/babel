@@ -1,0 +1,226 @@
+# Materiais grátis de inglês no Babel
+
+Plano para aproveitar a sua lista de sites, playlists e dicionários no app. A ideia não é virar uma pasta de favoritos. Cada material deve aparecer **na hora em que serve**: quando você lê um livro, erra no quiz ou anota uma palavra.
+
+> **Status:**
+> - **Etapa 1 feita:** aba Materiais com 21 materiais grátis (`src/data/recursos-en.json`), filtro de nível que começa no nível do mapa, filtro por habilidade e por status, nota de 1 a 5 e anotação em cada material, salvos no backup.
+> - **Ficaram de fora ao conferir os links:** Jogos para Aprender Inglês (o endereço redireciona para propaganda), 5 Minute English (site fora do ar), Cursodeingles.online (o domínio não existe mais) e o curso do IFRS (Moodle, precisa de matrícula).
+> - **Entraram a mais:** os 100 textos para iniciantes do Aulas de Inglês Grátis, ao lado dos 110 avançados.
+>
+> **Decidido:**
+> - Uma aba própria, **Materiais**, reúne tudo o que está neste plano. As outras abas só ganham atalhos para ela.
+> - Só materiais gratuitos. Sites pagos ou com plano grátis limitado ficam de fora.
+> - Playlists **só com redirecionamento**: o card abre a playlist no YouTube e guarda em que aula você parou. Sem API e sem chave (ver o passo 6).
+
+---
+
+## 1. A ideia em uma frase
+
+Uma aba **Materiais** que reúne tudo: catálogo de links, trilhas das playlists, pacotes de palavras, missão do dia e teste de nível. As outras abas ganham atalhos para ela:
+
+- Na tela do livro, a gramática do nível leva para a explicação certa.
+- No quiz, quem erra um tema recebe um material sobre ele.
+- No vocabulário, cada palavra abre no Cambridge.
+- No Início, um card pequeno mostra a **missão do dia** (que mora na aba Materiais).
+
+---
+
+## 2. A sua lista, organizada
+
+Antes de entrar no app, cada link precisa de uma ficha: tipo, nível, se é grátis e em que idioma está o site. Classificação inicial:
+
+**Entram (todos grátis):**
+
+| Material | Tipo | Nível | Observação |
+|---|---|---|---|
+| BBC Learning English | curso, escuta, gramática | A1–C1 | carro-chefe: cursos por nível, notícias, vídeos curtos |
+| British Council – Grammar reference | gramática | A1–B2 | já separado por nível CEFR; ótimo para ligar com o app |
+| Grammar Bytes (chompchomp.com) | gramática, exercícios | B1–C1 | exercícios interativos |
+| 5 Minute English | gramática | A1–B1 | explicações curtas |
+| English Grammar 101 | gramática | A2–B2 | lições em sequência, com teste |
+| ESOL Courses | lições, escuta, leitura | A1–B2 | muito material por tema |
+| Engoo – materiais | leitura, notícias, conversa | A1–C1 | os materiais são abertos (só as aulas com professor são pagas); Daily News com nível |
+| Listen In English | escuta | A2–C1 | trechos de séries, filmes, notícias e podcasts |
+| LingoClip | escuta com música | A1–B2 | completar a letra da música |
+| The English Room – Games | jogos | A1–B1 | |
+| Jogos para Aprender Inglês | jogos | Pre-A1–A2 | site em português |
+| 110 textos com áudio e tradução (aulasdeinglesgratis.net) | leitura com áudio | B2–C1 | site em português |
+| Grammar Bank – Beginners Test (KET, PET) | teste | A2–B1 | serve de teste de nível |
+| Kultivi | curso em vídeo | A1–B1 | precisa de cadastro grátis, tem certificado |
+| IFRS – Inglês 1 (turma 2023B) | curso | A1 | Moodle: entra só se abrir sem matrícula |
+| 3 playlists de gramática (YouTube) | vídeo | A1–B2 | ver o passo 6 |
+| Cambridge Dictionary | dicionário | todos | ver o passo 5 |
+| Inglês Online – vocabulário | vocabulário | A1–B1 | site em português |
+| Cursodeingles.online – vocabulário | vocabulário | A1–A2 | site em português |
+| English Experts – guia rápido | vocabulário | A2–B2 | fórum em português |
+| Open English – 200 palavras mais usadas | vocabulário | Pre-A1–A1 | artigo de blog; ver o passo 7 |
+| Universidade do Intercâmbio – aumentar vocabulário | dica / artigo | todos | texto de dicas, não é exercício |
+
+**Ficam de fora (pagos ou com grátis limitado):** EnglishCentral, FluentU, Gymglish e TakeLessons.
+
+Os itens da primeira lista vieram sem URL completa. Na implementação, cada endereço será conferido antes de entrar no catálogo.
+
+---
+
+## 3. A aba Materiais
+
+Ela segue o estilo das outras abas, com cards em grafite e areia e filtros em pílula. É a 8ª aba do menu, com um ícone de pasta ou de bússola.
+
+Tudo o que está neste plano fica nela, em seções:
+
+1. **Hoje:** a missão do dia (passo 8).
+2. **Trilhas:** as playlists de gramática, com a aula em que você parou (passo 6).
+3. **Sites:** o catálogo de links em prateleiras (abaixo).
+4. **Palavras:** os pacotes para importar nas Revisões (passo 7).
+5. **Meu nível:** o teste de nível (passo 9).
+
+Detalhes do catálogo:
+
+- **Prateleiras por habilidade:** Gramática · Vocabulário · Escuta · Leitura · Jogos · Cursos · Testes · Dicionários.
+- **Filtro de nível:** começa no nível da sua parada atual no mapa de leitura. Por exemplo, se você está no A2 da ELi, aparecem primeiro os materiais A2.
+- **Etiquetas no card:** `PT` ou `EN` (idioma do site), o tempo médio (5 min, 15 min, curso longo) e `cadastro` quando o site pede conta. Como tudo é grátis, não precisa de etiqueta de preço.
+- **Status por material:** quero usar → usando → feito, como na Estante. Dá para dar uma nota de 1 a 5 e escrever uma anotação curta ("bom para phrasal verbs").
+- **Adicionar link:** você cola uma URL e escolhe tipo e nível. Assim a lista cresce sem mexer no código.
+- **Abrir em nova aba:** todos os links, inclusive as playlists, abrem no site original. Quase todos esses sites bloqueiam ser abertos dentro de outro app (iframe).
+
+---
+
+## 4. Ponte com a gramática dos livros
+
+O app já sabe a gramática de cada nível (`grammarFor` em `src/lib/books.ts`), e ela aparece em Estudar e no Quiz. Falta ligar cada ponto a uma explicação:
+
+```
+"Past simple" → British Council (A1–A2) · 5 Minute English · playlist, aula 12
+```
+
+- Em **Estudar**, cada ponto de gramática do livro ganha um link "Entender isso" com 1 ou 2 materiais.
+- No **Quiz**, a pergunta de gramática errada mostra "Revisar: Past simple", com o link.
+- Cada material do catálogo recebe etiquetas de tema (`past-simple`, `present-perfect`, `phrasal-verbs`…) para essa ligação ser automática.
+
+---
+
+## 5. Dicionário dentro do vocabulário
+
+Esta é a parte mais rápida de fazer e a que você vai usar mais:
+
+- Cada palavra do Vocabulário e das Revisões ganha um botão **Cambridge**, que abre `dictionary.cambridge.org/pt/dicionario/ingles-portugues/<palavra>`.
+- Ao anotar uma palavra, o botão também aparece, para conferir o sentido antes de salvar.
+- Mais tarde dá para incluir outros dicionários (Oxford Learner's, Longman) como opção nas configurações.
+
+---
+
+## 6. Playlists de gramática
+
+Sem API: as 3 playlists entram como cards que **abrem direto no YouTube**.
+
+| Playlist | Link |
+|---|---|
+| Gramática completa da língua inglesa | `youtube.com/playlist?list=PLM4F7Yfc9B4-TH9rMRqLBk5u5kEAHVV-t` |
+| Gramática da língua inglesa | `youtube.com/playlist?list=PLGY1nxl-9ZcMv7kYyydP_zDYBkIjcRF2P` |
+| Dominando a gramática em inglês | `youtube.com/playlist?list=PL62aalXXyN9OFa6Otre1eleuxF4pGq1k3` |
+
+- **Abrir no YouTube:** o botão leva para a playlist numa aba nova. Não precisa de chave nem de script.
+- **Onde parei:** cada card guarda a aula em que você está ("parei na aula 12"), que você atualiza com um toque em + / −. O botão "Continuar" sempre aparece em destaque.
+- **Status:** quero ver → vendo → terminei, como os outros materiais.
+- **Ponte com a gramática:** os temas de cada playlist podem ser anotados à mão (por exemplo, `past-simple` = aula 12). Assim a playlist aparece no passo 4 com a aula certa. Isso pode ser feito aos poucos.
+- **Playlist nova:** entra pelo "Adicionar link" (passo 3). Se for um link do YouTube, o app reconhece e cria o card de playlist.
+
+---
+
+## 7. Pacotes de palavras para as Revisões
+
+A lista das "200 palavras mais usadas" é uma boa ideia, mas copiar o texto do blog não é legal (direitos autorais). A alternativa é usar uma **lista aberta de frequência**:
+
+- **NGSL (New General Service List):** cerca de 2.800 palavras que cobrem a maior parte de qualquer texto. A licença é aberta (CC BY-SA).
+- O app divide a lista em pacotes de 50 ("As 50 primeiras", "51–100"…). Você importa um pacote para as Revisões com um clique.
+- Ao abrir um livro, o app pode marcar quais palavras do pacote aparecem nele, se tivermos o texto (Gutenberg, StoryWeaver).
+
+---
+
+## 8. Missão do dia (no Início)
+
+Um card no Início que monta uma sessão curta com base no seu nível e no que falta:
+
+```
+Hoje · A2 · ~25 min
+1. Ler o capítulo 3 de "The Railway Children"     (Estante)
+2. Present perfect – British Council                (Gramática)
+3. Um trecho no Listen In English                  (Escuta)
+4. Revisar 12 palavras                             (Revisões)
+```
+
+- Cada item marcado conta para os dias seguidos (`days`, que já existe).
+- A escolha prioriza: livro em andamento, gramática errada no último quiz, habilidade menos usada na semana.
+- Não precisa de IA. Se a IA estiver ligada, ela pode escrever uma frase de incentivo ou um mini exercício.
+
+---
+
+## 9. Teste de nível
+
+O Grammar Bank (KET/PET) e o British Council têm testes curtos. A ideia:
+
+- Um card "Descobrir meu nível" com o link para o teste.
+- Depois você informa o resultado e o app sugere a parada certa no mapa de leitura.
+- Mais tarde: um teste próprio do app, montado com as perguntas de gramática de cada nível.
+
+---
+
+## 10. Modelo de dados
+
+Catálogo fixo em `src/data/recursos-en.json`:
+
+```ts
+type Resource = {
+  id: string;            // "bbc-learning-english"
+  name: string;
+  url: string;
+  kind: "grammar" | "vocab" | "listening" | "reading" | "games" | "course" | "test" | "dictionary" | "video";
+  levels: string[];      // ["A1", "A2", "B1"]
+  siteLang: "pt" | "en";
+  signup?: boolean;      // pede cadastro (grátis)
+  minutes?: number;      // tempo médio de uma sessão
+  topics?: string[];     // ["past-simple", "phrasal-verbs"] para a ponte com a gramática
+  playlist?: string;     // ID da playlist do YouTube, quando for uma
+  lessons?: Record<string, number>; // tema → número da aula, anotado à mão
+  note?: string;
+};
+```
+
+No store (`estante-eli-app-v1`), sem quebrar o que já existe:
+
+```ts
+resources: Record<string, { status: "want" | "doing" | "done"; rating?: number; note?: string; lesson?: number }>; // lesson = aula em que parou
+myResources: Resource[];   // links que você adicionou
+missions: Record<string, string[]>; // dia → itens feitos
+```
+
+Tudo entra no backup que já existe.
+
+---
+
+## 11. Ordem sugerida
+
+1. **Aba Materiais + catálogo:** a aba nova no menu, as seções vazias, as fichas dos links grátis, as prateleiras, os filtros e o status. Já deixa tudo útil.
+2. **Cambridge no vocabulário:** pequeno e de uso diário.
+3. **Trilhas das playlists:** cards que abrem no YouTube, com "onde parei".
+4. **Ponte gramática ↔ materiais:** etiquetas de tema, atalhos em Estudar e no Quiz.
+5. **Missão do dia** na aba Materiais, com o card no Início.
+6. **Pacotes NGSL** importáveis nas Revisões.
+7. **Adicionar link próprio** e **teste de nível**.
+
+---
+
+## 12. Cuidados
+
+- **Só link, nunca cópia:** o app guarda nome, endereço e as suas notas, não o conteúdo dos sites.
+- **Links quebram:** criar um script (`scripts/check-links`) que testa todas as URLs do catálogo e avisa quais saíram do ar.
+- **Grátis muda:** se um site do catálogo passar a cobrar, ele sai da lista. O script de links pode avisar quando a página mudar muito.
+- **Outros idiomas:** o formato do catálogo já tem `siteLang` e níveis, então depois basta criar `recursos-fr.json`, `recursos-de.json` e `recursos-es.json`.
+
+---
+
+## 13. Decisões
+
+- **Aba:** separada, chamada **Materiais**, reunindo todas as funcionalidades deste plano.
+- **Custo:** só materiais grátis; EnglishCentral, FluentU, Gymglish e TakeLessons ficam de fora.
+- **Playlists:** só redirecionamento para o YouTube, sem API; o app guarda em que aula você parou.
