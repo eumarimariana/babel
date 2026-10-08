@@ -3,7 +3,7 @@
 Plano para aproveitar a sua lista de sites, playlists e dicionários no app. A ideia não é virar uma pasta de favoritos. Cada material deve aparecer **na hora em que serve**: quando você lê um livro, erra no quiz ou anota uma palavra.
 
 > **Status:**
-> - **Etapa 1 feita:** aba Materiais com 21 materiais grátis (`src/data/recursos-en.json`), filtro de nível que começa no nível do mapa, filtro por habilidade e por status, nota de 1 a 5 e anotação em cada material, salvos no backup.
+> - **Etapa 1 feita:** aba Materiais com 45 materiais grátis (os 21 da sua lista e mais 24 sugeridos depois, ver o passo 14) (`src/data/recursos-en.json`), filtro de nível que começa no nível do mapa, filtro por habilidade e por status, nota de 1 a 5 e anotação em cada material, salvos no backup.
 > - **Ficaram de fora ao conferir os links:** Jogos para Aprender Inglês (o endereço redireciona para propaganda), 5 Minute English (site fora do ar), Cursodeingles.online (o domínio não existe mais) e o curso do IFRS (Moodle, precisa de matrícula).
 > - **Entraram a mais:** os 100 textos para iniciantes do Aulas de Inglês Grátis, ao lado dos 110 avançados.
 >
@@ -224,3 +224,22 @@ Tudo entra no backup que já existe.
 - **Aba:** separada, chamada **Materiais**, reunindo todas as funcionalidades deste plano.
 - **Custo:** só materiais grátis; EnglishCentral, FluentU, Gymglish e TakeLessons ficam de fora.
 - **Playlists:** só redirecionamento para o YouTube, sem API; o app guarda em que aula você parou.
+
+---
+
+## 14. Mais materiais e ideias de integração
+
+Os 24 materiais sugeridos depois da primeira lista já estão na aba Materiais, com duas habilidades novas: **Pronúncia** e **Escrita**. Alguns deles podem ir além de um link:
+
+| Material | Ideia | Onde |
+|---|---|---|
+| YouGlish | Botão "Ouvir em vídeos" em cada palavra (`youglish.com/pronounce/<palavra>/english`) | Vocabulário e Revisões, junto com o Cambridge (etapa 2) |
+| Forvo | Botão de pronúncia nativa por palavra | Mesmo lugar, como segunda opção |
+| VOA Learning English | Virar uma **base na Estante**: o conteúdo é de domínio público, então os textos e o áudio podem vir para dentro do app, com nível | Estante |
+| ER Central | Candidata a **base na Estante** (graded readers com áudio e headwords). Antes, conferir se as regras de uso permitem listar o catálogo | Estante |
+| LanguageTool | Botão "Corrigir" no resumo do livro, pela API grátis, sem precisar de IA | Estudar |
+| Write & Improve | Link "Receber nota CEFR" ao lado do resumo | Estudar |
+| EF SET | Teste principal do card "Meu nível" | Materiais, etapa 7 |
+| Oxford 3000/5000 e English Vocabulary Profile | Mostrar o nível CEFR das palavras do caderno e montar os pacotes por nível. As listas não podem ser copiadas; usar só como link ou conferir a licença | Vocabulário e etapa 6 |
+| Rachel's English, English with Lucy, Easy British English | Mesmo formato das playlists (abrir no YouTube e "onde parei") | Materiais, etapa 3 |
+

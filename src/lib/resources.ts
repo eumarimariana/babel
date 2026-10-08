@@ -2,7 +2,7 @@ import type { Lang } from "@/lib/books";
 import enResources from "@/data/recursos-en.json";
 
 /** Free study sites, playlists and dictionaries. Only links: the content stays on each site. */
-export type ResourceKind = "grammar" | "vocab" | "listening" | "reading" | "games" | "course" | "test" | "dictionary" | "video" | "tips";
+export type ResourceKind = "grammar" | "vocab" | "listening" | "reading" | "games" | "course" | "test" | "dictionary" | "video" | "pronunciation" | "writing" | "tips";
 export type Resource = {
   id: string;
   name: string;
@@ -22,6 +22,8 @@ export const RESOURCE_KINDS: { value: ResourceKind; label: string }[] = [
   { value: "vocab", label: "Vocabulário" },
   { value: "listening", label: "Escuta" },
   { value: "reading", label: "Leitura" },
+  { value: "pronunciation", label: "Pronúncia" },
+  { value: "writing", label: "Escrita" },
   { value: "video", label: "Vídeos" },
   { value: "games", label: "Jogos" },
   { value: "course", label: "Cursos" },

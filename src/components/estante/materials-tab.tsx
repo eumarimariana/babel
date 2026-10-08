@@ -13,7 +13,9 @@ import {
   HeadphonesIcon,
   LightbulbIcon,
   NotePencilIcon,
+  PenNibIcon,
   PlayCircleIcon,
+  SpeakerHighIcon,
   StarIcon,
   TextAaIcon,
 } from "@phosphor-icons/react";
@@ -28,6 +30,8 @@ const KIND_ICON: Record<ResourceKind, typeof CompassIcon> = {
   vocab: NotePencilIcon,
   listening: HeadphonesIcon,
   reading: ArticleIcon,
+  pronunciation: SpeakerHighIcon,
+  writing: PenNibIcon,
   video: PlayCircleIcon,
   games: GameControllerIcon,
   course: ChalkboardTeacherIcon,
@@ -80,7 +84,7 @@ export function MaterialsTab({ level }: { level?: string }) {
           <Header />
           <dl className="flex gap-6">
             {[
-              { label: "no nível", value: atLevel.length },
+              { label: shownLevel === "all" ? "materiais" : "no nível", value: atLevel.length },
               { label: "usando", value: count("doing") },
               { label: "feitos", value: count("done") },
             ].map((x) => (
