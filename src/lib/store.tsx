@@ -1,10 +1,12 @@
 "use client";
 
+import type { Lang } from "@/lib/books";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 export type Status = "want" | "reading" | "done";
 export type Word = {
   id: string;
+  ln?: Lang; // language of the word; old words are English
   w: string;
   pt: string;
   en: string;
@@ -18,6 +20,7 @@ export type Word = {
 };
 export type Quote = {
   id: string;
+  ln?: Lang; // language of the passage; old quotes are English
   text: string; // the passage, in the language being studied
   pt: string; // translation
   book: number | null;
@@ -99,7 +102,7 @@ type Ctx = {
   deleteWord: (id: string) => void;
   saveKit: (bookId: number, kit: Kit) => void;
   saveEssay: (bookId: number, text: string) => void;
-  addQuote: (q: Pick<Quote, "text" | "pt" | "book" | "page" | "note">) => void;
+  addQuote: (q: Pick<Quote, "text" | "pt" | "book" | "page" | "note"> & { ln?: Lang }) => void;
   updateQuote: (id: string, patch: Partial<Pick<Quote, "text" | "pt" | "page" | "note">>) => void;
   deleteQuote: (id: string) => void;
   markDay: () => void;
@@ -153,10 +156,13 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
   const addWord = useCallback(
     (w: Partial<Word> & { w: string }) => {
       const text = w.w.trim();
-      if (!text || data.words.some((x) => x.w.toLowerCase() === text.toLowerCase())) return false;
+      const ln = w.ln ?? "en";
+      const same = (x: Word) => (x.ln ?? "en") === ln && x.w.toLowerCase() === text.toLowerCase();
+      if (!text || data.words.some(same)) return false;
       const word: Word = {
         id: "w" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         w: text,
+        ln: w.ln ?? "en",
         pt: w.pt ?? "",
         en: w.en ?? "",
         ex: w.ex ?? "",
@@ -167,7 +173,7 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
         created: new Date().toISOString(),
         reps: 0,
       };
-      setData((d) => (d.words.some((x) => x.w.toLowerCase() === text.toLowerCase()) ? d : withDay({ ...d, words: [...d.words, word] })));
+      setData((d) => (d.words.some(same) ? d : withDay({ ...d, words: [...d.words, word] })));
       return true;
     },
     [data.words],
@@ -191,12 +197,12 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
   const deleteWord = useCallback((id: string) => setData((d) => ({ ...d, words: d.words.filter((w) => w.id !== id) })), []);
   const saveKit = useCallback((bookId: number, kit: Kit) => setData((d) => withDay({ ...d, kits: { ...d.kits, [bookId]: kit } })), []);
   const addQuote = useCallback(
-    (q: Pick<Quote, "text" | "pt" | "book" | "page" | "note">) =>
+    (q: Pick<Quote, "text" | "pt" | "book" | "page" | "note"> & { ln?: Lang }) =>
       setData((d) =>
         withDay({
           ...d,
           quotes: [
-            { id: "q" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text: q.text.trim(), pt: q.pt.trim(), book: q.book, page: q.page.trim(), note: q.note.trim(), created: new Date().toISOString() },
+            { id: "q" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ln: q.ln ?? "en", text: q.text.trim(), pt: q.pt.trim(), book: q.book, page: q.page.trim(), note: q.note.trim(), created: new Date().toISOString() },
             ...d.quotes,
           ],
         }),

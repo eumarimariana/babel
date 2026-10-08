@@ -2,10 +2,16 @@
 
 Plano para levar o Babel além do inglês (francês, alemão e espanhol), ampliar a estante de inglês com outras editoras e fontes gratuitas, e organizar tudo em **perfis por idioma** com **escolha da base de livros**.
 
-> **Status:** a maior parte ainda é planejamento. **Já implementado** (inglês):
-> - **Segunda base de livros na Estante:** "Clássicos grátis", com 38 originais em domínio público do Project Gutenberg (capas, leitura online e EPUB), agrupados por nível aproximado (B1, B2, C1). A troca de base fica no topo da Estante (seção 6, ainda sem perfis).
-> - **"Onde ler e ouvir"** em cada livro: áudio MP3 e amostra no site da ELi, original grátis no Gutenberg, audiolivro na LibriVox, EPUB, Estante Virtual, Amazon (pelo ISBN), bibliotecas pelo WorldCat e Open Library (seção 3).
-> - **ISBN de todos os 177 livros da ELi** guardado no catálogo, e vínculo de cada adaptação da ELi com o original no Gutenberg quando ele existe.
+> **Status — já implementado:**
+> - **Perfil por idioma (versão simples):** seletor EN · FR · DE · ES no menu. Estante, caderno, citações, revisões, mapa, voz e pedidos da IA seguem o idioma escolhido, que fica salvo no navegador. Palavras e citações antigas contam como inglês.
+> - **Bases grátis por idioma:**
+>   - Inglês: ELi Readers (177), Histórias grátis (StoryWeaver, 80, graded 1–4), Readers grátis (McGuffey e outros, 12), Clássicos grátis (Gutenberg, 38).
+>   - Francês: Histoires gratuites (StoryWeaver, 80), Readers grátis (9), Clássicos grátis (10).
+>   - Alemão: Geschichten gratis (StoryWeaver, 69), Readers grátis (6), Clássicos grátis (9).
+>   - Espanhol: Historias gratis (StoryWeaver, 80), Readers grátis (14), Clássicos grátis (8).
+> - **"Onde ler e ouvir"** em cada livro: áudio e amostra da ELi, original grátis no Gutenberg (75 livros da ELi ligados), LibriVox, EPUB, StoryWeaver, Estante Virtual, Amazon pelo ISBN, WorldCat e Open Library.
+>
+> **Ainda não:** séries pagas (Oxford, Penguin, Hachette, Klett, Edinumen…), porque não há fonte de dados confiável para elas; precisam de uma lista feita à mão com ISBN. Também falta separar backup e IA preferida por perfil.
 >
 > As séries e os sites listados abaixo foram reunidos de memória. Antes de usar qualquer um, confira o catálogo atual, os níveis e as regras de uso de cada editora.
 

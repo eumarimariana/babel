@@ -94,7 +94,7 @@ export function Journey({ stages }: JourneyProps) {
           ].map(([x, y], i) => (
             <path key={i} d={`M ${x} ${y} q 6 -6 12 0 t 12 0 M ${x + 6} ${y + 9} q 6 -6 12 0 t 12 0`} stroke={ROUTE} strokeWidth={1.5} fill="none" />
           ))}
-          <g transform="translate(1150 340)">
+          <g transform="translate(60 62)">
             <circle r={24} fill="none" stroke={ROUTE} strokeWidth={1.5} />
             <path d="M 0 -30 L 6 0 L 0 30 L -6 0 Z" fill={INK} />
             <path d="M -30 0 L 0 -5 L 30 0 L 0 5 Z" fill={ROUTE} />

@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 export const WordInfoSchema = z.object({
-  pos: z.string().describe("part of speech in English, e.g. adjective, phrasal verb"),
+  pos: z.string().describe("part of speech, e.g. adjective, phrasal verb, substantivo feminino"),
   pt: z.string().describe("short Brazilian Portuguese translation, 1-4 words, up to 2 options"),
-  en: z.string().describe("simple English definition"),
+  en: z.string().describe("simple definition written in the language being studied"),
   ex: z.string().describe("one natural example sentence using the word"),
 });
 

@@ -7,17 +7,16 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { AFTER_READING_QUESTIONS, BASE_INFO, BOOKS, BOOK_BY_ID, type Book, FREE_BOOKS, GRAMMAR_BY_LEVEL, STORY_BOOKS, baseOf, bookUrl, describeBook } from "@/lib/books";
+import { BASE_INFO, BOOKS, BOOK_BY_ID, type Book, baseOf, bookUrl, describeBook, grammarFor, kindOf, langInfo, langOf, questionsFor } from "@/lib/books";
 import { today, useEstante } from "@/lib/store";
 import { correctText, makeKit } from "@/lib/ai-client";
-import { BookCover, SimpleSelect, StatusPicker, copyText } from "./common";
+import { BookCover, SimpleSelect, StatusPicker, copyText, useBookOptions } from "./common";
 import { WordCard } from "./vocab-tab";
-
-const BOOK_OPTIONS = [...BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` })), ...FREE_BOOKS.map((b) => ({ value: String(b.id), label: `Clássico · ${b.t} (${b.lv})` })), ...STORY_BOOKS.map((b) => ({ value: String(b.id), label: `História · ${b.t} (${b.lv})` }))];
 
 export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; bookId: number; onBookChange: (id: number) => void }) {
   const book = BOOK_BY_ID.get(bookId) ?? BOOKS[0];
   const { status, setStatus } = useEstante();
+  const BOOK_OPTIONS = useBookOptions(false);
   return (
     <div className="grid gap-5">
       {/* book header, graphite like the dashboard's highlight card */}
@@ -40,7 +39,7 @@ export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; boo
             <h2 className="font-display text-3xl leading-tight sm:text-4xl">{book.t}</h2>
             <div className="flex flex-wrap items-center gap-2 text-xs tabular">
               <span className="rounded-full bg-sand px-3 py-1 font-bold text-sand-foreground">{book.lv}</span>
-              <span className="rounded-full border border-ink-border px-3 py-1">{book.hw ? `${book.hw} headwords` : baseOf(book) === "storyweaver" ? "história ilustrada" : "original, sem adaptação"}</span>
+              <span className="rounded-full border border-ink-border px-3 py-1">{book.hw ? `${book.hw} headwords` : kindOf(book) === "storyweaver" ? "história ilustrada" : "original, sem adaptação"}</span>
               <span className="rounded-full border border-ink-border px-3 py-1">{book.cat}</span>
             </div>
           </div>
@@ -119,7 +118,7 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
   const kit = data.kits[book.id];
   const [busy, setBusy] = useState(false);
   const ctl = useRef<AbortController | null>(null);
-  const has = (w: string) => data.words.some((x) => x.w.toLowerCase() === w.toLowerCase());
+  const has = (w: string) => data.words.some((x) => (x.ln ?? "en") === langOf(book) && x.w.toLowerCase() === w.toLowerCase());
 
   useEffect(() => () => ctl.current?.abort(), []);
 
@@ -137,7 +136,7 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
     }
   }
 
-  const prompt = `Sou brasileiro e vou ler ${describeBook(book)}. Resumo: ${book.s}\nMe dê 12 palavras/expressões em inglês que provavelmente aparecem no livro e são úteis para o meu nível, cada uma com classe gramatical, tradução, definição simples em inglês e uma frase de exemplo ligada à história. Depois, 3 pontos de gramática típicos do ${book.lv} com explicação curta em português.`;
+  const prompt = `Sou brasileiro e vou ler ${describeBook(book)}. Resumo: ${book.s}\nMe dê 12 palavras/expressões em ${langInfo(langOf(book)).name.toLowerCase()} que provavelmente aparecem no livro e são úteis para o meu nível, cada uma com classe gramatical, tradução, definição simples em ${langInfo(langOf(book)).name.toLowerCase()} e uma frase de exemplo ligada à história. Depois, 3 pontos de gramática típicos do ${book.lv} com explicação curta em português.`;
 
   return (
     <Step eyebrow="Antes de ler" title="Kit de pré-leitura" desc="Palavras-chave que devem aparecer no livro, a gramática do nível e perguntas para o fim.">
@@ -163,7 +162,7 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
             variant="ghost"
             onClick={() => {
               let n = 0;
-              for (const w of kit.words) if (addWord({ ...w, book: book.id })) n++;
+              for (const w of kit.words) if (addWord({ ...w, ln: langOf(book), book: book.id })) n++;
               toast.success(n ? `${n} palavras adicionadas ao caderno.` : "Todas já estavam no caderno.");
             }}
           >
@@ -180,7 +179,7 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
                 key={w.w}
                 word={w}
                 action={
-                  <Button size="sm" variant="outline" className="mt-1 justify-self-start" disabled={has(w.w)} onClick={() => addWord({ ...w, book: book.id })}>
+                  <Button size="sm" variant="outline" className="mt-1 justify-self-start" disabled={has(w.w)} onClick={() => addWord({ ...w, ln: langOf(book), book: book.id })}>
                     {has(w.w) ? <CheckIcon data-icon="inline-start" /> : <PlusIcon data-icon="inline-start" />}
                     {has(w.w) ? "No caderno" : "Adicionar"}
                   </Button>
@@ -204,7 +203,7 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
       ) : (
         <div className="grid gap-2">
           <h3 className="font-display text-base">O que observar no {book.lv}</h3>
-          {(GRAMMAR_BY_LEVEL[book.lv] ?? []).map((g, i) => (
+          {grammarFor(langOf(book), book.lv).map((g, i) => (
             <ListRow key={g} n={i + 1} title={g} />
           ))}
         </div>
@@ -240,7 +239,7 @@ function AfterReading({ book, aiName }: { book: Book; aiName: string }) {
   const [busy, setBusy] = useState(false);
   const ctl = useRef<AbortController | null>(null);
   const kitQs = data.kits[book.id]?.questions;
-  const questions = kitQs?.length ? kitQs : AFTER_READING_QUESTIONS;
+  const questions = kitQs?.length ? kitQs : questionsFor(langOf(book));
   const count = (text.trim().match(/\S+/g) ?? []).length;
 
   useEffect(() => {
@@ -267,10 +266,10 @@ function AfterReading({ book, aiName }: { book: Book; aiName: string }) {
     }
   }
 
-  const prompt = `Sou brasileiro, estudo inglês e acabei de ler ${describeBook(book)}. Corrija meu texto abaixo. Responda em português com: 1) versão corrigida mudando o mínimo; 2) cada erro no formato "errado → certo: explicação"; 3) 2 sugestões para soar mais natural; 4) 3 palavras novas úteis com tradução; 5) nota de 0 a 10.\n\n"""${text.trim()}"""`;
+  const prompt = `Sou brasileiro, estudo ${langInfo(langOf(book)).name.toLowerCase()} e acabei de ler ${describeBook(book)}. Corrija meu texto abaixo. Responda em português com: 1) versão corrigida mudando o mínimo; 2) cada erro no formato "errado → certo: explicação"; 3) 2 sugestões para soar mais natural; 4) 3 palavras novas úteis com tradução; 5) nota de 0 a 10.\n\n"""${text.trim()}"""`;
 
   return (
-    <Step eyebrow="Depois de ler" title="Responda e escreva um resumo em inglês" desc="Use as perguntas como roteiro e escreva de 4 a 8 frases. O texto fica salvo.">
+    <Step eyebrow="Depois de ler" title={`Responda e escreva um resumo em ${langInfo(langOf(book)).name.toLowerCase()}`} desc="Use as perguntas como roteiro e escreva de 4 a 8 frases. O texto fica salvo.">
       <Questions items={questions} />
       <Textarea id={`essay-${book.id}`} value={text} onChange={(e) => setText(e.target.value)} rows={7} placeholder="The story is about…" className="rounded-2xl bg-background p-4 leading-relaxed" />
       <div className="flex flex-wrap items-center gap-2">

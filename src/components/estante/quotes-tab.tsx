@@ -8,17 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { BOOKS, BOOK_BY_ID, FREE_BOOKS, STORY_BOOKS } from "@/lib/books";
+import { BOOK_BY_ID } from "@/lib/books";
 import { brDate, useEstante, type Quote } from "@/lib/store";
 import { translateQuote } from "@/lib/ai-client";
 import { quotePrompt } from "@/lib/ai/prompts";
 import { cn } from "@/lib/utils";
-import { BookCover, SimpleSelect, SpeakButton, copyText } from "./common";
-
-const BOOK_OPTIONS = [{ value: "none", label: "Nenhum livro" }, ...BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` })), ...FREE_BOOKS.map((b) => ({ value: String(b.id), label: `Clássico · ${b.t} (${b.lv})` })), ...STORY_BOOKS.map((b) => ({ value: String(b.id), label: `História · ${b.t} (${b.lv})` }))];
+import { BookCover, SimpleSelect, SpeakButton, copyText, useBookOptions, useLang } from "./common";
 
 export function QuotesTab({ aiName, bookId, onBookChange, onOpenBook }: { aiName: string; bookId: string; onBookChange: (v: string) => void; onOpenBook: (id: number) => void }) {
-  const { data, addQuote, updateQuote, deleteQuote } = useEstante();
+  const { data: all, addQuote, updateQuote, deleteQuote } = useEstante();
+  const lang = useLang();
+  const BOOK_OPTIONS = useBookOptions(true);
+  // only the quotes of the language being studied
+  const langQuotes = useMemo(() => all.quotes.filter((x) => (x.ln ?? "en") === lang), [all.quotes, lang]);
+  const data = { ...all, quotes: langQuotes };
   const [form, setForm] = useState({ text: "", pt: "", page: "", note: "" });
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
@@ -46,20 +49,20 @@ export function QuotesTab({ aiName, bookId, onBookChange, onOpenBook }: { aiName
   function save(e: React.FormEvent) {
     e.preventDefault();
     if (!form.text.trim()) return;
-    addQuote({ ...form, book: book?.id ?? null });
+    addQuote({ ...form, ln: lang, book: book?.id ?? null });
     toast.success("Citação salva.");
     setForm({ text: "", pt: "", page: "", note: "" });
     document.getElementById("q-text")?.focus();
   }
 
-  const booksWithQuotes = useMemo(() => [...new Set(data.quotes.map((x) => x.book).filter((x): x is number => x != null))], [data.quotes]);
+  const booksWithQuotes = useMemo(() => [...new Set(langQuotes.map((x) => x.book).filter((x): x is number => x != null))], [langQuotes]);
   const quotes = useMemo(() => {
     const query = q.trim().toLowerCase();
-    return data.quotes.filter((x) => {
+    return langQuotes.filter((x) => {
       if (filter !== "all" && String(x.book) !== filter) return false;
       return !query || `${x.text} ${x.pt} ${x.note}`.toLowerCase().includes(query);
     });
-  }, [data.quotes, q, filter]);
+  }, [langQuotes, q, filter]);
 
   const field = "border-ink-border bg-white/5 text-ink-foreground placeholder:text-ink-muted focus-visible:border-sand focus-visible:ring-sand/30 dark:bg-white/5";
   const stats = [

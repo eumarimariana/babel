@@ -1,0 +1,110 @@
+[
+ {
+  "id": 1024571,
+  "pg": 24571,
+  "t": "Der Struwwelpeter",
+  "a": "Heinrich Hoffmann",
+  "lv": "A2",
+  "cat": "Infantil",
+  "s": "\"Der Struwwelpeter\" by Heinrich Hoffmann is a German children's book written and illustrated in 1845. This collection of ten illustrated and rhymed stories presents cautionary tales about children whose misbehavior leads to disastrous consequences. Each story delivers a clear moral lesson through exaggerated scenarios, from a boy who refuses to groom himself to children who ignore warnings with shocking results.…",
+  "cover": "https://www.gutenberg.org/cache/epub/24571/pg24571.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/ebooks/24571.html.images",
+  "epub": "https://www.gutenberg.org/ebooks/24571.epub3.images"
+ },
+ {
+  "id": 1020050,
+  "pg": 20050,
+  "t": "Märchen der Gebrüder Grimm 1",
+  "a": "Jacob Grimm, Wilhelm Grimm",
+  "lv": "B1",
+  "cat": "Contos de fadas",
+  "s": "",
+  "cover": "https://www.gutenberg.org/cache/epub/20050/pg20050.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/files/20050/20050-index.html",
+  "epub": null
+ },
+ {
+  "id": 1020051,
+  "pg": 20051,
+  "t": "Märchen der Gebrüder Grimm 2",
+  "a": "Jacob Grimm, Wilhelm Grimm",
+  "lv": "B1",
+  "cat": "Contos de fadas",
+  "s": "",
+  "cover": "https://www.gutenberg.org/cache/epub/20051/pg20051.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/files/20051/20051-index.html",
+  "epub": null
+ },
+ {
+  "id": 1019636,
+  "pg": 19636,
+  "t": "Bildergeschichten",
+  "a": "Wilhelm Busch",
+  "lv": "B1",
+  "cat": "Humor",
+  "s": "",
+  "cover": "https://www.gutenberg.org/cache/epub/19636/pg19636.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/files/19636/19636-index.html",
+  "epub": null
+ },
+ {
+  "id": 1022367,
+  "pg": 22367,
+  "t": "Die Verwandlung",
+  "a": "Franz Kafka",
+  "lv": "B2",
+  "cat": "Novela",
+  "s": "\"Die Verwandlung\" by Franz Kafka is a novella written in 1912. The story follows Gregor Samsa, who wakes one morning to find himself transformed into a giant insect. Unable to work and communicate, he becomes increasingly isolated from his family, who must now support themselves financially. As Gregor adapts to his new form, his relationships deteriorate and his family grows resentful of his presence. The narrative…",
+  "cover": "https://www.gutenberg.org/cache/epub/22367/pg22367.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/ebooks/22367.html.images",
+  "epub": "https://www.gutenberg.org/ebooks/22367.epub3.images"
+ },
+ {
+  "id": 1021798,
+  "pg": 21798,
+  "t": "Winnetou I",
+  "a": "Karl May",
+  "lv": "B2",
+  "cat": "Aventura",
+  "s": "",
+  "cover": "https://www.gutenberg.org/cache/epub/21798/pg21798.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/files/21798/21798-index.html",
+  "epub": null
+ },
+ {
+  "id": 1035312,
+  "pg": 35312,
+  "t": "Aus dem Leben eines Taugenichts: Novelle",
+  "a": "Joseph, Freiherr von Eichendorff",
+  "lv": "C1",
+  "cat": "Novela",
+  "s": "\"Aus dem Leben eines Taugenichts: Novelle\" by Freiherr von Joseph Eichendorff is a novella completed in 1822/23 and first published in 1826. A miller's son, dismissed as a good-for-nothing, sets out into the world with only his violin. He falls in love with a beautiful lady at a Viennese castle, becomes a toll collector, then abandons everything when she seems unattainable. His wandering journey takes him through…",
+  "cover": "https://www.gutenberg.org/cache/epub/35312/pg35312.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/ebooks/35312.html.images",
+  "epub": "https://www.gutenberg.org/ebooks/35312.epub3.images"
+ },
+ {
+  "id": 1002229,
+  "pg": 2229,
+  "t": "Faust: Der Tragödie erster Teil",
+  "a": "Johann Wolfgang von Goethe",
+  "lv": "C1",
+  "cat": "Teatro",
+  "s": "\"Faust: Der Tragödie erster Teil\" by Johann Wolfgang von Goethe is a tragedy published in 1808. The renowned scholar Dr. Heinrich Faust, disillusioned with knowledge and unable to enjoy life, makes a wager with the devil Mephistopheles. Transformed into a young man, Faust embarks on a journey that leads to a passionate affair with the innocent Margarete, called Gretchen. Their relationship spirals into tragedy,…",
+  "cover": "https://www.gutenberg.org/cache/epub/2229/pg2229.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/ebooks/2229.html.images",
+  "epub": "https://www.gutenberg.org/ebooks/2229.epub3.images"
+ },
+ {
+  "id": 1034811,
+  "pg": 34811,
+  "t": "Buddenbrooks: Verfall einer Familie",
+  "a": "Thomas Mann",
+  "lv": "C1",
+  "cat": "Romance",
+  "s": "\"Buddenbrooks: Verfall einer Familie\" by Thomas Mann is a novel published in 1901. It chronicles the gradual decline of a wealthy north German merchant family across four generations, from 1835 to 1877. Drawing from Mann's own family history in Lübeck, the story explores conflicts between business duty and personal happiness as the Buddenbrooks face financial reverses and changing values during Germany's…",
+  "cover": "https://www.gutenberg.org/cache/epub/34811/pg34811.cover.medium.jpg",
+  "read": "https://www.gutenberg.org/ebooks/34811.html.images",
+  "epub": "https://www.gutenberg.org/ebooks/34811.epub3.images"
+ }
+]

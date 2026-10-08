@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { ArrowSquareOutIcon, BankIcon, BookOpenTextIcon, BookmarkSimpleIcon, CaretLeftIcon, CaretRightIcon, DownloadSimpleIcon, GraduationCapIcon, HeadphonesIcon, NotePencilIcon, QuotesIcon, StorefrontIcon } from "@phosphor-icons/react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
-import { BASE_INFO, BOOK_BY_ID, type Book, baseBooks, baseOf, bookLinks, bookNumber, bookUrl, isFree } from "@/lib/books";
+import { BASE_INFO, BOOK_BY_ID, type Book, baseBooks, baseOf, bookLinks, bookNumber, bookUrl, isFree, kindOf } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { BookCover, StatusPicker, useMediaQuery } from "./common";
@@ -113,7 +113,7 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
             {b.hw ? (
               <span className="rounded-full border border-ink-border px-3 py-1 text-xs tabular">{b.hw} headwords</span>
             ) : (
-              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{base === "storyweaver" ? "história ilustrada, grátis" : "texto original, sem adaptação"}</span>
+              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{kindOf(b) === "storyweaver" ? "história ilustrada, grátis" : BASE_INFO[base].graded ? "livro de leitura graduado" : "texto original, sem adaptação"}</span>
             )}
             {p?.st === "done" && <span className="rounded-full border border-ink-border px-3 py-1 text-xs">lido em {brDate(p.d)}</span>}
           </div>
@@ -199,7 +199,6 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onGo, wide, split =
 /** "Where to read and listen": official pages, free originals, audiobooks, shops and libraries. Links only. */
 function WhereToRead({ b, links }: { b: Book; links: ReturnType<typeof bookLinks> }) {
   const free = isFree(b);
-  const base = baseOf(b);
   const groups: { title: string; items: { href: string | null | undefined; icon: React.ReactNode; label: string; sub: string }[] }[] = [
     {
       title: "Ouvir",
@@ -213,7 +212,7 @@ function WhereToRead({ b, links }: { b: Book; links: ReturnType<typeof bookLinks
       title: "Ler",
       items: [
         { href: links.eliSample, icon: <BookOpenTextIcon weight="bold" />, label: "Amostra no site da ELi", sub: "algumas páginas, online" },
-        { href: base === "storyweaver" ? b.read : null, icon: <BookOpenTextIcon weight="bold" />, label: "Ler no StoryWeaver", sub: "grátis, ilustrado, licença aberta" },
+        { href: kindOf(b) === "storyweaver" ? b.read : null, icon: <BookOpenTextIcon weight="bold" />, label: "Ler no StoryWeaver", sub: "grátis, ilustrado, licença aberta" },
         { href: free ? null : links.original, icon: <BookOpenTextIcon weight="bold" />, label: "Original grátis no Gutenberg", sub: "texto completo, sem adaptação" },
         { href: free ? b.epub : null, icon: <DownloadSimpleIcon weight="bold" />, label: "Baixar EPUB", sub: "para Kindle, Kobo ou o app de livros" },
       ],

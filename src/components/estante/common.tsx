@@ -1,13 +1,13 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { BookOpenIcon, BookmarkSimpleIcon, CheckIcon, CircleIcon, SpeakerHighIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { coverUrl, levelColor, type Book } from "@/lib/books";
+import { basesFor, coverUrl, langInfo, levelColor, type Book, type Lang } from "@/lib/books";
 import type { Status } from "@/lib/store";
 
 export type Option = { value: string; label: string };
@@ -80,10 +80,26 @@ export function StatusSelect({ value, onChange, title }: { value: Status | ""; o
   );
 }
 
-export function speak(text: string) {
+/** The language being studied (the active profile). */
+export const LangContext = createContext<Lang>("en");
+export const useLang = () => useContext(LangContext);
+
+/** Book picker options for the language being studied, grouped by base. */
+export function useBookOptions(withNone: boolean): Option[] {
+  const lang = useLang();
+  return useMemo(() => {
+    const opts = basesFor(lang).flatMap((d) => d.books.map((b, i) => ({ value: String(b.id), label: `${d.id === "eli" ? `${i + 1}.` : `${d.name} ·`} ${b.t} (${b.lv})` })));
+    return withNone ? [{ value: "none", label: "Nenhum livro" }, ...opts] : opts;
+  }, [lang, withNone]);
+}
+
+export function speak(text: string, lang: Lang = "en") {
   try {
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-GB";
+    u.lang = langInfo(lang).voice;
+    // pick an installed voice for that language when there is one
+    const voice = speechSynthesis.getVoices().find((v) => v.lang.replace("_", "-").startsWith(u.lang.slice(0, 2)));
+    if (voice) u.voice = voice;
     u.rate = 0.9;
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
@@ -92,9 +108,10 @@ export function speak(text: string) {
   }
 }
 
-export function SpeakButton({ text }: { text: string }) {
+export function SpeakButton({ text, lang }: { text: string; lang?: Lang }) {
+  const current = useLang();
   return (
-    <Button variant="ghost" size="icon-sm" aria-label={`Ouvir ${text}`} onClick={(e) => (e.stopPropagation(), speak(text))}>
+    <Button variant="ghost" size="icon-sm" aria-label={`Ouvir ${text}`} onClick={(e) => (e.stopPropagation(), speak(text, lang ?? current))}>
       <SpeakerHighIcon />
     </Button>
   );

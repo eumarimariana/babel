@@ -6,12 +6,19 @@ import { Input } from "@/components/ui/input";
 import { BOOK_BY_ID } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { Segmented, SpeakButton } from "./common";
+import { langInfo } from "@/lib/books";
+import { Segmented, SpeakButton, useLang } from "./common";
 
 type Mode = "en" | "pt";
 
 export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
-  const { data, due, gradeWord } = useEstante();
+  const { data: all, due: allDue, gradeWord } = useEstante();
+  const lang = useLang();
+  const name = langInfo(lang).name.toLowerCase();
+  // reviews only cover the language being studied
+  const words = all.words.filter((w) => (w.ln ?? "en") === lang);
+  const due = allDue.filter((w) => (w.ln ?? "en") === lang);
+  const data = { ...all, words };
   const [mode, setMode] = useState<Mode>("en");
   const [queue, setQueue] = useState<string[]>(() => shuffleIds(due.map((w) => w.id)));
   const [total, setTotal] = useState(queue.length);
@@ -20,7 +27,7 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
   const [doneCount, setDoneCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const current = useMemo(() => data.words.find((w) => w.id === queue[0]), [data.words, queue]);
+  const current = useMemo(() => all.words.find((w) => w.id === queue[0]), [all.words, queue]);
 
   function grade(g: 0 | 1 | 2) {
     if (!current) return;
@@ -105,8 +112,8 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
           value={mode}
           onChange={(v) => (setMode(v), setShown(false))}
           options={[
-            { value: "en", label: "Inglês → PT" },
-            { value: "pt", label: "PT → inglês" },
+            { value: "en", label: `${langInfo(lang).name} → PT` },
+            { value: "pt", label: `PT → ${name}` },
           ]}
         />
         <div className="flex min-w-[10rem] flex-1 items-center gap-3 sm:max-w-xs">
@@ -123,7 +130,7 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
         <div className={cn("relative min-h-[22rem] transition-transform duration-500 [transform-style:preserve-3d]", shown && mode === "en" && "[transform:rotateY(180deg)]")}>
           {/* front: graphite */}
           <div className="absolute inset-0 grid content-center justify-items-center gap-4 rounded-[2rem] bg-ink p-6 text-center text-ink-foreground [backface-visibility:hidden]">
-            <p className="text-xs text-ink-muted tabular">{mode === "en" ? (book?.t ?? "Caderno") : "Como se diz em inglês?"}</p>
+            <p className="text-xs text-ink-muted tabular">{mode === "en" ? (book?.t ?? "Caderno") : `Como se diz em ${name}?`}</p>
             {mode === "en" ? (
               <>
                 <p className="text-5xl leading-none font-bold tracking-tight sm:text-6xl">{current.w}</p>
@@ -155,7 +162,7 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
                       id="typed"
                       value={typed}
                       onChange={(e) => setTyped(e.target.value)}
-                      placeholder="digite em inglês"
+                      placeholder={`digite em ${name}`}
                       aria-label="Sua resposta"
                       autoComplete="off"
                       className="h-11 border-ink-border bg-white/5 text-ink-foreground placeholder:text-ink-muted dark:bg-white/5"

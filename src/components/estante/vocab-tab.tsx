@@ -8,16 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { BOOKS, BOOK_BY_ID, FREE_BOOKS, STORY_BOOKS } from "@/lib/books";
+import { BOOK_BY_ID, langInfo } from "@/lib/books";
 import { addDays, today, useEstante, type Word } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { explainWord } from "@/lib/ai-client";
-import { MemoryBoxes, Segmented, SimpleSelect, SpeakButton } from "./common";
-
-const BOOK_OPTIONS = [{ value: "none", label: "Nenhum livro" }, ...BOOKS.map((b, i) => ({ value: String(b.id), label: `${i + 1}. ${b.t} (${b.lv})` })), ...FREE_BOOKS.map((b) => ({ value: String(b.id), label: `Clássico · ${b.t} (${b.lv})` })), ...STORY_BOOKS.map((b) => ({ value: String(b.id), label: `História · ${b.t} (${b.lv})` }))];
+import { MemoryBoxes, Segmented, SimpleSelect, SpeakButton, useBookOptions, useLang } from "./common";
 
 export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; bookId: string; onBookChange: (v: string) => void }) {
-  const { data, addWord, deleteWord } = useEstante();
+  const { data: all, addWord, deleteWord } = useEstante();
+  const lang = useLang();
+  const BOOK_OPTIONS = useBookOptions(true);
+  // only the notebook of the language being studied
+  const langWords = useMemo(() => all.words.filter((w) => (w.ln ?? "en") === lang), [all.words, lang]);
+  const data = { ...all, words: langWords };
   const [form, setForm] = useState({ w: "", pt: "", en: "", ex: "", pos: "" });
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
@@ -41,7 +44,7 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
   function save(e: React.FormEvent) {
     e.preventDefault();
     if (!form.w.trim()) return;
-    const ok = addWord({ ...form, book: bookId === "none" ? null : Number(bookId) });
+    const ok = addWord({ ...form, ln: lang, book: bookId === "none" ? null : Number(bookId) });
     if (!ok) return toast.warning("Essa palavra já está no caderno.");
     toast.success(`“${form.w.trim()}” foi para o caderno.`);
     setForm({ w: "", pt: "", en: "", ex: "", pos: "" });
@@ -50,11 +53,11 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
 
   const words = useMemo(() => {
     const query = q.trim().toLowerCase();
-    const ws = data.words.filter((w) => !query || `${w.w} ${w.pt}`.toLowerCase().includes(query));
+    const ws = langWords.filter((w) => !query || `${w.w} ${w.pt}`.toLowerCase().includes(query));
     return ws.sort(
       sort === "az" ? (a, b) => a.w.localeCompare(b.w) : sort === "weak" ? (a, b) => a.box - b.box : (a, b) => b.created.localeCompare(a.created),
     );
-  }, [data.words, q, sort]);
+  }, [langWords, q, sort]);
 
   const t = today();
   const stats = [
@@ -91,7 +94,7 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
           <Field id="w-pt" label="Significado em português">
             <Input id="w-pt" value={form.pt} onChange={set("pt")} className={field} />
           </Field>
-          <Field id="w-en" label="Definição em inglês">
+          <Field id="w-en" label={`Definição em ${langInfo(lang).name.toLowerCase()}`}>
             <Input id="w-en" value={form.en} onChange={set("en")} className={field} />
           </Field>
           <Field id="w-ex" label="Frase de exemplo">

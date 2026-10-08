@@ -7,7 +7,8 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ALL_BOOKS, BOOKS, BOOK_BY_ID, type Base, type Book, STAGES, baseBooks } from "@/lib/books";
+import { ALL_BOOKS, BOOKS, BOOK_BY_ID, LANGS, type Base, type Book, type Lang, STAGES, baseBooks, basesFor, booksFor, cefrRank, langOf } from "@/lib/books";
+import { setStudyLang } from "@/lib/ai/prompts";
 import { EstanteProvider, useEstante } from "@/lib/store";
 import { activeProviderName, subscribeAi, useAiConfig } from "@/lib/ai-client";
 import { BooksTab } from "./books-tab";
@@ -20,7 +21,7 @@ import { CelebrationPlayer } from "./players";
 import { HomeTab } from "./home-tab";
 import { BookPanel, BookScreen } from "./book-screen";
 import { BabelLogo } from "./logo";
-import { useMediaQuery } from "./common";
+import { LangContext, useMediaQuery } from "./common";
 import { cn } from "@/lib/utils";
 
 const ICONS = { weight: "regular" as const, size: "1em" };
@@ -35,8 +36,29 @@ export function EstanteApp() {
   );
 }
 
+const LANG_KEY = "babel-lang";
+const readLang = (): Lang => {
+  try {
+    const v = localStorage.getItem(LANG_KEY);
+    return LANGS.some((l) => l.code === v) ? (v as Lang) : "en";
+  } catch {
+    return "en";
+  }
+};
+
 function Shell() {
-  const { data, ready, status, streak, due } = useEstante();
+  const { data, ready, status, streak, due: allDue } = useEstante();
+  // The language being studied works as a light profile: shelf, notebook, quotes, reviews, voice and AI follow it.
+  const [lang, setLangState] = useState<Lang>("en");
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- read the saved profile once, after hydration
+    setLangState(readLang());
+  }, []);
+  useEffect(() => setStudyLang(lang), [lang]);
+  const inLang = (x: { ln?: Lang }) => (x.ln ?? "en") === lang;
+  const words = data.words.filter(inLang);
+  const quotes = data.quotes.filter(inLang);
+  const due = allDue.filter(inLang);
   const [tab, setTab] = useState("home");
   const [openBook, setOpenBook] = useState<number | null>(null);
   const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
@@ -51,6 +73,18 @@ function Shell() {
   const prevDone = useRef<Set<string> | null>(null);
   const [query, setQuery] = useState("");
   const [base, setBase] = useState<Base>("eli");
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    setBase(basesFor(l)[0].id);
+    setStudyId(null);
+    setVocabBook("none");
+    setQuoteBook("none");
+    try {
+      localStorage.setItem(LANG_KEY, l);
+    } catch {
+      /* private mode */
+    }
+  };
   const wideXl = useMediaQuery("(min-width: 1280px)", false);
 
   // Celebrate any book that just became "done".
@@ -64,10 +98,12 @@ function Shell() {
     prevDone.current = now;
   }, [data.progress, ready]);
 
-  const done = BOOKS.filter((b) => status(b.id) === "done").length;
-  const reading = ALL_BOOKS.filter((b) => status(b.id) === "reading");
-  const nextBook = reading[0] ?? BOOKS.find((b) => status(b.id) !== "done");
-  const studyBook = studyId ?? nextBook?.id ?? BOOKS[0].id;
+  // English keeps the ELi headword ladder; other languages climb their graded bases by CEFR level.
+  const ladder = lang === "en" ? BOOKS : basesFor(lang).filter((d) => d.graded).flatMap((d) => d.books).sort((a, b) => cefrRank(a.lv) - cefrRank(b.lv));
+  const done = ladder.filter((b) => status(b.id) === "done").length;
+  const reading = ALL_BOOKS.filter((b) => status(b.id) === "reading" && langOf(b) === lang);
+  const nextBook = reading[0] ?? ladder.find((b) => status(b.id) !== "done");
+  const studyBook = studyId && BOOK_BY_ID.get(studyId) && langOf(BOOK_BY_ID.get(studyId)!) === lang ? studyId : (nextBook?.id ?? booksFor(lang)[0].id);
 
   const go = (t: string) => {
     setTab(t);
@@ -91,20 +127,26 @@ function Shell() {
   };
 
   const journey = {
-    stages: STAGES.map((s) => ({ lv: s.lv, label: s.label, total: s.ids.length, done: s.ids.filter((id) => data.progress[id]?.st === "done").length })),
+    stages:
+      lang === "en"
+        ? STAGES.map((s) => ({ lv: s.lv, label: s.label, total: s.ids.length, done: s.ids.filter((id) => data.progress[id]?.st === "done").length }))
+        : [...new Set(ladder.map((b) => b.lv))].map((lv) => {
+            const at = ladder.filter((b) => b.lv === lv);
+            return { lv, label: `${at.length} livros`, total: at.length, done: at.filter((b) => status(b.id) === "done").length };
+          }),
     done,
-    total: BOOKS.length,
-    words: data.words.length,
+    total: ladder.length,
+    words: words.length,
     streak,
   };
 
   const subtitle: Record<string, string> = {
     home: todayLong(),
-    books: base === "gutenberg" ? "clássicos completos, grátis e em domínio público" : base === "storyweaver" ? "histórias ilustradas grátis, do Pre-A1 ao B1" : `${done} de ${BOOKS.length} lidos`,
-    vocab: `${data.words.length} ${data.words.length === 1 ? "palavra" : "palavras"} no caderno`,
+    books: base === "eli" ? `${done} de ${BOOKS.length} lidos` : `${baseBooks(base).length} livros · ${baseBooks(base).filter((b) => status(b.id) === "done").length} lidos`,
+    vocab: `${words.length} ${words.length === 1 ? "palavra" : "palavras"} no caderno`,
     review: due.length ? `${due.length} para hoje` : "tudo em dia",
     study: "antes, durante e depois da leitura",
-    quotes: `${data.quotes.length} ${data.quotes.length === 1 ? "citação salva" : "citações salvas"}`,
+    quotes: `${quotes.length} ${quotes.length === 1 ? "citação salva" : "citações salvas"}`,
   };
   const search = (q: string) => {
     setQuery(q);
@@ -114,6 +156,7 @@ function Shell() {
   const panelBook = openBook ?? (base === "eli" ? (nextBook?.id ?? null) : baseBooks(base)[0].id);
 
   return (
+    <LangContext.Provider value={lang}>
     <Tabs value={tab} onValueChange={(v) => go(String(v))} className="min-h-dvh gap-0 pb-24 lg:pb-0">
       <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-5 lg:p-4">
         {/* sidebar */}
@@ -121,6 +164,8 @@ function Shell() {
           <button onClick={() => go("home")} className="px-2 pt-2" aria-label="Babel, início">
             <BabelLogo />
           </button>
+
+          <LangSwitch lang={lang} onChange={setLang} dark />
 
           <TabsList className="h-auto! w-full flex-col items-stretch gap-1 rounded-none bg-transparent p-0">
             {NAV.map((n) => (
@@ -132,7 +177,7 @@ function Shell() {
                 {tab === n.value && <motion.span layoutId="side-pill" className="absolute inset-0 -z-10 rounded-full bg-sand" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
                 <n.icon weight={tab === n.value ? "fill" : "regular"} className="size-5" />
                 {n.label}
-                <CountBadge n={n.value === "review" ? due.length : n.value === "vocab" ? data.words.length : 0} active={tab === n.value} />
+                <CountBadge n={n.value === "review" ? due.length : n.value === "vocab" ? words.length : 0} active={tab === n.value} />
               </TabsTrigger>
             ))}
           </TabsList>
@@ -178,6 +223,9 @@ function Shell() {
                 <h1 className="font-display text-3xl sm:text-4xl">{tab === "home" ? "Boa leitura hoje" : TAB_TITLE[tab]}</h1>
                 <p className="mt-1 text-xs text-muted-foreground first-letter:uppercase tabular">{subtitle[tab]}</p>
               </div>
+              <div className="w-full max-w-[16rem] lg:hidden">
+                <LangSwitch lang={lang} onChange={setLang} />
+              </div>
               <label className="relative w-full sm:w-80">
                 <span className="sr-only">Buscar livro</span>
                 <MagnifyingGlassIcon weight="bold" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -205,7 +253,7 @@ function Shell() {
                 <TabsContent value="quotes">
                   <QuotesTab aiName={aiName} bookId={quoteBook} onBookChange={setQuoteBook} onOpenBook={setOpenBook} />
                 </TabsContent>
-                <TabsContent value="review">{ready && <ReviewTab key={String(ready)} onGoVocab={() => go("vocab")} />}</TabsContent>
+                <TabsContent value="review">{ready && <ReviewTab key={`${ready}-${lang}`} onGoVocab={() => go("vocab")} />}</TabsContent>
                 <TabsContent value="study">
                   <StudyTab aiName={aiName} bookId={studyBook} onBookChange={setStudyId} />
                 </TabsContent>
@@ -274,6 +322,7 @@ function Shell() {
         </DialogContent>
       </Dialog>
     </Tabs>
+    </LangContext.Provider>
   );
 }
 
@@ -318,6 +367,33 @@ function AiCard({ name, model, onOpen }: { name: string; model: string; onOpen: 
         </span>
       </button>
       <p className="text-[11px] text-[#6b6863]">Grátis com Gemini · 1 minuto</p>
+    </div>
+  );
+}
+
+/** Which language you are studying: switches the whole app (a light "profile"). */
+function LangSwitch({ lang, onChange, dark }: { lang: Lang; onChange: (l: Lang) => void; dark?: boolean }) {
+  return (
+    <div role="radiogroup" aria-label="Idioma de estudo" className={cn("grid grid-cols-4 gap-1 rounded-full p-1", dark ? "bg-white/5" : "border border-border bg-card")}>
+      {LANGS.map((l) => {
+        const on = l.code === lang;
+        return (
+          <button
+            key={l.code}
+            role="radio"
+            aria-checked={on}
+            aria-label={l.name}
+            title={l.name}
+            onClick={() => onChange(l.code)}
+            className={cn(
+              "h-8 rounded-full text-xs font-bold tracking-wide uppercase transition-colors",
+              on ? "bg-sand text-sand-foreground" : dark ? "text-ink-muted hover:text-ink-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {l.code}
+          </button>
+        );
+      })}
     </div>
   );
 }
