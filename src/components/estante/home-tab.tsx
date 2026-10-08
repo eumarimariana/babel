@@ -25,7 +25,7 @@ type Props = {
 /** One line on where a base's levels come from. */
 const levelSource = (base: Base) => {
   const kind = BASE_INFO[base].kind;
-  return kind === "storyweaver" ? "níveis 1–4 do StoryWeaver" : kind === "gsb" ? "níveis 1–5 do Global Storybooks" : "nível estimado";
+  return kind === "storyweaver" ? "níveis 1–4 do StoryWeaver" : kind === "gsb" ? "níveis 1–5 do Global Storybooks" : kind === "bookdash" ? "leitura inicial" : "nível estimado";
 };
 
 const WEEKDAY = ["Do", "Se", "Te", "Qa", "Qi", "Sx", "Sá"];

@@ -73,6 +73,8 @@ export function BooksTab({ q, onQ, onOpen, selected, base, onBase }: { q: string
       done: all.filter((b) => status(b.id) === "done").length,
       total: all.length,
     });
+    // a base with a single level (Book Dash) reads better grouped by theme
+    if (group === "level" && info.kind === "bookdash") return CATEGORIES.map((c) => make(c, c, "", BOOKS.filter((b) => b.cat === c)));
     if (group === "level")
       return base !== "eli"
         ? levelsOf(BOOKS).map((lv) => make(lv, lv, joinNotes(BOOKS.filter((b) => b.lv === lv).map(levelNote)) + (info.kind === "gutenberg" && LEVEL_META[lv] ? ` · ${LEVEL_META[lv].gutenberg}` : ""), BOOKS.filter((b) => b.lv === lv)))
@@ -114,7 +116,7 @@ export function BooksTab({ q, onQ, onOpen, selected, base, onBase }: { q: string
 
       {/* categories, like a library app */}
       <section className="grid gap-3">
-        <h2 className="text-sm font-semibold">{info.kind === "storyweaver" ? "Editoras" : "Gêneros"}</h2>
+        <h2 className="text-sm font-semibold">{info.kind === "storyweaver" ? "Editoras" : info.kind === "bookdash" ? "Temas" : "Gêneros"}</h2>
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
           {["all", ...CATEGORIES].map((c) => (
             <button
@@ -274,7 +276,7 @@ function BookTile({ book: b, status, onOpen, index, fixed, selected }: { book: B
         <span className="truncate text-xs text-muted-foreground tabular">{b.a}</span>
         <span className="mt-1 flex items-center justify-between text-xs tabular">
           <span className="font-bold">{b.lv}</span>
-          <span className="text-muted-foreground tabular">{b.hw ? `${b.hw} hw` : kindOf(b) === "librivox" ? (b.time ?? "áudio") : kindOf(b) === "gsb" ? "com áudio" : kindOf(b) === "storyweaver" ? (b.audio ? "com áudio" : "ilustrada") : "grátis"}</span>
+          <span className="text-muted-foreground tabular">{b.hw ? `${b.hw} hw` : kindOf(b) === "librivox" ? (b.time ?? "áudio") : kindOf(b) === "gsb" ? "com áudio" : kindOf(b) === "bookdash" ? "ilustrado" : kindOf(b) === "storyweaver" ? (b.audio ? "com áudio" : "ilustrada") : "grátis"}</span>
         </span>
       </span>
     </motion.button>

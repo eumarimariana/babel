@@ -117,7 +117,7 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onQuiz, onGo, wide,
             {b.hw ? (
               <span className="rounded-full border border-ink-border px-3 py-1 text-xs tabular">{b.hw} headwords</span>
             ) : (
-              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{kindOf(b) === "librivox" ? `audiolivro · ${b.time ?? ""}` : kindOf(b) === "storyweaver" || kindOf(b) === "gsb" ? "livro ilustrado, grátis" : BASE_INFO[base].graded ? "livro de leitura graduado" : "texto original, sem adaptação"}</span>
+              <span className="rounded-full border border-ink-border px-3 py-1 text-xs">{kindOf(b) === "librivox" ? `audiolivro · ${b.time ?? ""}` : kindOf(b) === "storyweaver" || kindOf(b) === "gsb" || kindOf(b) === "bookdash" ? "livro ilustrado, grátis" : BASE_INFO[base].graded ? "livro de leitura graduado" : "texto original, sem adaptação"}</span>
             )}
             {p?.st === "done" && <span className="rounded-full border border-ink-border px-3 py-1 text-xs">lido em {brDate(p.d)}</span>}
           </div>
@@ -211,6 +211,7 @@ function WhereToRead({ b, links }: { b: Book; links: ReturnType<typeof bookLinks
       title: "Ouvir",
       items: [
         { href: links.eliAudio, icon: <HeadphonesIcon weight="bold" />, label: "Áudio MP3 da ELi", sub: "grátis, na área “Resources for students”" },
+        { href: links.bookDash, icon: <BookOpenTextIcon weight="bold" />, label: "Ler no Book Dash", sub: "ler online ou baixar o ebook, grátis" },
         { href: links.gsbRead, icon: <HeadphonesIcon weight="bold" />, label: "Ler e ouvir no Global Storybooks", sub: "texto, ilustrações e narração" },
         { href: links.gsbMp3, icon: <DownloadSimpleIcon weight="bold" />, label: "Baixar o MP3", sub: "a história inteira narrada" },
         { href: links.listen, icon: <HeadphonesIcon weight="bold" />, label: "Ouvir no LibriVox", sub: b.time ? `audiolivro completo · ${b.time}` : "audiolivro completo" },

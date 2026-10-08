@@ -5,17 +5,20 @@ Plano para levar o Babel além do inglês (francês, alemão e espanhol), amplia
 > **Status — já implementado:**
 > - **Perfil por idioma (versão simples):** seletor EN · FR · DE · ES no menu. Estante, caderno, citações, revisões, mapa, voz e pedidos da IA seguem o idioma escolhido, que fica salvo no navegador. Palavras e citações antigas contam como inglês.
 > - **Bases grátis por idioma:**
->   - Inglês: ELi Readers (177), StoryWeaver (240, níveis 1–4), Global Storybooks (40, níveis 1–5, com áudio), Gutenberg Readers (McGuffey e outros, 12), Gutenberg Infantis (Potter, Milne, Kipling…, 14), LibriVox (16 audiolivros), Gutenberg Clássicos (38).
+>   - Inglês: ELi Readers (177), StoryWeaver (240, níveis 1–4), Global Storybooks (40, níveis 1–5, com áudio), Book Dash (208 livros ilustrados sul-africanos, agrupados por tema), Gutenberg Readers (McGuffey e outros, 12), Gutenberg Infantis (Potter, Milne, Kipling…, 14), LibriVox (16 audiolivros), Gutenberg Clássicos (38).
 >   - Francês: StoryWeaver (240), Global Storybooks (40), Gutenberg Readers (9), Gutenberg Clássicos (10).
 >   - Alemão: StoryWeaver (157), Global Storybooks (40), Gutenberg Readers (6), Gutenberg Clássicos (9).
 >   - Espanhol: StoryWeaver (240), Global Storybooks (40), Gutenberg Readers (14), Gutenberg Clássicos (8).
 > - **Aba Quiz:** quiz do livro gerado pela IA (história, palavras no contexto e gramática do nível, com explicação) e quiz das suas palavras sem IA; as palavras erradas voltam para as revisões.
 > - **"Onde ler e ouvir"** em cada livro: áudio e amostra da ELi, original grátis no Gutenberg (75 livros da ELi ligados), LibriVox, EPUB, StoryWeaver, Estante Virtual, Amazon pelo ISBN, WorldCat e Open Library.
 >
-> - **Níveis:** ELi usa o CEFR da editora. StoryWeaver (1–4) e Global Storybooks (1–5) usam níveis de alfabetização infantil; o app converte para CEFR aproximado (1 ≈ Pre-A1, 2 ≈ A1, 3 ≈ A2, 4–5 ≈ B1) e mostra o nível original ao lado. Gutenberg e LibriVox têm nível estimado.
+> - **Níveis:** ELi usa o CEFR da editora. StoryWeaver (1–4) e Global Storybooks (1–5) usam níveis de alfabetização infantil; o app converte para CEFR aproximado (1 ≈ Pre-A1, 2 ≈ A1, 3 ≈ A2, 4–5 ≈ B1) e mostra o nível original ao lado. Gutenberg, LibriVox e Book Dash têm nível estimado.
+> - **Sobre o Global Storybooks:** em EN, FR, DE e ES as 40 histórias são as mesmas do African Storybook, traduzidas. Por isso o Book Dash entrou para dar mais variedade.
 > - **Mapa de leitura por base:** o mapa, o progresso por nível e a próxima parada seguem a base escolhida (seletor no próprio mapa ou na Estante).
 >
 > **Precisa de chave:** Bloom Library (feed OPDS com nível, mas exige conta e chave dada pela equipe deles).
+>
+> **Avaliado e não incluído:** Indigenous Storybooks (só 12 histórias por idioma, níveis 1–2, parte repetida do African Storybook); Storybooks Canada (as mesmas 40 do African Storybook); Let's Read da Asia Foundation (sem API pública); Literacy Cloud (fora do ar); Standard Ebooks (o feed exige conta de apoiador).
 >
 > **Descartado:** english-e-reader.net (e listas que só apontam para ele, como a do Inglês Essencial): distribui graded readers de editoras sem autorização.
 >

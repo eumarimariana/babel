@@ -15,6 +15,7 @@ const L = (b?: Book) => LANG_EN[b ? langOf(b) : studyLang];
 export const bookLine = (b: Book) => {
   const kind = kindOf(b);
   if (kind === "storyweaver") return `"${b.t}" by ${b.a} (a free illustrated ${L(b)} story from StoryWeaver, level ${b.lv})`;
+  if (kind === "bookdash") return `"${b.t}" (a free illustrated ${L(b)} picture book from Book Dash, South Africa, for beginning readers)`;
   if (kind === "gsb") return `"${b.t}" by ${b.a} (a free illustrated ${L(b)} story from Global Storybooks, reading level ${b.ol} of 5, about ${b.lv})`;
   if (kind === "librivox") return `"${b.t}" by ${b.a} (a free ${L(b)} audiobook from LibriVox, roughly level ${b.lv} for listening)`;
   if (kind === "gutenberg")
