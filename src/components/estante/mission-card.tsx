@@ -23,7 +23,7 @@ export function MissionCard({ book, onGo, onOpen, className }: { book?: Book; on
   }
 
   return (
-    <article className={cn("grid content-start gap-4 rounded-[1.5rem] border border-border bg-card p-5", className)}>
+    <article className={cn("grid grid-cols-1 content-start gap-4 rounded-[1.5rem] border border-border bg-card p-5", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className={cn("grid size-10 shrink-0 place-items-center rounded-full", count === items.length ? "bg-ink text-ink-foreground" : "bg-sand text-sand-foreground")}>
@@ -41,7 +41,7 @@ export function MissionCard({ book, onGo, onOpen, className }: { book?: Book; on
         </span>
       </div>
 
-      <ol className="grid gap-2">
+      <ol className="grid grid-cols-1 gap-2">
         {items.map((x) => {
           const on = done.has(x.id);
           const label = (

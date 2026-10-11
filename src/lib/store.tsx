@@ -1,6 +1,7 @@
 "use client";
 
 import type { Lang } from "@/lib/books";
+import type { Resource } from "@/lib/resources";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 export type Status = "want" | "reading" | "done";
@@ -58,11 +59,13 @@ export type Data = {
   scores: Record<string, QuizScore>; // by book id, or "words-<lang>" for notebook quizzes
   resources: Record<string, ResourceMark>; // study materials, by resource id
   missions: Record<string, string[]>; // day → mission items done
+  myResources: Resource[]; // links added by hand, each with its language in `ln`
+  placement: Partial<Record<Lang, { lv: string; at: string }>>; // level from a placement test
   days: string[];
 };
 
 const KEY = "estante-eli-app-v1";
-const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, missions: {}, days: [] };
+const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, missions: {}, myResources: [], placement: {}, days: [] };
 export const INTERVALS = [0, 1, 2, 4, 8, 16, 32];
 
 export function today() {
@@ -96,6 +99,8 @@ export function normalize(input: unknown): Data {
     scores: d.scores ?? {},
     resources: d.resources ?? {},
     missions: d.missions ?? {},
+    myResources: (d.myResources ?? []).filter((r) => r && r.id && r.url),
+    placement: d.placement ?? {},
     days: d.days ?? [],
   };
 }
@@ -151,6 +156,9 @@ type Ctx = {
   recordScore: (key: string, correct: number, total: number, gaps?: string[]) => void;
   markResource: (id: string, patch: Partial<Omit<ResourceMark, "d">>) => void;
   toggleMission: (item: string) => void;
+  addResource: (r: Resource) => void;
+  deleteResource: (id: string) => void;
+  setPlacement: (lang: Lang, lv: string | null) => void;
   markDay: () => void;
   replaceAll: (d: Data) => void;
   streak: number;
@@ -294,6 +302,26 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       }),
     [],
   );
+  const addResource = useCallback((r: Resource) => setData((d) => ({ ...d, myResources: [...d.myResources.filter((x) => x.id !== r.id), r] })), []);
+  const deleteResource = useCallback(
+    (id: string) =>
+      setData((d) => {
+        const resources = { ...d.resources };
+        delete resources[id];
+        return { ...d, resources, myResources: d.myResources.filter((x) => x.id !== id) };
+      }),
+    [],
+  );
+  const setPlacement = useCallback(
+    (lang: Lang, lv: string | null) =>
+      setData((d) => {
+        const placement = { ...d.placement };
+        if (lv) placement[lang] = { lv, at: today() };
+        else delete placement[lang];
+        return { ...d, placement };
+      }),
+    [],
+  );
   const markDay = useCallback(() => setData(withDay), []);
   const replaceAll = useCallback((d: Data) => setData(d), []);
 
@@ -317,12 +345,15 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       recordScore,
       markResource,
       toggleMission,
+      addResource,
+      deleteResource,
+      setPlacement,
       markDay,
       replaceAll,
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, addResource, deleteResource, setPlacement, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }

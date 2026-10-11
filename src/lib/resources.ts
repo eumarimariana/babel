@@ -15,6 +15,8 @@ export type Resource = {
   topics?: string[]; // grammar topics, for linking with the books later
   playlist?: string; // YouTube playlist id
   note: string;
+  ln?: Lang; // only on links added by hand
+  mine?: boolean; // added by hand
 };
 
 export const RESOURCE_KINDS: { value: ResourceKind; label: string }[] = [
@@ -45,6 +47,19 @@ export function plainLevel(lv: string | undefined) {
 
 const BY_LANG: Partial<Record<Lang, Resource[]>> = { en: enResources as Resource[] };
 export const resourcesFor = (lang: Lang) => BY_LANG[lang] ?? [];
+/** The catalog plus the links added by hand for that language. */
+export const allResourcesFor = (lang: Lang, mine: Resource[]) => [...resourcesFor(lang), ...mine.filter((r) => r.ln === lang)];
+
+/** Playlist id of a YouTube link ("…playlist?list=PL…" or a video inside a playlist), if it is one. */
+export function youtubePlaylist(url: string) {
+  try {
+    const u = new URL(url);
+    if (!/(^|\.)youtube\.com$|^youtu\.be$/.test(u.hostname)) return undefined;
+    return u.searchParams.get("list") ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export const siteOf = (url: string) => new URL(url).hostname.replace(/^www\./, "");
 

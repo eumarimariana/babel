@@ -1,5 +1,5 @@
 import { grammarFor, langOf, type Book, type Lang } from "@/lib/books";
-import { RESOURCE_KINDS, plainLevel, resourcesFor, topicsIn, TOPIC_BY_ID, type Resource, type ResourceKind } from "@/lib/resources";
+import { RESOURCE_KINDS, allResourcesFor, plainLevel, topicsIn, TOPIC_BY_ID, type Resource, type ResourceKind } from "@/lib/resources";
 import { addDays, type Data } from "@/lib/store";
 
 /** One step of the daily mission. `id` stays the same all day, so ticking it survives reloads. */
@@ -44,7 +44,7 @@ export function buildMission(data: Data, lang: Lang, day: string, book?: Book): 
   }
 
   // one material for the skill used least in the last 7 days, preferring the ones marked "Usando"
-  const pool = resourcesFor(lang).filter((r) => SKILLS.includes(r.kind) && (!level || r.levels.includes(level)) && data.resources[r.id]?.st !== "done");
+  const pool = allResourcesFor(lang, data.myResources).filter((r) => SKILLS.includes(r.kind) && (!level || r.levels.includes(level)) && data.resources[r.id]?.st !== "done");
   if (pool.length) {
     const used = new Map<ResourceKind, number>();
     for (let i = 1; i <= 7; i++)

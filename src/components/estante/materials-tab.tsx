@@ -22,12 +22,14 @@ import {
   TextAaIcon,
 } from "@phosphor-icons/react";
 import { langInfo, type Book } from "@/lib/books";
-import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, plainLevel, resourcesFor, siteOf } from "@/lib/resources";
+import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, allResourcesFor, plainLevel, siteOf } from "@/lib/resources";
 import { useEstante, type ResourceMark, type ResourceStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Segmented, useLang } from "./common";
 import { MissionCard } from "./mission-card";
 import { WordPacks } from "./word-packs";
+import { AddLink } from "./add-link";
+import { LevelTest } from "./level-test";
 
 const KIND_ICON: Record<ResourceKind, typeof CompassIcon> = {
   grammar: TextAaIcon,
@@ -50,12 +52,12 @@ const STATUS: { value: ResourceStatus; label: string }[] = [
   { value: "done", label: "Feito" },
 ];
 
-/** Free sites, playlists and dictionaries, by skill and level. Later stages (daily mission, playlists, word packs) also live here. */
+/** Free sites, playlists and dictionaries by skill and level, plus the daily mission, the level test, word packs and your own links. */
 export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: string) => void; onOpen: (id: number) => void }) {
   const level = book?.lv;
   const lang = useLang();
-  const { data, markResource } = useEstante();
-  const all = resourcesFor(lang);
+  const { data, markResource, deleteResource } = useEstante();
+  const all = allResourcesFor(lang, data.myResources);
   const mapLevel = plainLevel(level);
   const [lv, setLv] = useState<string | null>(null); // null = follow the reading map
   const shownLevel = lv ?? (mapLevel || "all");
@@ -74,9 +76,10 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
         <section className="rounded-[1.75rem] bg-ink p-6 text-ink-foreground">
           <Header />
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-muted">
-            Os materiais de {langInfo(lang).name.toLowerCase()} ainda não foram reunidos. Por enquanto só o inglês tem a lista; troque para EN no menu para ver.
+            Os materiais de {langInfo(lang).name.toLowerCase()} ainda não foram reunidos. Por enquanto só o inglês tem a lista; troque para EN no menu para ver, ou adicione os seus links abaixo.
           </p>
         </section>
+        <AddLink lang={lang} level={mapLevel || undefined} />
       </div>
     );
   }
@@ -123,7 +126,10 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
         </div>
       </section>
 
-      <MissionCard book={book} onGo={onGo} onOpen={onOpen} />
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <MissionCard book={book} onGo={onGo} onOpen={onOpen} />
+        <LevelTest lang={lang} onOpen={onOpen} />
+      </div>
 
       {/* skills */}
       <section className="grid gap-3">
@@ -160,7 +166,7 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
               </h3>
               <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
                 {g.items.map((r) => (
-                  <ResourceCard key={r.id} r={r} mark={data.resources[r.id]} onMark={(patch) => markResource(r.id, patch)} />
+                  <ResourceCard key={r.id} r={r} mark={data.resources[r.id]} onMark={(patch) => markResource(r.id, patch)} onDelete={r.mine ? () => deleteResource(r.id) : undefined} />
                 ))}
               </div>
             </section>
@@ -172,12 +178,7 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
 
       {lang === "en" && <WordPacks onGoReview={() => onGo("review")} />}
 
-      <section className="rounded-[1.25rem] border border-dashed border-border p-5">
-        <h3 className="text-sm font-semibold">Em breve nesta aba</h3>
-        <ul className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-          <li>· Teste de nível e adicionar seus próprios links</li>
-        </ul>
-      </section>
+      <AddLink lang={lang} level={shownLevel === "all" ? undefined : shownLevel} />
     </div>
   );
 }
@@ -198,10 +199,10 @@ function Header() {
 
 const levelRange = (levels: string[]) => (levels.length >= RESOURCE_LEVELS.length ? "todos os níveis" : levels.length === 1 ? levels[0] : `${levels[0]}–${levels[levels.length - 1]}`);
 
-function ResourceCard({ r, mark, onMark }: { r: Resource; mark?: ResourceMark; onMark: (patch: Partial<Omit<ResourceMark, "d">>) => void }) {
+function ResourceCard({ r, mark, onMark, onDelete }: { r: Resource; mark?: ResourceMark; onMark: (patch: Partial<Omit<ResourceMark, "d">>) => void; onDelete?: () => void }) {
   const Icon = KIND_ICON[r.kind];
   const [editing, setEditing] = useState(false);
-  const tags = [levelRange(r.levels), r.siteLang === "pt" ? "site em português" : "site em inglês", r.minutes && `~${r.minutes} min`, r.signup && "cadastro grátis"].filter(Boolean) as string[];
+  const tags = [levelRange(r.levels), !r.mine && (r.siteLang === "pt" ? "site em português" : "site em inglês"), r.minutes && `~${r.minutes} min`, r.signup && "cadastro grátis", r.mine && "seu link"].filter(Boolean) as string[];
 
   return (
     <article className={cn("grid content-start gap-3 rounded-[1.25rem] border bg-card p-4", mark?.st === "doing" ? "border-foreground" : "border-border")}>
@@ -282,6 +283,11 @@ function ResourceCard({ r, mark, onMark }: { r: Resource; mark?: ResourceMark; o
             </button>
           ))}
         </div>
+        {onDelete && (
+          <button onClick={() => confirm(`Apagar “${r.name}” dos seus links?`) && onDelete()} className="ml-auto text-xs text-muted-foreground underline-offset-2 hover:text-destructive hover:underline">
+            Apagar
+          </button>
+        )}
         {!editing && (
           <button onClick={() => setEditing(true)} className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
             {mark?.note ? "Editar nota" : "Anotar"}
