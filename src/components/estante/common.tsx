@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { basesFor, coverUrls, langInfo, levelColor, type Book, type Lang } from "@/lib/books";
 import type { Status } from "@/lib/store";
+import { pronounce } from "@/lib/pronounce";
+import { toast } from "sonner";
 
 export type Option = { value: string; label: string };
 
@@ -93,19 +95,16 @@ export function useBookOptions(withNone: boolean): Option[] {
   }, [lang, withNone]);
 }
 
+let warned = false;
+/** Says a word or passage (device voice, or a Wiktionary recording); tells once when nothing can be played. */
 export function speak(text: string, lang: Lang = "en", rate = 0.9) {
-  try {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = langInfo(lang).voice;
-    // pick an installed voice for that language when there is one
-    const voice = speechSynthesis.getVoices().find((v) => v.lang.replace("_", "-").startsWith(u.lang.slice(0, 2)));
-    if (voice) u.voice = voice;
-    u.rate = rate;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  } catch {
-    /* speech not available */
-  }
+  pronounce(text, lang, rate).then((ok) => {
+    if (ok || warned) return;
+    warned = true;
+    toast.info(`Seu navegador não tem voz em ${langInfo(lang).name.toLowerCase()} e não achei uma gravação de “${text.slice(0, 40)}”.`, {
+      description: "Palavras soltas tocam a gravação do Wiktionary. Para frases, ative a voz do sistema no navegador.",
+    });
+  });
 }
 
 export function SpeakButton({ text, lang }: { text: string; lang?: Lang }) {
