@@ -221,15 +221,10 @@ export function BookCover({ book, status, size = "md", className, priority }: { 
   );
 }
 
-/**
- * The cover picture: tries each source in turn and falls back to a typeset cover when none loads.
- * Square or landscape pictures (picture books, StoryWeaver crops) are shown whole over a blurred copy,
- * instead of being cropped into the portrait book shape.
- */
+/** The cover picture: tries each source in turn and falls back to a typeset cover when none loads. */
 function CoverImage({ book, size, priority }: { book: Book; size: "xs" | "md" | "lg"; priority?: boolean }) {
   const urls = coverUrls(book, size);
   const [i, setI] = useState(0);
-  const [wide, setWide] = useState(false);
   const src = urls[i];
   const w = { xs: 137, md: 274, lg: 549 }[size];
 
@@ -241,25 +236,18 @@ function CoverImage({ book, size, priority }: { book: Book; size: "xs" | "md" | 
       </div>
     );
 
-  const img = (cls: string, extra?: object) => (
-    <Image src={src} alt="" width={w} height={Math.round((w * 400) / 274)} unoptimized loading={priority ? undefined : "lazy"} className={cls} {...extra} />
-  );
   return (
-    <>
-      {wide && img("absolute inset-0 size-full scale-125 object-cover opacity-60 blur-xl", { "aria-hidden": true })}
-      <Image
-        src={src}
-        alt={`Capa de ${book.t}`}
-        width={w}
-        height={Math.round((w * 400) / 274)}
-        unoptimized
-        priority={priority}
-        loading={priority ? undefined : "lazy"}
-        onLoad={(e) => setWide(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight > 0.85)}
-        onError={() => setI((n) => n + 1)}
-        className={cn("relative size-full", wide ? "object-contain drop-shadow-md" : "object-cover")}
-      />
-    </>
+    <Image
+      src={src}
+      alt={`Capa de ${book.t}`}
+      width={w}
+      height={Math.round((w * 400) / 274)}
+      unoptimized
+      priority={priority}
+      loading={priority ? undefined : "lazy"}
+      onError={() => setI((n) => n + 1)}
+      className="size-full object-cover"
+    />
   );
 }
 
