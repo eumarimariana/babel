@@ -3,8 +3,8 @@
 import { useSyncExternalStore } from "react";
 import type { Book } from "@/lib/books";
 import type { KitResult, QuizResult, WordInfo } from "@/lib/ai-schemas";
-import { anthropicCorrect, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
-import { freeCorrect, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
+import { anthropicCorrect, anthropicSentence, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
+import { freeCorrect, freeSentence, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
 import { suggestTaskModels, type AiTask } from "@/lib/ai/task-models";
 
 /**
@@ -201,6 +201,12 @@ export async function makeQuiz(book: Book, words: string[], grammar: string[], s
 export async function translateQuote(text: string, book?: Book, signal?: AbortSignal): Promise<string> {
   const a = active("translate");
   return a.id === "anthropic" ? anthropicTranslate(a.key, a.model, text, book, signal) : freeTranslate(a.id, a.key, a.models, text, book, signal);
+}
+
+/** Short feedback, in Portuguese, on a sentence written to practise a word. */
+export async function checkSentence(word: string, meaning: string, sentence: string, signal?: AbortSignal): Promise<string> {
+  const a = active("sentence");
+  return a.id === "anthropic" ? anthropicSentence(a.key, a.model, word, meaning, sentence, signal) : freeSentence(a.id, a.key, a.models, word, meaning, sentence, signal);
 }
 
 export async function correctText(book: Book, text: string, onText: (t: string) => void, signal?: AbortSignal) {

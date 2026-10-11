@@ -1,17 +1,77 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { CardsIcon, CheckCircleIcon } from "@phosphor-icons/react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { CardsIcon, CheckCircleIcon, EarIcon, LinkSimpleIcon, PencilLineIcon } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input";
 import { BOOK_BY_ID } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { langInfo } from "@/lib/books";
 import { DictButton, Segmented, SpeakButton, useLang } from "./common";
+import { activeProviderName, subscribeAi } from "@/lib/ai-client";
+import { Practice, type PracticeKind } from "./practice";
 
 type Mode = "en" | "pt";
 
+const TRAININGS: { value: "cards" | PracticeKind; label: string; detail: string; icon: typeof CardsIcon; min: number }[] = [
+  { value: "cards", label: "Flashcards", detail: "repetição espaçada", icon: CardsIcon, min: 1 },
+  { value: "dictation", label: "Ditado", detail: "ouça e escreva", icon: EarIcon, min: 1 },
+  { value: "pairs", label: "Pares", detail: "ligue à tradução", icon: LinkSimpleIcon, min: 4 },
+  { value: "write", label: "Escrever", detail: "crie uma frase", icon: PencilLineIcon, min: 1 },
+];
+
+/** Reviews (spaced repetition) plus three other ways to practise the notebook's words. */
 export function ReviewTab({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks?: () => void }) {
+  const { data } = useEstante();
+  const lang = useLang();
+  const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
+  const [kind, setKind] = useState<"cards" | PracticeKind>("cards");
+  const words = useMemo(() => data.words.filter((w) => (w.ln ?? "en") === lang), [data.words, lang]);
+  const withPt = words.filter((w) => w.pt).length;
+  const current = TRAININGS.find((t) => t.value === kind)!;
+  const enough = (t: (typeof TRAININGS)[number]) => (t.value === "pairs" ? withPt : words.length) >= t.min;
+
+  return (
+    <div className="mx-auto grid max-w-3xl gap-5">
+      {words.length > 0 && (
+        <div role="radiogroup" aria-label="Tipo de treino" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {TRAININGS.map((t) => {
+            const on = kind === t.value;
+            return (
+              <button
+                key={t.value}
+                role="radio"
+                aria-checked={on}
+                disabled={!enough(t)}
+                title={enough(t) ? undefined : `Precisa de ${t.min} palavras com tradução`}
+                onClick={() => setKind(t.value)}
+                className={cn(
+                  "flex items-center gap-3 rounded-[1.25rem] border p-3 text-left transition-colors disabled:opacity-40",
+                  on ? "border-ink bg-ink text-ink-foreground" : "border-border bg-card hover:border-foreground",
+                )}
+              >
+                <span className={cn("grid size-9 shrink-0 place-items-center rounded-full", on ? "bg-sand text-sand-foreground" : "bg-muted")}>
+                  <t.icon weight="bold" className="size-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">{t.label}</span>
+                  <span className={cn("block truncate text-xs", on ? "text-ink-muted" : "text-muted-foreground")}>{t.detail}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {kind === "cards" || !enough(current) ? (
+        <Flashcards onGoVocab={onGoVocab} onGoPacks={onGoPacks} />
+      ) : (
+        <Practice key={`${kind}-${lang}`} kind={kind} words={words} lang={lang} aiName={aiName} onExit={() => setKind("cards")} />
+      )}
+    </div>
+  );
+}
+
+function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks?: () => void }) {
   const { data: all, due: allDue, gradeWord } = useEstante();
   const lang = useLang();
   const name = langInfo(lang).name.toLowerCase();
@@ -105,7 +165,7 @@ export function ReviewTab({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onG
 
   const left = Math.max(0, total - doneCount);
   return (
-    <div className="mx-auto grid max-w-3xl gap-5">
+    <div className="grid gap-5">
       <div className="grid grid-cols-3 gap-3">
         <Figure value={Math.min(doneCount, total)} label="feitas" />
         <Figure value={left} label="na fila" />

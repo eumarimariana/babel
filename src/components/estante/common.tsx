@@ -93,14 +93,14 @@ export function useBookOptions(withNone: boolean): Option[] {
   }, [lang, withNone]);
 }
 
-export function speak(text: string, lang: Lang = "en") {
+export function speak(text: string, lang: Lang = "en", rate = 0.9) {
   try {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = langInfo(lang).voice;
     // pick an installed voice for that language when there is one
     const voice = speechSynthesis.getVoices().find((v) => v.lang.replace("_", "-").startsWith(u.lang.slice(0, 2)));
     if (voice) u.voice = voice;
-    u.rate = 0.9;
+    u.rate = rate;
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
   } catch {

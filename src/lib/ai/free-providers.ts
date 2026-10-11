@@ -2,7 +2,7 @@
 
 import type { Book } from "@/lib/books";
 import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
-import { KIT_JSON_SHAPE, QUIZ_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt } from "./prompts";
+import { KIT_JSON_SHAPE, QUIZ_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt, sentencePrompt } from "./prompts";
 
 /**
  * Gemini (Google AI Studio), Groq and OpenRouter, called straight from the browser with the
@@ -207,6 +207,12 @@ export async function freeTranslate(provider: FreeProvider, key: string, models:
   const out = await withFallback(models, (m) => complete(provider, key, m, quotePrompt(text, book), false, signal), signal);
   if (!out.trim()) throw new Error("A tradução veio vazia. Tente de novo ou escolha outro modelo.");
   return cleanTranslation(out);
+}
+
+export async function freeSentence(provider: FreeProvider, key: string, models: string[], word: string, meaning: string, sentence: string, signal?: AbortSignal) {
+  const out = await withFallback(models, (m) => complete(provider, key, m, sentencePrompt(word, meaning, sentence), false, signal), signal);
+  if (!out.trim()) throw new Error("A resposta veio vazia. Tente de novo ou escolha outro modelo.");
+  return out.trim();
 }
 
 export async function freeQuiz(provider: FreeProvider, key: string, models: string[], b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {

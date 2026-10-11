@@ -1,12 +1,13 @@
 import type { ModelOption } from "./free-providers";
 
 /** What the AI does in the app. Each task can run on a different model of the same key. */
-export type AiTask = "word" | "translate" | "quiz" | "kit" | "correct";
+export type AiTask = "word" | "translate" | "sentence" | "quiz" | "kit" | "correct";
 type Tier = "fast" | "balanced" | "best";
 
 export const AI_TASKS: { id: AiTask; label: string; detail: string; tier: Tier }[] = [
   { id: "word", label: "Explicar palavras", detail: "tradução, definição e exemplo de uma palavra", tier: "fast" },
   { id: "translate", label: "Traduzir citações", detail: "um trecho curto do livro para o português", tier: "fast" },
+  { id: "sentence", label: "Corrigir frases", detail: "a frase que você escreve no treino Escrever", tier: "balanced" },
   { id: "quiz", label: "Gerar quizzes", detail: "perguntas sobre a história e a gramática, com gabarito", tier: "balanced" },
   { id: "kit", label: "Kit de pré-leitura", detail: "palavras-chave, gramática e perguntas de um livro", tier: "balanced" },
   { id: "correct", label: "Corrigir resumos", detail: "correção comentada do seu texto, frase a frase", tier: "best" },

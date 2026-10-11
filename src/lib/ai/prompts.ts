@@ -67,6 +67,16 @@ export function quotePrompt(text: string, book?: Book) {
   );
 }
 
+/** Feedback on one sentence the learner wrote to practise a word. */
+export function sentencePrompt(word: string, meaning: string, sentence: string) {
+  return (
+    `The learner is practising the ${L()} word or expression "${word.slice(0, 80)}"${meaning ? ` (meaning: ${meaning.slice(0, 80)})` : ""} and wrote this sentence:\n` +
+    `"""${sentence.slice(0, 600)}"""\n\n` +
+    "Answer in Brazilian Portuguese, in at most 4 short lines, no preamble: first say if the sentence is correct and natural and if the word is used in the right sense; " +
+    `then, if anything should change, give the corrected sentence in ${L()}; end with one short tip.`
+  );
+}
+
 /** A 10-question multiple-choice quiz on the book and on the language the learner met in it. */
 export function quizPrompt(b: Book, words: string[], grammar: string[]) {
   return [
