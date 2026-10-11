@@ -26,7 +26,7 @@ import { langInfo, type Book } from "@/lib/books";
 import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, allResourcesFor, plainLevel, siteOf } from "@/lib/resources";
 import { useEstante, type ResourceMark, type ResourceStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { BTN, SectionHead, useLang } from "./common";
+import { BTN, ScrollRow, SectionHead, useLang } from "./common";
 import { MissionCard } from "./mission-card";
 import { WordPacks } from "./word-packs";
 import { AddLink } from "./add-link";
@@ -179,20 +179,13 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
         ) : kind !== "all" || groups.length === 1 ? (
           <div className="grid items-start gap-3 md:grid-cols-2 2xl:grid-cols-3">{list.map(card)}</div>
         ) : (
-          // each skill stays whole inside one column, and the columns pack without empty half-rows
-          <div className="gap-5 md:columns-2 2xl:columns-3">
-            {groups.map((g) => {
-              const Icon = KIND_ICON[g.value];
-              return (
-                <section key={g.value} className="mb-6 grid break-inside-avoid gap-3">
-                  <h3 className="flex items-center gap-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    <Icon weight="bold" className="size-4" /> {g.label}
-                    <span className="font-normal tabular">{g.items.length}</span>
-                  </h3>
-                  {g.items.map(card)}
-                </section>
-              );
-            })}
+          // one shelf per skill, scrolling sideways like the Estante
+          <div className="grid grid-cols-1 gap-6">
+            {groups.map((g) => (
+              <ScrollRow key={g.value} title={g.label} icon={KIND_ICON[g.value]} count={g.items.length} meta={`${g.items.length} ${g.items.length === 1 ? "material" : "materiais"}`}>
+                {g.items.map(card)}
+              </ScrollRow>
+            ))}
           </div>
         )}
       </section>
@@ -232,7 +225,7 @@ function ResourceCard({ r, mark, onMark, onDelete }: { r: Resource; mark?: Resou
   const rating = mark?.rating ?? 0;
 
   return (
-    <article className={cn("grid content-start gap-3 rounded-[1.25rem] border bg-card p-4 transition-colors", mark?.st === "doing" ? "border-foreground" : "border-border hover:border-foreground/40")}>
+    <article className={cn("flex h-full flex-col gap-3 rounded-[1.25rem] border bg-card p-4 transition-colors", mark?.st === "doing" ? "border-foreground" : "border-border hover:border-foreground/40")}>
       <div className="flex items-start gap-3">
         <span className={cn("grid size-10 shrink-0 place-items-center rounded-full", mark?.st === "done" ? "bg-ink text-ink-foreground" : mark?.st === "doing" ? "bg-sand text-sand-foreground" : "bg-muted")}>
           {mark?.st === "done" ? <CheckIcon weight="bold" className="size-4" /> : <Icon className="size-5" />}
@@ -302,7 +295,7 @@ function ResourceCard({ r, mark, onMark, onDelete }: { r: Resource; mark?: Resou
                 role="radio"
                 aria-checked={on}
                 onClick={() => onMark({ st: on ? undefined : s.value })}
-                className={cn("h-7 rounded-full px-2.5 text-xs transition-colors", on ? "bg-card font-semibold text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                className={cn("h-7 rounded-full px-2 text-xs transition-colors", on ? "bg-card font-semibold text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
               >
                 {s.label}
               </button>

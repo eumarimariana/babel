@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
+import { createContext, useContext, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { ArrowRightIcon, BookOpenIcon, BookOpenTextIcon, BookmarkSimpleIcon, CheckIcon, CircleIcon, SpeakerHighIcon } from "@phosphor-icons/react";
+import { ArrowRightIcon, CaretLeftIcon, CaretRightIcon, BookOpenIcon, BookOpenTextIcon, BookmarkSimpleIcon, CheckIcon, CircleIcon, SpeakerHighIcon } from "@phosphor-icons/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -286,3 +286,64 @@ export function SectionHead({ title, count, action, onAction }: { title: string;
 
 /** The small primary button (Abrir, Importar…) used on the cards of the Materials tab. */
 export const BTN = "inline-flex h-8 items-center gap-1.5 rounded-full bg-foreground px-3.5 text-[13px] font-semibold text-background transition-transform hover:scale-[1.03] disabled:pointer-events-none disabled:opacity-50";
+
+/**
+ * A horizontal shelf of cards, like the Estante's: title and count on top, arrows to scroll,
+ * and "mais" to open it as a grid. Children are the cards; each gets a fixed width while scrolling.
+ */
+export function ScrollRow({ title, icon: Icon, meta, count, children, startAt = 0, section }: { title: string; icon?: React.ElementType; meta?: React.ReactNode; count: number; children: React.ReactNode[]; startAt?: number; section?: boolean }) {
+  const scroller = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const scroll = (dir: 1 | -1) => scroller.current?.scrollBy({ left: dir * scroller.current.clientWidth * 0.85, behavior: "smooth" });
+  const many = count > 2;
+
+  return (
+    <section className="grid min-w-0 grid-cols-1 gap-3">
+      <header className="flex min-h-8 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          {/* `section`: a top-level section of the tab, titled like SectionHead; otherwise a shelf inside one */}
+          <h3 className={cn("flex items-center gap-2 whitespace-nowrap", section ? "font-display text-lg" : "text-base font-semibold")}>
+            {Icon && <Icon className="size-5 shrink-0" />}
+            {title}
+          </h3>
+          <span className="truncate text-xs text-muted-foreground tabular">{meta ?? count}</span>
+        </div>
+        {many && (
+          <div className="flex shrink-0 items-center gap-1">
+            {!expanded && (
+              <span className="hidden gap-1 sm:flex">
+                <button aria-label={`Rolar ${title} para a esquerda`} onClick={() => scroll(-1)} className="grid size-8 place-items-center rounded-full border border-border hover:border-foreground">
+                  <CaretLeftIcon weight="bold" className="size-3.5" />
+                </button>
+                <button aria-label={`Rolar ${title} para a direita`} onClick={() => scroll(1)} className="grid size-8 place-items-center rounded-full bg-ink text-ink-foreground">
+                  <CaretRightIcon weight="bold" className="size-3.5" />
+                </button>
+              </span>
+            )}
+            <button onClick={() => setExpanded((e) => !e)} className="px-2 text-xs underline underline-offset-4 hover:text-muted-foreground tabular">
+              {expanded ? "menos" : "mais"}
+            </button>
+          </div>
+        )}
+      </header>
+      <div
+        ref={(el) => {
+          scroller.current = el;
+          // open the shelf at the first card worth seeing (e.g. the next word pack)
+          if (el && startAt && !el.dataset.started) {
+            el.dataset.started = "1";
+            const child = el.children[startAt] as HTMLElement | undefined;
+            if (child) el.scrollLeft = child.offsetLeft - el.offsetLeft;
+          }
+        }}
+        className={cn(
+          expanded
+            ? "grid items-start gap-3 md:grid-cols-2 2xl:grid-cols-3"
+            : "-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:scroll-px-0 sm:px-0 [&>*]:w-[min(23rem,calc(100vw-3rem))] [&>*]:shrink-0 [&>*]:snap-start",
+        )}
+      >
+        {children}
+      </div>
+    </section>
+  );
+}

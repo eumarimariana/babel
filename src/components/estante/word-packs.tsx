@@ -5,7 +5,7 @@ import { CheckIcon, PlusIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { BTN, SectionHead } from "./common";
+import { BTN, ScrollRow } from "./common";
 
 /** [word, short Portuguese gloss, English definition], most frequent first. */
 type Entry = [string, string, string];
@@ -18,7 +18,6 @@ const SIZE = 50;
 export function WordPacks({ onGoReview }: { onGoReview: () => void }) {
   const { data, addWords } = useEstante();
   const [list, setList] = useState<Entry[] | null>(null);
-  const [all, setAll] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -40,7 +39,6 @@ export function WordPacks({ onGoReview }: { onGoReview: () => void }) {
   }, [list, known]);
 
   const firstOpen = packs.findIndex((p) => p.have < p.words.length);
-  const shown = all ? packs : packs.slice(Math.max(0, firstOpen), Math.max(0, firstOpen) + 6);
   const done = packs.filter((p) => p.have === p.words.length).length;
 
   function importPack(words: Entry[], label: string) {
@@ -51,20 +49,15 @@ export function WordPacks({ onGoReview }: { onGoReview: () => void }) {
 
   return (
     <section id="word-packs" className="grid scroll-mt-4 gap-3">
-      <SectionHead title="Pacotes de palavras" count={list ? `${done}/${packs.length} no caderno` : undefined} action={packs.length > 6 ? (all ? "Só os próximos" : `Ver todos os ${packs.length}`) : undefined} onAction={() => setAll(!all)} />
-      <p className="-mt-1 max-w-2xl text-sm text-muted-foreground">
-        As palavras mais frequentes do inglês, em pacotes de 50, das mais usadas para as menos. Ao importar, viram flashcards nas Revisões, com tradução e definição. As que já estão no caderno ficam de fora.
-      </p>
-
       {!list ? (
         <p className="rounded-[1.25rem] bg-muted/70 p-5 text-sm text-muted-foreground">Carregando a lista…</p>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
-          {shown.map((p) => {
+        <ScrollRow section title="Pacotes de palavras" count={packs.length} meta={`${done}/${packs.length} no caderno · 50 palavras cada`} startAt={Math.max(0, firstOpen)}>
+          {packs.map((p) => {
             const label = `${p.n * SIZE + 1}–${p.n * SIZE + p.words.length}`;
             const full = p.have === p.words.length;
             return (
-              <article key={p.n} className={cn("grid content-start gap-3 rounded-[1.25rem] border bg-card p-4", p.n === firstOpen ? "border-foreground" : "border-border")}>
+              <article key={p.n} className={cn("flex h-full flex-col gap-3 rounded-[1.25rem] border bg-card p-4", p.n === firstOpen ? "border-foreground" : "border-border")}>
                 <div>
                   <h4 className="font-bold tabular">Palavras {label}</h4>
                   <p className="text-xs text-muted-foreground tabular">
@@ -88,10 +81,10 @@ export function WordPacks({ onGoReview }: { onGoReview: () => void }) {
               </article>
             );
           })}
-        </div>
+        </ScrollRow>
       )}
       <p className="text-xs text-muted-foreground">
-        Lista:{" "}
+        As palavras mais frequentes do inglês, das mais usadas para as menos. Ao importar, viram flashcards nas Revisões, com tradução e definição; as que já estão no caderno ficam de fora. Lista:{" "}
         <a href="https://www.newgeneralservicelist.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
           New General Service List 1.2
         </a>{" "}
