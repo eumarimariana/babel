@@ -5,6 +5,7 @@ import type { Book } from "@/lib/books";
 import type { KitResult, QuizResult, WordInfo } from "@/lib/ai-schemas";
 import { anthropicCorrect, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
 import { freeCorrect, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
+import { suggestTaskModels, type AiTask } from "@/lib/ai/task-models";
 
 /**
  * Bring-your-own-key: each person pastes their own key for one of the providers below.
@@ -12,7 +13,7 @@ import { freeCorrect, freeKit, freeQuiz, freeTranslate, freeWord, listModels, ty
  * to the provider — never through this site's server.
  */
 export type ProviderId = "anthropic" | FreeProvider;
-export type { ModelOption };
+export type { ModelOption, AiTask };
 
 export const PROVIDERS: { id: ProviderId; name: string; free: boolean; keyUrl: string; keyHint: string; note: string }[] = [
   {
@@ -55,6 +56,7 @@ type AiConfig = {
   keys: Partial<Record<ProviderId, string>>;
   models: Partial<Record<ProviderId, string>>;
   modelLists: Partial<Record<ProviderId, ModelOption[]>>;
+  taskModels?: Partial<Record<ProviderId, Partial<Record<AiTask, string>>>>; // per-task overrides; missing = the provider's model
 };
 const STORAGE = "estante-eli-ai-v1";
 const OLD_ANTHROPIC_KEY = "estante-eli-anthropic-key";
@@ -133,6 +135,28 @@ export function setModel(id: ProviderId, model: string) {
   const c = getConfig();
   save({ ...c, models: { ...c.models, [id]: model } });
 }
+/** Pick a model for one task (null = back to the provider's model). */
+export function setTaskModel(id: ProviderId, task: AiTask, model: string | null) {
+  const c = getConfig();
+  const mine = { ...(c.taskModels?.[id] ?? {}) };
+  if (model) mine[task] = model;
+  else delete mine[task];
+  save({ ...c, taskModels: { ...c.taskModels, [id]: mine } });
+}
+/** The suggested model for every task, from the models this key lists. */
+export function taskSuggestions(id: ProviderId) {
+  const c = getConfig();
+  return suggestTaskModels(id, c.modelLists[id] ?? [], c.models[id] ?? "");
+}
+export function applyTaskSuggestions(id: ProviderId) {
+  const c = getConfig();
+  save({ ...c, taskModels: { ...c.taskModels, [id]: taskSuggestions(id) } });
+}
+/** The model a task runs on right now. */
+export function taskModel(c: AiConfig, id: ProviderId, task: AiTask) {
+  return c.taskModels?.[id]?.[task] || c.models[id] || c.modelLists[id]?.[0]?.id || "";
+}
+
 export function removeProvider(id: ProviderId) {
   const c = getConfig();
   const keys = { ...c.keys };
@@ -141,12 +165,12 @@ export function removeProvider(id: ProviderId) {
   save({ ...c, keys, active: nextActive });
 }
 
-function active() {
+function active(task: AiTask) {
   const c = getConfig();
   const id = c.active;
   const key = id ? c.keys[id] : undefined;
   if (!id || !key) throw new Error("Escolha um provedor de IA e cole sua chave nas Configurações.");
-  const model = c.models[id] ?? "";
+  const model = taskModel(c, id, task);
   return { id, key, model, models: [model, ...fallbackModels(id, model, c.modelLists[id] ?? [])] };
 }
 
@@ -158,28 +182,28 @@ function fallbackModels(id: ProviderId, chosen: string, list: ModelOption[]) {
 }
 
 export async function explainWord(word: string, book?: Book): Promise<WordInfo> {
-  const a = active();
-  return a.id === "anthropic" ? anthropicWord(a.key, word, book) : freeWord(a.id, a.key, a.models, word, book);
+  const a = active("word");
+  return a.id === "anthropic" ? anthropicWord(a.key, a.model, word, book) : freeWord(a.id, a.key, a.models, word, book);
 }
 
 export async function makeKit(book: Book, signal?: AbortSignal): Promise<KitResult> {
-  const a = active();
-  return a.id === "anthropic" ? anthropicKit(a.key, book, signal) : freeKit(a.id, a.key, a.models, book, signal);
+  const a = active("kit");
+  return a.id === "anthropic" ? anthropicKit(a.key, a.model, book, signal) : freeKit(a.id, a.key, a.models, book, signal);
 }
 
 /** A multiple-choice quiz on the book (story, words in context, grammar of the level). */
 export async function makeQuiz(book: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
-  const a = active();
-  return a.id === "anthropic" ? anthropicQuiz(a.key, book, words, grammar, signal) : freeQuiz(a.id, a.key, a.models, book, words, grammar, signal);
+  const a = active("quiz");
+  return a.id === "anthropic" ? anthropicQuiz(a.key, a.model, book, words, grammar, signal) : freeQuiz(a.id, a.key, a.models, book, words, grammar, signal);
 }
 
 /** Translates a saved quote into Brazilian Portuguese. */
 export async function translateQuote(text: string, book?: Book, signal?: AbortSignal): Promise<string> {
-  const a = active();
-  return a.id === "anthropic" ? anthropicTranslate(a.key, text, book, signal) : freeTranslate(a.id, a.key, a.models, text, book, signal);
+  const a = active("translate");
+  return a.id === "anthropic" ? anthropicTranslate(a.key, a.model, text, book, signal) : freeTranslate(a.id, a.key, a.models, text, book, signal);
 }
 
 export async function correctText(book: Book, text: string, onText: (t: string) => void, signal?: AbortSignal) {
-  const a = active();
-  return a.id === "anthropic" ? anthropicCorrect(a.key, book, text, onText, signal) : freeCorrect(a.id, a.key, a.models, book, text, onText, signal);
+  const a = active("correct");
+  return a.id === "anthropic" ? anthropicCorrect(a.key, a.model, book, text, onText, signal) : freeCorrect(a.id, a.key, a.models, book, text, onText, signal);
 }

@@ -6,9 +6,15 @@ import type { Book } from "@/lib/books";
 import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
 import { SYSTEM, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt } from "./prompts";
 
-const MODEL = "claude-opus-5-5";
+/** The Claude models a key can pick per task; Opus is the default for everything. */
+export const CLAUDE_MODELS = [
+  { id: "claude-opus-5-5", label: "Claude Opus 5.5" },
+  { id: "claude-sonnet-5-5", label: "Claude Sonnet 5.5" },
+  { id: "claude-haiku-5-5", label: "Claude Haiku 5.5" },
+];
 // If a safety classifier declines, the API retries on Anthropic's recommended fallback model.
-const FALLBACK = { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const };
+// Haiku has no server-side fallback, so it goes without.
+const fallback = (model: string) => (model.includes("haiku") ? {} : { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const });
 
 const client = (apiKey: string) => new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
@@ -26,21 +32,20 @@ function friendly(error: unknown): Error {
   return new Error("Não deu certo agora. Tente de novo.");
 }
 
-/** Cheap check that the key works (reads one model's info, no tokens spent). */
+/** Cheap check that the key works and which models it can use (reads model info, no tokens spent). */
 export async function anthropicModels(apiKey: string) {
-  try {
-    await client(apiKey).models.retrieve(MODEL);
-    return [{ id: MODEL, label: "Claude Opus 5.5" }];
-  } catch (e) {
-    throw friendly(e);
-  }
+  const c = client(apiKey);
+  const found = await Promise.allSettled(CLAUDE_MODELS.map((m) => c.models.retrieve(m.id)));
+  const models = CLAUDE_MODELS.filter((_, i) => found[i].status === "fulfilled");
+  if (!models.length) throw friendly((found[0] as PromiseRejectedResult).reason);
+  return models;
 }
 
-export async function anthropicWord(apiKey: string, word: string, book?: Book): Promise<WordInfo> {
+export async function anthropicWord(apiKey: string, model: string, word: string, book?: Book): Promise<WordInfo> {
   try {
     const res = await client(apiKey).beta.messages.parse({
-      ...FALLBACK,
-      model: MODEL,
+      ...fallback(model),
+      model,
       max_tokens: 2000,
       system: SYSTEM,
       output_config: { effort: "low", format: betaZodOutputFormat(WordInfoSchema) },
@@ -53,12 +58,12 @@ export async function anthropicWord(apiKey: string, word: string, book?: Book): 
   }
 }
 
-export async function anthropicKit(apiKey: string, b: Book, signal?: AbortSignal): Promise<KitResult> {
+export async function anthropicKit(apiKey: string, model: string, b: Book, signal?: AbortSignal): Promise<KitResult> {
   try {
     const res = await client(apiKey).beta.messages.parse(
       {
-        ...FALLBACK,
-        model: MODEL,
+        ...fallback(model),
+        model,
         max_tokens: 8000,
         system: SYSTEM,
         output_config: { effort: "medium", format: betaZodOutputFormat(KitSchema) },
@@ -73,12 +78,12 @@ export async function anthropicKit(apiKey: string, b: Book, signal?: AbortSignal
   }
 }
 
-export async function anthropicQuiz(apiKey: string, b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
+export async function anthropicQuiz(apiKey: string, model: string, b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
   try {
     const res = await client(apiKey).beta.messages.parse(
       {
-        ...FALLBACK,
-        model: MODEL,
+        ...fallback(model),
+        model,
         max_tokens: 8000,
         system: SYSTEM,
         output_config: { effort: "medium", format: betaZodOutputFormat(QuizSchema) },
@@ -93,12 +98,12 @@ export async function anthropicQuiz(apiKey: string, b: Book, words: string[], gr
   }
 }
 
-export async function anthropicTranslate(apiKey: string, text: string, book?: Book, signal?: AbortSignal) {
+export async function anthropicTranslate(apiKey: string, model: string, text: string, book?: Book, signal?: AbortSignal) {
   try {
     const res = await client(apiKey).beta.messages.create(
       {
-        ...FALLBACK,
-        model: MODEL,
+        ...fallback(model),
+        model,
         max_tokens: 4000,
         system: SYSTEM,
         output_config: { effort: "low" },
@@ -115,12 +120,12 @@ export async function anthropicTranslate(apiKey: string, text: string, book?: Bo
   }
 }
 
-export async function anthropicCorrect(apiKey: string, b: Book, text: string, onText: (t: string) => void, signal?: AbortSignal) {
+export async function anthropicCorrect(apiKey: string, model: string, b: Book, text: string, onText: (t: string) => void, signal?: AbortSignal) {
   try {
     const stream = client(apiKey).beta.messages.stream(
       {
-        ...FALLBACK,
-        model: MODEL,
+        ...fallback(model),
+        model,
         max_tokens: 8000,
         system: SYSTEM,
         output_config: { effort: "medium" },

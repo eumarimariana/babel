@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { PROVIDERS, connectProvider, removeProvider, setActiveProvider, setModel, useAiConfig, type ProviderId } from "@/lib/ai-client";
+import { PROVIDERS, applyTaskSuggestions, connectProvider, removeProvider, setActiveProvider, setModel, setTaskModel, taskModel, taskSuggestions, useAiConfig, type ProviderId } from "@/lib/ai-client";
+import { AI_TASKS, TIER_WHY } from "@/lib/ai/task-models";
 import { cn } from "@/lib/utils";
 import { SimpleSelect } from "./common";
 import { brDate, normalize, today, useEstante } from "@/lib/store";
@@ -203,6 +204,7 @@ function AiSection({ onDone }: { onDone?: () => void }) {
               />
             </div>
           )}
+          {models.length > 0 && <TaskModels provider={selected} />}
           <div className="flex flex-wrap gap-2">
             {!inUse && (
               <button onClick={() => (setActiveProvider(selected), toast.success(`Agora usando ${info.name}.`))} className="h-9 rounded-full bg-sand px-4 text-sm font-bold text-sand-foreground">
@@ -264,6 +266,63 @@ function AiSection({ onDone }: { onDone?: () => void }) {
         <LockSimpleIcon weight="bold" className="mt-0.5 size-4 shrink-0" />
         A chave fica só neste navegador e vai direto para o provedor, sem passar por nenhum servidor do Babel. Em computador compartilhado, remova ao terminar.
       </p>
+    </div>
+  );
+}
+
+/** "Melhor modelo para cada tarefa": a suggested model per task, picked from the models this key can use. */
+function TaskModels({ provider }: { provider: ProviderId }) {
+  const config = useAiConfig();
+  const models = config.modelLists[provider] ?? [];
+  const suggested = taskSuggestions(provider);
+  const label = (id: string) => models.find((m) => m.id === id)?.label ?? id;
+  const differs = AI_TASKS.some((t) => taskModel(config, provider, t.id) !== suggested[t.id]);
+  const claudeOld = provider === "anthropic" && models.length === 1; // connected before Sonnet and Haiku were listed
+
+  return (
+    <div className="grid gap-3 border-t border-ink-border pt-3">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="text-sm font-semibold">Melhor modelo para cada tarefa</p>
+          <p className="text-xs text-ink-muted">Sugestões a partir dos {models.length} modelos que a sua chave tem.</p>
+        </div>
+        {differs && (
+          <button onClick={() => (applyTaskSuggestions(provider), toast.success("Cada tarefa agora usa o modelo sugerido."))} className="h-8 rounded-full bg-sand px-3.5 text-xs font-bold text-sand-foreground">
+            Usar as sugestões
+          </button>
+        )}
+      </div>
+      <ul className="grid gap-2.5">
+        {AI_TASKS.map((t) => {
+          const current = taskModel(config, provider, t.id);
+          const isSuggested = current === suggested[t.id];
+          return (
+            <li key={t.id} className="grid gap-1.5 rounded-xl bg-white/5 p-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                <span className="text-sm font-medium">{t.label}</span>
+                <span className="text-[11px] text-ink-muted">{t.detail}</span>
+              </div>
+              {models.length > 1 ? (
+                <SimpleSelect
+                  label={`Modelo para ${t.label.toLowerCase()}`}
+                  value={current}
+                  onChange={(m) => setTaskModel(provider, t.id, m)}
+                  options={models.map((m) => ({ value: m.id, label: m.id === suggested[t.id] ? `${m.label} · sugerido` : m.label }))}
+                  className="h-9 w-full border-ink-border bg-white/5 text-ink-foreground dark:bg-white/5 [&_svg]:text-ink-muted"
+                />
+              ) : (
+                <span className="text-xs">{label(current)}</span>
+              )}
+              <p className="flex items-start gap-1.5 text-[11px] text-ink-muted">
+                {isSuggested && <CheckIcon weight="bold" className="mt-0.5 size-3 shrink-0 text-sand" />}
+                {isSuggested ? `Sugerido: ${TIER_WHY[t.tier]}.` : `Sugerido: ${label(suggested[t.id])} (${TIER_WHY[t.tier]}).`}
+              </p>
+            </li>
+          );
+        })}
+      </ul>
+      {claudeOld && <p className="text-[11px] text-ink-muted">Sua chave foi conectada antes de o app listar o Sonnet e o Haiku. Cole a chave de novo em &quot;Trocar a chave&quot; para ver todos os modelos do Claude.</p>}
+      {provider === "anthropic" && <p className="text-[11px] text-ink-muted">Preço por milhão de tokens (entrada / saída): Haiku 5.5 US$ 0,10 / 0,50 · Sonnet 5.5 US$ 2 / 10 · Opus 5.5 US$ 4 / 20.</p>}
     </div>
   );
 }
