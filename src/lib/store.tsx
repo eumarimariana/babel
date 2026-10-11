@@ -37,7 +37,7 @@ export type QuizQuestion = {
   wordId?: string; // set when the question comes from a word in the notebook
 };
 export type SavedQuiz = { questions: QuizQuestion[]; at: string };
-export type QuizScore = { best: number; last: number; total: number; times: number; at: string };
+export type QuizScore = { best: number; last: number; total: number; times: number; at: string; gaps?: string[] }; // gaps = grammar topics missed last time
 export type ResourceStatus = "want" | "doing" | "done";
 export type ResourceMark = { st?: ResourceStatus; rating?: number; note?: string; lesson?: number; d: string };
 export type KitWord = { w: string; pos: string; pt: string; en: string; ex: string };
@@ -124,7 +124,7 @@ type Ctx = {
   updateQuote: (id: string, patch: Partial<Pick<Quote, "text" | "pt" | "page" | "note">>) => void;
   deleteQuote: (id: string) => void;
   saveQuiz: (bookId: number, quiz: SavedQuiz) => void;
-  recordScore: (key: string, correct: number, total: number) => void;
+  recordScore: (key: string, correct: number, total: number, gaps?: string[]) => void;
   markResource: (id: string, patch: Partial<Omit<ResourceMark, "d">>) => void;
   markDay: () => void;
   replaceAll: (d: Data) => void;
@@ -237,11 +237,11 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
   const deleteQuote = useCallback((id: string) => setData((d) => ({ ...d, quotes: d.quotes.filter((q) => q.id !== id) })), []);
   const saveQuiz = useCallback((bookId: number, quiz: SavedQuiz) => setData((d) => ({ ...d, quizzes: { ...d.quizzes, [bookId]: quiz } })), []);
   const recordScore = useCallback(
-    (key: string, correct: number, total: number) =>
+    (key: string, correct: number, total: number, gaps?: string[]) =>
       setData((d) => {
         const prev = d.scores[key];
         const best = prev && prev.best / prev.total >= correct / total ? prev : { best: correct, total };
-        return withDay({ ...d, scores: { ...d.scores, [key]: { best: best.best, total: best.total, last: correct, times: (prev?.times ?? 0) + 1, at: today() } } });
+        return withDay({ ...d, scores: { ...d.scores, [key]: { best: best.best, total: best.total, last: correct, times: (prev?.times ?? 0) + 1, at: today(), ...(gaps?.length ? { gaps } : {}) } } });
       }),
     [],
   );

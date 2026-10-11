@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { BASE_INFO, BOOKS, BOOK_BY_ID, type Book, baseOf, bookUrl, describeBook, grammarFor, kindOf, langInfo, langOf, questionsFor } from "@/lib/books";
+import { topicsIn } from "@/lib/resources";
 import { today, useEstante } from "@/lib/store";
 import { correctText, makeKit } from "@/lib/ai-client";
 import { BookCover, SimpleSelect, StatusPicker, copyText, useBookOptions } from "./common";
@@ -87,7 +88,7 @@ function Step({ eyebrow, title, desc, children }: { eyebrow: string; title: stri
 }
 
 /** Row in the style of a "daily schedule" list: number tile, title, subtitle. */
-function ListRow({ n, title, sub, example }: { n: number; title: string; sub?: string; example?: string }) {
+function ListRow({ n, title, sub, example, children }: { n: number; title: string; sub?: string; example?: string; children?: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl bg-muted/70 p-3">
       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-card text-xs font-bold ring-1 ring-border tabular">{String(n).padStart(2, "0")}</span>
@@ -95,8 +96,25 @@ function ListRow({ n, title, sub, example }: { n: number; title: string; sub?: s
         <p className="font-semibold">{title}</p>
         {sub && <p className="text-muted-foreground">{sub}</p>}
         {example && <p className="mt-0.5 text-xs text-muted-foreground tabular">“{example}”</p>}
+        {children}
       </div>
     </div>
+  );
+}
+
+/** "Entender isso": the explanation pages for the grammar points named in the text. */
+function TopicLinks({ text, lang }: { text: string; lang: Parameters<typeof topicsIn>[1] }) {
+  const links = topicsIn(text, lang).flatMap((t) => t.links.slice(0, 1).map((l) => ({ ...l, label: t.label })));
+  if (!links.length) return null;
+  return (
+    <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+      <span className="text-muted-foreground">Entender isso:</span>
+      {links.map((l) => (
+        <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium underline-offset-2 hover:underline">
+          {links.length > 1 ? l.label : l.name} <ArrowSquareOutIcon weight="bold" className="size-3" />
+        </a>
+      ))}
+    </p>
   );
 }
 
@@ -190,7 +208,9 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
           <div className="grid gap-2">
             <h3 className="font-display text-base">Gramática do nível</h3>
             {kit.grammar.map((g, i) => (
-              <ListRow key={g.point} n={i + 1} title={g.point} sub={g.pt} example={g.example} />
+              <ListRow key={g.point} n={i + 1} title={g.point} sub={g.pt} example={g.example}>
+                <TopicLinks text={`${g.point} ${g.pt}`} lang={langOf(book)} />
+              </ListRow>
             ))}
           </div>
           {kit.questions.length > 0 && (
@@ -204,7 +224,9 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
         <div className="grid gap-2">
           <h3 className="font-display text-base">O que observar no {book.lv}</h3>
           {grammarFor(langOf(book), book.lv).map((g, i) => (
-            <ListRow key={g} n={i + 1} title={g} />
+            <ListRow key={g} n={i + 1} title={g}>
+              <TopicLinks text={g} lang={langOf(book)} />
+            </ListRow>
           ))}
         </div>
       )}

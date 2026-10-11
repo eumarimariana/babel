@@ -2,11 +2,12 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ArrowClockwiseIcon, ArrowRightIcon, CheckIcon, CopyIcon, ExamIcon, ListChecksIcon, NotePencilIcon, XIcon } from "@phosphor-icons/react";
+import { ArrowClockwiseIcon, ArrowRightIcon, ArrowSquareOutIcon, CheckIcon, CopyIcon, ExamIcon, ListChecksIcon, NotePencilIcon, XIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { BOOK_BY_ID, BOOKS, grammarFor, langInfo, langOf } from "@/lib/books";
 import { brDate, today, useEstante, type QuizQuestion, type Word } from "@/lib/store";
 import { makeQuiz } from "@/lib/ai-client";
+import { topicsIn } from "@/lib/resources";
 import { quizPrompt } from "@/lib/ai/prompts";
 import { cn } from "@/lib/utils";
 import { BookCover, SimpleSelect, copyText, useBookOptions, useLang } from "./common";
@@ -174,6 +175,8 @@ function ScoreLine({ score }: { score: { best: number; last: number; total: numb
 
 function Player({ run, onExit, onAgain }: { run: Run; onExit: () => void; onAgain: () => void }) {
   const { recordScore, gradeWord } = useEstante();
+  const lang = useLang();
+  const topicsOf = (m: QuizQuestion) => (m.kind === "grammar" ? topicsIn(`${m.q} ${m.why} ${m.options[m.answer]}`, lang) : []);
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [right, setRight] = useState(0);
@@ -196,7 +199,7 @@ function Player({ run, onExit, onAgain }: { run: Run; onExit: () => void; onAgai
       return;
     }
     setFinished(true);
-    recordScore(run.key, right, total);
+    recordScore(run.key, right, total, [...new Set(missed.flatMap((m) => topicsOf(m).map((t) => t.id)))]);
     // words you missed come back to today's reviews
     for (const m of missed) if (m.wordId) gradeWord(m.wordId, 0);
   }
@@ -224,6 +227,11 @@ function Player({ run, onExit, onAgain }: { run: Run; onExit: () => void; onAgai
                   {m.options[m.answer]}
                 </p>
                 {m.why && <p className="text-muted-foreground">{m.why}</p>}
+                {topicsOf(m).map((t) => (
+                  <a key={t.id} href={t.links[0].url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex w-fit items-center gap-1 text-xs font-semibold underline-offset-2 hover:underline">
+                    Revisar: {t.label} <ArrowSquareOutIcon weight="bold" className="size-3" />
+                  </a>
+                ))}
               </div>
             ))}
             {missed.some((m) => m.wordId) && <p className="text-xs text-muted-foreground">As palavras que você errou voltaram para as revisões de hoje.</p>}

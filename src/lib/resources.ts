@@ -47,3 +47,44 @@ const BY_LANG: Partial<Record<Lang, Resource[]>> = { en: enResources as Resource
 export const resourcesFor = (lang: Lang) => BY_LANG[lang] ?? [];
 
 export const siteOf = (url: string) => new URL(url).hostname.replace(/^www\./, "");
+
+/**
+ * Grammar topics, recognised in the free text of the level list, the AI kit and quiz questions,
+ * each linked to the page that explains it (Perfect English Grammar and EnglishPage have one page per topic).
+ */
+export type GrammarTopic = { id: string; label: string; match: RegExp; links: { name: string; url: string }[] };
+
+const peg = (page: string) => ({ name: "Perfect English Grammar", url: `https://www.perfect-english-grammar.com/${page}.html` });
+const ep = (page: string) => ({ name: "EnglishPage", url: `https://www.englishpage.com/${page}.html` });
+
+export const GRAMMAR_TOPICS: GrammarTopic[] = [
+  { id: "present-simple", label: "Present simple", match: /present simple|simple present|have got/i, links: [peg("present-simple"), ep("verbpage/simplepresent")] },
+  { id: "present-continuous", label: "Present continuous", match: /present (continuous|progressive)/i, links: [peg("present-continuous"), ep("verbpage/presentcontinuous")] },
+  { id: "past-simple", label: "Past simple", match: /past simple|simple past|verbos (regulares|irregulares)/i, links: [peg("past-simple"), ep("verbpage/simplepast")] },
+  { id: "past-continuous", label: "Past continuous", match: /past (continuous|progressive)/i, links: [peg("past-continuous"), ep("verbpage/pastcontinuous")] },
+  { id: "present-perfect", label: "Present perfect", match: /present perfect/i, links: [peg("present-perfect"), peg("present-perfect-or-past-simple")] },
+  { id: "past-perfect", label: "Past perfect", match: /past perfect/i, links: [peg("past-perfect"), ep("verbpage/pastperfect")] },
+  { id: "future", label: "Will e going to", match: /\bwill\b|going to|future|futuro/i, links: [peg("will-or-be-going-to"), ep("verbpage/simplefuture")] },
+  { id: "used-to", label: "Used to", match: /used to/i, links: [peg("used-to"), ep("verbpage/usedto")] },
+  { id: "comparatives", label: "Comparativos e superlativos", match: /comparativ|superlativ/i, links: [peg("adjectives-comparative-and-superlative")] },
+  { id: "can", label: "Can (habilidade)", match: /\bcan\b.*(habilidade|abilit)|(habilidade|abilit).*\bcan\b/i, links: [peg("modal-verbs-of-ability")] },
+  { id: "deduction", label: "Modais de dedução", match: /dedu[cç]|must have|can't have|might have|probabilit/i, links: [peg("modal-verbs-of-probability"), peg("past-modals")] },
+  { id: "modals", label: "Verbos modais", match: /\bmodal|\bmust\b|\bshould\b|\bmight\b/i, links: [peg("modal-verbs"), ep("modals/modalintro")] },
+  { id: "conditionals", label: "Conditionals", match: /conditional|condicion/i, links: [peg("conditionals"), ep("conditional/conditionalintro")] },
+  { id: "passive", label: "Voz passiva", match: /passiv/i, links: [peg("passive"), ep("verbpage/activepassive")] },
+  // "discurso indireto livre" is a narrative technique, not reported speech
+  { id: "reported-speech", label: "Reported speech", match: /reported speech|indirect speech|discurso indireto(?! livre)|estilo indireto/i, links: [peg("reported-speech"), peg("reporting-verbs")] },
+  { id: "relative-clauses", label: "Orações relativas", match: /relativ/i, links: [peg("relative-clauses"), peg("relative-pronouns")] },
+  { id: "gerunds", label: "Gerúndio e infinitivo", match: /gerund|infinitive/i, links: [peg("gerunds-and-infinitives")] },
+  { id: "phrasal-verbs", label: "Phrasal verbs", match: /phrasal/i, links: [peg("phrasal-verbs-1")] },
+  { id: "wish", label: "Wish", match: /\bwish\b/i, links: [peg("wish")] },
+];
+export const TOPIC_BY_ID = new Map(GRAMMAR_TOPICS.map((t) => [t.id, t]));
+
+/** Topics named in a piece of text. Only English has links for now. */
+export function topicsIn(text: string, lang: Lang) {
+  if (lang !== "en") return [];
+  const found = GRAMMAR_TOPICS.filter((t) => t.match.test(text));
+  // "must have" is deduction, not the general modals page
+  return found.some((t) => t.id === "deduction") ? found.filter((t) => t.id !== "modals") : found;
+}
