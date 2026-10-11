@@ -269,7 +269,7 @@ function Shell() {
                 <TabsContent value="materials">
                   <MaterialsTab book={nextBook} onGo={go} onOpen={setOpenBook} />
                 </TabsContent>
-                <TabsContent value="review">{ready && <ReviewTab key={`${ready}-${lang}`} onGoVocab={() => go("vocab")} />}</TabsContent>
+                <TabsContent value="review">{ready && <ReviewTab key={`${ready}-${lang}`} onGoVocab={() => go("vocab")} onGoPacks={lang === "en" ? () => go("materials") : undefined} />}</TabsContent>
                 <TabsContent value="study">
                   <StudyTab aiName={aiName} bookId={studyBook} onBookChange={setStudyId} />
                 </TabsContent>

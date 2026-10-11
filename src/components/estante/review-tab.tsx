@@ -11,7 +11,7 @@ import { DictButton, Segmented, SpeakButton, useLang } from "./common";
 
 type Mode = "en" | "pt";
 
-export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
+export function ReviewTab({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks?: () => void }) {
   const { data: all, due: allDue, gradeWord } = useEstante();
   const lang = useLang();
   const name = langInfo(lang).name.toLowerCase();
@@ -70,9 +70,16 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
         title="Nada para revisar ainda"
         text="As palavras que você salvar no caderno viram flashcards aqui. Cada acerto empurra a próxima revisão para mais longe (1, 2, 4, 8, 16 e 32 dias). Cada erro traz a palavra de volta para hoje."
         action={
-          <button onClick={onGoVocab} className="h-10 rounded-full bg-sand px-5 text-sm font-bold text-sand-foreground">
-            Ir para o caderno
-          </button>
+          <div className="flex flex-wrap justify-center gap-2">
+            <button onClick={onGoVocab} className="h-10 rounded-full bg-sand px-5 text-sm font-bold text-sand-foreground">
+              Ir para o caderno
+            </button>
+            {onGoPacks && (
+              <button onClick={onGoPacks} className="h-10 rounded-full border border-ink-border px-5 text-sm font-medium hover:bg-white/5">
+                Importar palavras frequentes
+              </button>
+            )}
+          </div>
         }
       />
     );

@@ -27,6 +27,7 @@ import { useEstante, type ResourceMark, type ResourceStatus } from "@/lib/store"
 import { cn } from "@/lib/utils";
 import { Segmented, useLang } from "./common";
 import { MissionCard } from "./mission-card";
+import { WordPacks } from "./word-packs";
 
 const KIND_ICON: Record<ResourceKind, typeof CompassIcon> = {
   grammar: TextAaIcon,
@@ -169,10 +170,11 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
         <p className="rounded-[1.25rem] bg-muted/70 p-5 text-sm text-muted-foreground">Nenhum material com esses filtros.</p>
       )}
 
+      {lang === "en" && <WordPacks onGoReview={() => onGo("review")} />}
+
       <section className="rounded-[1.25rem] border border-dashed border-border p-5">
         <h3 className="text-sm font-semibold">Em breve nesta aba</h3>
         <ul className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-          <li>· Pacotes de palavras frequentes para as Revisões</li>
           <li>· Teste de nível e adicionar seus próprios links</li>
         </ul>
       </section>

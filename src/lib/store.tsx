@@ -100,6 +100,27 @@ export function normalize(input: unknown): Data {
   };
 }
 
+const sameWord = (a: Word, b: Word) => (a.ln ?? "en") === (b.ln ?? "en") && a.w.toLowerCase() === b.w.toLowerCase();
+
+function newWord(w: Partial<Word> & { w: string }): Word | null {
+  const text = w.w.trim();
+  if (!text) return null;
+  return {
+    id: "w" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+    w: text,
+    ln: w.ln ?? "en",
+    pt: w.pt ?? "",
+    en: w.en ?? "",
+    ex: w.ex ?? "",
+    pos: w.pos ?? "",
+    book: w.book ?? null,
+    box: 0,
+    due: today(),
+    created: new Date().toISOString(),
+    reps: 0,
+  };
+}
+
 function streakOf(days: string[]) {
   const set = new Set(days);
   let d = today();
@@ -118,6 +139,7 @@ type Ctx = {
   status: (id: number) => Status | "";
   setStatus: (id: number, st: Status | "") => void;
   addWord: (w: Partial<Word> & { w: string }) => boolean;
+  addWords: (ws: (Partial<Word> & { w: string })[]) => number;
   gradeWord: (id: string, grade: 0 | 1 | 2) => void;
   deleteWord: (id: string) => void;
   saveKit: (bookId: number, kit: Kit) => void;
@@ -179,26 +201,24 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
 
   const addWord = useCallback(
     (w: Partial<Word> & { w: string }) => {
-      const text = w.w.trim();
-      const ln = w.ln ?? "en";
-      const same = (x: Word) => (x.ln ?? "en") === ln && x.w.toLowerCase() === text.toLowerCase();
-      if (!text || data.words.some(same)) return false;
-      const word: Word = {
-        id: "w" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-        w: text,
-        ln: w.ln ?? "en",
-        pt: w.pt ?? "",
-        en: w.en ?? "",
-        ex: w.ex ?? "",
-        pos: w.pos ?? "",
-        book: w.book ?? null,
-        box: 0,
-        due: today(),
-        created: new Date().toISOString(),
-        reps: 0,
-      };
-      setData((d) => (d.words.some(same) ? d : withDay({ ...d, words: [...d.words, word] })));
+      const word = newWord(w);
+      if (!word || data.words.some((x) => sameWord(x, word))) return false;
+      setData((d) => (d.words.some((x) => sameWord(x, word)) ? d : withDay({ ...d, words: [...d.words, word] })));
       return true;
+    },
+    [data.words],
+  );
+
+  /** Several words in one go (a word pack); the ones already in the notebook are skipped. Returns how many were added. */
+  const addWords = useCallback(
+    (ws: (Partial<Word> & { w: string })[]) => {
+      const fresh: Word[] = [];
+      for (const w of ws) {
+        const word = newWord(w);
+        if (word && ![...data.words, ...fresh].some((x) => sameWord(x, word))) fresh.push(word);
+      }
+      if (fresh.length) setData((d) => withDay({ ...d, words: [...d.words, ...fresh.filter((f) => !d.words.some((x) => sameWord(x, f)))] }));
+      return fresh.length;
     },
     [data.words],
   );
@@ -285,6 +305,7 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       status: (id) => data.progress[id]?.st ?? "",
       setStatus,
       addWord,
+      addWords,
       gradeWord,
       deleteWord,
       saveKit,
@@ -301,7 +322,7 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }
