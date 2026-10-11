@@ -23,7 +23,8 @@ import {
   TrashIcon,
 } from "@phosphor-icons/react";
 import { langInfo, type Book } from "@/lib/books";
-import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, allResourcesFor, plainLevel, siteOf } from "@/lib/resources";
+import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, allResourcesFor, siteOf } from "@/lib/resources";
+import { learnerLevel } from "@/lib/recommend";
 import { useEstante, type ResourceMark, type ResourceStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { BTN, ScrollRow, SectionHead, useLang } from "./common";
@@ -55,11 +56,10 @@ const STATUS: { value: ResourceStatus; label: string }[] = [
 
 /** Free sites, playlists and dictionaries by skill and level, plus the daily mission, the level test, word packs and your own links. */
 export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: string) => void; onOpen: (id: number) => void }) {
-  const level = book?.lv;
   const lang = useLang();
   const { data, markResource, deleteResource } = useEstante();
   const all = allResourcesFor(lang, data.myResources);
-  const mapLevel = plainLevel(level);
+  const mapLevel = learnerLevel(data, lang); // placement test and books read
   const [lv, setLv] = useState<string | null>(null); // null = follow the reading map
   const shownLevel = lv ?? (mapLevel || "all");
   const [kind, setKind] = useState<ResourceKind | "all">("all");
@@ -146,7 +146,7 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
             {["all", ...RESOURCE_LEVELS].map((l) => (
               <Chip key={l} on={shownLevel === l} onClick={() => (setLv(l), setKind("all"))}>
                 {l === "all" ? "Todos" : l}
-                {l === mapLevel && <span className="opacity-60"> · mapa</span>}
+                {l === mapLevel && <span className="opacity-60"> · seu nível</span>}
               </Chip>
             ))}
           </FilterRow>

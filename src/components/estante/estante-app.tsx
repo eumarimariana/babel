@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ALL_BOOKS, BOOKS, BOOK_BY_ID, LANGS, type Base, type Book, type Lang, STAGES, baseBooks, basesFor, booksFor, cefrRank, langOf } from "@/lib/books";
 import { setStudyLang } from "@/lib/ai/prompts";
+import { recommendBooks } from "@/lib/recommend";
 import { EstanteProvider, useEstante } from "@/lib/store";
 import { activeProviderName, subscribeAi, useAiConfig } from "@/lib/ai-client";
 import { BooksTab } from "./books-tab";
@@ -48,13 +49,28 @@ const readLang = (): Lang => {
   }
 };
 
+// the shelf's base is remembered per language, so a reload does not jump back to the first one
+const baseKey = (l: Lang) => `babel-base-${l}`;
+const readBase = (l: Lang): Base => {
+  try {
+    const v = localStorage.getItem(baseKey(l));
+    if (basesFor(l).some((d) => d.id === v)) return v as Base;
+  } catch {
+    /* private mode */
+  }
+  return basesFor(l)[0].id;
+};
+
 function Shell() {
   const { data, ready, status, streak, due: allDue } = useEstante();
   // The language being studied works as a light profile: shelf, notebook, quotes, reviews, voice and AI follow it.
   const [lang, setLangState] = useState<Lang>("en");
+  const [base, setBaseState] = useState<Base>("eli");
   useEffect(() => {
+    const l = readLang();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- read the saved profile once, after hydration
-    setLangState(readLang());
+    setLangState(l);
+    setBaseState(readBase(l));
   }, []);
   useEffect(() => setStudyLang(lang), [lang]);
   const inLang = (x: { ln?: Lang }) => (x.ln ?? "en") === lang;
@@ -75,10 +91,17 @@ function Shell() {
   const [celebrate, setCelebrate] = useState<Book | null>(null);
   const prevDone = useRef<Set<string> | null>(null);
   const [query, setQuery] = useState("");
-  const [base, setBase] = useState<Base>("eli");
+  const setBase = (b: Base) => {
+    setBaseState(b);
+    try {
+      localStorage.setItem(baseKey(lang), b);
+    } catch {
+      /* private mode */
+    }
+  };
   const setLang = (l: Lang) => {
     setLangState(l);
-    setBase(basesFor(l)[0].id);
+    setBaseState(readBase(l));
     setStudyId(null);
     setVocabBook("none");
     setQuoteBook("none");
@@ -106,7 +129,9 @@ function Shell() {
   const ladder = base === "eli" ? BOOKS : [...baseBooks(base)].sort((a, b) => cefrRank(a.lv) - cefrRank(b.lv));
   const done = ladder.filter((b) => status(b.id) === "done").length;
   const reading = ALL_BOOKS.filter((b) => status(b.id) === "reading" && langOf(b) === lang);
-  const nextBook = reading[0] ?? ladder.find((b) => status(b.id) !== "done");
+  // what to read next comes from the free sources at the learner's level, not from the shelf's base
+  const suggested = recommendBooks(data, lang, 6);
+  const nextBook = reading[0] ?? suggested[0];
   const studyBook = studyId && BOOK_BY_ID.get(studyId) && langOf(BOOK_BY_ID.get(studyId)!) === lang ? studyId : (nextBook?.id ?? booksFor(lang)[0].id);
 
   const go = (t: string) => {
@@ -167,7 +192,7 @@ function Shell() {
     if (tab !== "books") setTab("books");
   };
   const docked = tab === "books" && wideXl;
-  const panelBook = openBook ?? (base === "eli" ? (nextBook?.id ?? null) : baseBooks(base)[0].id);
+  const panelBook = openBook ?? (ladder.find((b) => status(b.id) !== "done") ?? baseBooks(base)[0]).id;
 
   return (
     <LangContext.Provider value={lang}>
@@ -256,7 +281,7 @@ function Shell() {
             <div className={cn("min-w-0", docked && "xl:grid xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start xl:gap-5")}>
               <div className="min-w-0">
                 <TabsContent value="home">
-                  <HomeTab journey={journey} nextBook={nextBook} reading={reading} onGo={go} onOpen={setOpenBook} onStudy={goStudy} aiName={aiName} base={base} onBase={setBase} />
+                  <HomeTab journey={journey} nextBook={nextBook} suggested={suggested} reading={reading} onGo={go} onOpen={setOpenBook} onStudy={goStudy} aiName={aiName} base={base} onBase={setBase} />
                 </TabsContent>
                 <TabsContent value="books">
                   <BooksTab q={query} onQ={setQuery} onOpen={setOpenBook} selected={docked ? panelBook : null} base={base} onBase={setBase} />

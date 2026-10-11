@@ -2,18 +2,20 @@
 
 import { useState } from "react";
 import { ArrowUpRightIcon, CaretLeftIcon, CaretRightIcon, QuotesIcon } from "@phosphor-icons/react";
-import { ALL_BOOKS, BASE_INFO, basesFor, bookExtra, cefrRank, langOf, type Base, type Book } from "@/lib/books";
+import { ALL_BOOKS, BASE_INFO, basesFor, bookExtra, langOf, type Base, type Book } from "@/lib/books";
 import { addDays, today, useEstante, type Status } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { JourneyProps } from "@/remotion/Journey";
 import { BookCover, SectionHead, STATUS_LABEL, useLang } from "./common";
 import { MissionCard } from "./mission-card";
 import { JourneyPlayer } from "./players";
+import { sourceLine } from "@/lib/recommend";
 import { QuoteCard } from "./quotes-tab";
 
 type Props = {
   journey: JourneyProps;
   nextBook?: Book;
+  suggested: Book[]; // free books at the learner's level, from lib/recommend
   reading: Book[];
   onGo: (tab: string) => void;
   onOpen: (id: number) => void;
@@ -31,7 +33,7 @@ const levelSource = (base: Base) => {
 
 const WEEKDAY = ["Do", "Se", "Te", "Qa", "Qi", "Sx", "Sá"];
 
-export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiName, base, onBase }: Props) {
+export function HomeTab({ journey, nextBook, suggested, reading, onGo, onOpen, onStudy, aiName, base, onBase }: Props) {
   const { data: all, due: allDue, streak, status, updateQuote } = useEstante();
   const lang = useLang();
   // everything on the home screen belongs to the language being studied
@@ -40,10 +42,9 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiN
   const due = allDue.filter(inLang);
   const quote = data.quotes[0];
   const langBooks = ALL_BOOKS.filter((b) => langOf(b) === lang);
-  const graded = basesFor(lang).filter((d) => d.graded).flatMap((d) => d.books).sort((a, b) => cefrRank(a.lv) - cefrRank(b.lv));
   const want = langBooks.filter((b) => status(b.id) === "want");
   const pile = [...reading, ...want];
-  const cards = (pile.length >= 3 ? pile : [...pile, ...graded.filter((b) => !status(b.id))]).slice(0, 3);
+  const cards = (pile.length >= 3 ? pile : [...pile, ...suggested.filter((b) => !pile.includes(b))]).slice(0, 3);
   const tracked = langBooks.filter((b) => status(b.id)).slice(0, 5);
   // progress per CEFR band, from the map's stages (several stages can share a band)
   const bands = journey.stages.reduce<{ lv: string; done: number; total: number }[]>((acc, s) => {
@@ -192,10 +193,10 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiN
         <MissionCard book={nextBook} onGo={onGo} onOpen={onOpen} className="md:col-span-2 xl:col-span-1" />
         {nextBook && (
           <article className="relative overflow-hidden rounded-[1.5rem] bg-ink p-5 text-ink-foreground md:col-span-2 xl:col-span-1">
-            <p className="text-xs text-ink-muted tabular">{reading.length ? "Lendo agora" : "Próxima parada"}</p>
+            <p className="text-xs text-ink-muted tabular">{reading.length ? "Lendo agora" : "Sugestão para ler"}</p>
             <h2 className="mt-2 max-w-[11rem] font-display text-2xl leading-tight">{nextBook.t}</h2>
             <p className="mt-1 max-w-[11rem] text-xs text-ink-muted tabular">
-              {nextBook.lv} · {bookExtra(nextBook)}
+              {reading.length ? `${nextBook.lv} · ${bookExtra(nextBook)}` : `${sourceLine(nextBook)} · grátis`}
             </p>
             <button onClick={() => onStudy(nextBook.id)} className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-sand px-4 py-2 text-xs font-semibold text-sand-foreground hover:opacity-90">
               Abrir kit de estudo <ArrowUpRightIcon weight="bold" className="size-3.5" />

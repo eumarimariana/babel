@@ -1,8 +1,9 @@
 "use client";
 
 import { ArrowSquareOutIcon, ArrowUpRightIcon, ClipboardTextIcon } from "@phosphor-icons/react";
-import { basesFor, cefrRank, type Lang } from "@/lib/books";
-import { RESOURCE_LEVELS, plainLevel } from "@/lib/resources";
+import type { Lang } from "@/lib/books";
+import { recommendBooks, sourceLine } from "@/lib/recommend";
+import { RESOURCE_LEVELS } from "@/lib/resources";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -16,14 +17,10 @@ const TESTS: Partial<Record<Lang, { name: string; url: string; detail: string }[
 
 /** "Descobrir meu nível": take a free test, tell the app the result, get the right stop on the reading map. */
 export function LevelTest({ lang, onOpen }: { lang: Lang; onOpen: (id: number) => void }) {
-  const { data, status, setPlacement } = useEstante();
+  const { data, setPlacement } = useEstante();
   const result = data.placement[lang];
   const tests = TESTS[lang] ?? [];
-  const books = basesFor(lang)
-    .filter((d) => d.graded)
-    .flatMap((d) => d.books)
-    .sort((a, b) => cefrRank(a.lv) - cefrRank(b.lv));
-  const suggestion = result ? books.find((b) => plainLevel(b.lv) === result.lv && status(b.id) !== "done") : undefined;
+  const suggestion = result ? recommendBooks(data, lang, 1, result.lv)[0] : undefined;
 
   return (
     <article className="grid grid-cols-1 content-start gap-4 rounded-[1.5rem] border border-border bg-card p-5">
@@ -33,7 +30,7 @@ export function LevelTest({ lang, onOpen }: { lang: Lang; onOpen: (id: number) =
         </span>
         <div>
           <h2 className="font-display text-lg leading-tight">Descobrir meu nível</h2>
-          <p className="text-xs text-muted-foreground">{result ? `Seu teste deu ${result.lv} em ${brDate(result.at)}` : "o app sugere por onde começar o mapa"}</p>
+          <p className="text-xs text-muted-foreground">{result ? `Seu teste deu ${result.lv} em ${brDate(result.at)}` : "o app sugere livros grátis do seu nível"}</p>
         </div>
       </div>
 
@@ -75,14 +72,14 @@ export function LevelTest({ lang, onOpen }: { lang: Lang; onOpen: (id: number) =
         (suggestion ? (
           <button onClick={() => onOpen(suggestion.id)} className="flex items-center justify-between gap-3 rounded-2xl bg-ink p-3 text-left text-ink-foreground">
             <span className="min-w-0">
-              <span className="block text-xs text-ink-muted">Comece o mapa por aqui</span>
+              <span className="block text-xs text-ink-muted">Comece por aqui</span>
               <span className="block truncate text-sm font-semibold">{suggestion.t}</span>
-              <span className="block text-xs text-ink-muted tabular">{suggestion.lv}</span>
+              <span className="block text-xs text-ink-muted tabular">{sourceLine(suggestion)} · grátis</span>
             </span>
             <ArrowUpRightIcon className="size-4 shrink-0" />
           </button>
         ) : (
-          <p className="text-sm text-muted-foreground">Você já leu todos os livros {result.lv} desta língua. Tente o próximo nível.</p>
+          <p className="text-sm text-muted-foreground">Você já leu todos os livros grátis a partir do {result.lv}.</p>
         ))}
     </article>
   );
