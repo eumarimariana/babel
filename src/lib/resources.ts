@@ -83,6 +83,7 @@ const peg = (page: string) => ({ name: "Perfect English Grammar", url: `https://
 const ep = (page: string) => ({ name: "EnglishPage", url: `https://www.englishpage.com/${page}.html` });
 
 export const GRAMMAR_TOPICS: GrammarTopic[] = [
+  { id: "there-is", label: "There is / there are", match: /there (is|are)/i, links: [peg("there-is-there-are"), { name: "Grammarly", url: "https://www.grammarly.com/blog/grammar/there-is-there-are/" }] },
   { id: "present-simple", label: "Present simple", match: /present simple|simple present|have got/i, links: [peg("present-simple"), ep("verbpage/simplepresent")] },
   { id: "present-continuous", label: "Present continuous", match: /present (continuous|progressive)/i, links: [peg("present-continuous"), ep("verbpage/presentcontinuous")] },
   { id: "past-simple", label: "Past simple", match: /past simple|simple past|verbos (regulares|irregulares)/i, links: [peg("past-simple"), ep("verbpage/simplepast")] },
@@ -100,6 +101,9 @@ export const GRAMMAR_TOPICS: GrammarTopic[] = [
   // "discurso indireto livre" is a narrative technique, not reported speech
   { id: "reported-speech", label: "Reported speech", match: /reported speech|indirect speech|discurso indireto(?! livre)|estilo indireto/i, links: [peg("reported-speech"), peg("reporting-verbs")] },
   { id: "relative-clauses", label: "Orações relativas", match: /relativ/i, links: [peg("relative-clauses"), peg("relative-pronouns")] },
+  { id: "inversion", label: "Inversão", match: /invers/i, links: [peg("inversion"), { name: "EnglishGrammar.org", url: "https://www.englishgrammar.org/inversion/" }] },
+  // a narrative technique: explained in Portuguese first, the concept is the same in every language
+  { id: "free-indirect", label: "Discurso indireto livre", match: /discurso indireto livre|free indirect/i, links: [{ name: "Wikipédia", url: "https://pt.wikipedia.org/wiki/Discurso_indireto_livre" }, { name: "Wikipedia (en)", url: "https://en.wikipedia.org/wiki/Free_indirect_speech" }] },
   { id: "gerunds", label: "Gerúndio e infinitivo", match: /gerund|infinitive/i, links: [peg("gerunds-and-infinitives")] },
   { id: "phrasal-verbs", label: "Phrasal verbs", match: /phrasal/i, links: [peg("phrasal-verbs-1")] },
   { id: "wish", label: "Wish", match: /\bwish\b/i, links: [peg("wish")] },
