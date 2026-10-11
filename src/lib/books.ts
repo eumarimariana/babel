@@ -178,11 +178,18 @@ export function bookLinks(b: Book) {
 }
 
 /** Cover image: the ELi CDN (274×400 at md, same file in three sizes) or a free book's own cover URL. */
-export function coverUrl(b: Book, size: "xs" | "md" | "lg" = "md") {
-  if (b.cover) return b.cover;
-  if (!b.c) return null;
+/**
+ * Where to load a book's cover from, in order. www.gutenberg.org often answers 503/504 for images,
+ * so Gutenberg covers try the PGLAF mirror first and the main site second.
+ */
+export function coverUrls(b: Book, size: "xs" | "md" | "lg" = "md"): string[] {
+  if (b.cover) {
+    const pg = b.cover.match(/^https:\/\/www\.gutenberg\.org(\/cache\/epub\/.+)$/);
+    return pg ? [`https://gutenberg.pglaf.org${pg[1]}`, b.cover] : [b.cover];
+  }
+  if (!b.c) return [];
   const [id, hash] = b.c.split("/");
-  return `https://d2xfnexjhce5on.cloudfront.net/eli/book/${id}/${size}/${hash}.webp`;
+  return [`https://d2xfnexjhce5on.cloudfront.net/eli/book/${id}/${size}/${hash}.webp`];
 }
 
 /** CEFR colour slot: 0 = Pre-A1 … 5 = C1. */

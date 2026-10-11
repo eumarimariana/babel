@@ -7,7 +7,7 @@ import { ArrowRightIcon, CaretLeftIcon, CaretRightIcon, BookOpenIcon, BookOpenTe
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { basesFor, coverUrl, langInfo, levelColor, type Book, type Lang } from "@/lib/books";
+import { basesFor, coverUrls, langInfo, levelColor, type Book, type Lang } from "@/lib/books";
 import type { Status } from "@/lib/store";
 
 export type Option = { value: string; label: string };
@@ -198,18 +198,10 @@ export function StatusPicker({ value, onChange, tone }: { value: Status | ""; on
 
 /** Book cover from the ELi CDN, with a typographic fallback in the level colour. */
 export function BookCover({ book, status, size = "md", className, priority }: { book: Book; status?: Status | ""; size?: "xs" | "md" | "lg"; className?: string; priority?: boolean }) {
-  const src = coverUrl(book, size);
-  const w = { xs: 137, md: 274, lg: 549 }[size];
   return (
     <div className={cn("relative aspect-[274/400] overflow-hidden rounded-[0.35rem] bg-muted ring-1 ring-foreground/10", className)}>
-      {src ? (
-        <Image src={src} alt={`Capa de ${book.t}`} width={w} height={Math.round((w * 400) / 274)} unoptimized priority={priority} loading={priority ? undefined : "lazy"} className="size-full object-cover" />
-      ) : (
-        <div className="flex size-full flex-col justify-between bg-secondary p-3">
-          <span className="text-[11px] tracking-wider text-muted-foreground uppercase tabular">{book.lv}</span>
-          <span className="font-display text-base leading-tight">{book.t}</span>
-        </div>
-      )}
+      {/* keyed by book, so the fallback state starts fresh when the same slot shows another book */}
+      <CoverImage key={`${book.id}-${size}`} book={book} size={size} priority={priority} />
       {status === "done" && (
         <span className="absolute top-1.5 right-1.5 grid size-5 place-items-center rounded-full bg-foreground text-background" title="Lido">
           <CheckIcon weight="bold" className="size-3" />
@@ -226,6 +218,48 @@ export function BookCover({ book, status, size = "md", className, priority }: { 
         </span>
       )}
     </div>
+  );
+}
+
+/**
+ * The cover picture: tries each source in turn and falls back to a typeset cover when none loads.
+ * Square or landscape pictures (picture books, StoryWeaver crops) are shown whole over a blurred copy,
+ * instead of being cropped into the portrait book shape.
+ */
+function CoverImage({ book, size, priority }: { book: Book; size: "xs" | "md" | "lg"; priority?: boolean }) {
+  const urls = coverUrls(book, size);
+  const [i, setI] = useState(0);
+  const [wide, setWide] = useState(false);
+  const src = urls[i];
+  const w = { xs: 137, md: 274, lg: 549 }[size];
+
+  if (!src)
+    return (
+      <div className="flex size-full flex-col justify-between bg-secondary p-3">
+        <span className="text-[11px] tracking-wider text-muted-foreground uppercase tabular">{book.lv}</span>
+        <span className="font-display text-base leading-tight">{book.t}</span>
+      </div>
+    );
+
+  const img = (cls: string, extra?: object) => (
+    <Image src={src} alt="" width={w} height={Math.round((w * 400) / 274)} unoptimized loading={priority ? undefined : "lazy"} className={cls} {...extra} />
+  );
+  return (
+    <>
+      {wide && img("absolute inset-0 size-full scale-125 object-cover opacity-60 blur-xl", { "aria-hidden": true })}
+      <Image
+        src={src}
+        alt={`Capa de ${book.t}`}
+        width={w}
+        height={Math.round((w * 400) / 274)}
+        unoptimized
+        priority={priority}
+        loading={priority ? undefined : "lazy"}
+        onLoad={(e) => setWide(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight > 0.85)}
+        onError={() => setI((n) => n + 1)}
+        className={cn("relative size-full", wide ? "object-contain drop-shadow-md" : "object-cover")}
+      />
+    </>
   );
 }
 
