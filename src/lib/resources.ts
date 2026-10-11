@@ -14,6 +14,8 @@ export type Resource = {
   minutes?: number; // a typical session
   topics?: string[]; // grammar topics, for linking with the books later
   playlist?: string; // YouTube playlist id
+  videos?: string[]; // the playlist's video ids, in order (lesson 1 = videos[0])
+  lessons?: Record<string, number>; // grammar topic id → lesson that explains it
   note: string;
   ln?: Lang; // only on links added by hand
   mine?: boolean; // added by hand
@@ -49,6 +51,14 @@ const BY_LANG: Partial<Record<Lang, Resource[]>> = { en: enResources as Resource
 export const resourcesFor = (lang: Lang) => BY_LANG[lang] ?? [];
 /** The catalog plus the links added by hand for that language. */
 export const allResourcesFor = (lang: Lang, mine: Resource[]) => [...resourcesFor(lang), ...mine.filter((r) => r.ln === lang)];
+
+/** Link straight to lesson n of a playlist when its videos are known, otherwise the playlist itself. */
+export const lessonUrl = (r: Resource, n?: number) =>
+  r.playlist && n && r.videos?.[n - 1] ? `https://www.youtube.com/watch?v=${r.videos[n - 1]}&list=${r.playlist}&index=${n}` : r.url;
+
+/** The playlist lessons (videos in Portuguese) that explain a grammar topic. */
+export const videoLessons = (topic: string, lang: Lang) =>
+  resourcesFor(lang).flatMap((r) => (r.lessons?.[topic] ? [{ resource: r, lesson: r.lessons[topic], url: lessonUrl(r, r.lessons[topic]) }] : []));
 
 /** Playlist id of a YouTube link ("…playlist?list=PL…" or a video inside a playlist), if it is one. */
 export function youtubePlaylist(url: string) {

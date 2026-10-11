@@ -1,5 +1,5 @@
 import { grammarFor, langOf, type Book, type Lang } from "@/lib/books";
-import { RESOURCE_KINDS, allResourcesFor, plainLevel, topicsIn, TOPIC_BY_ID, type Resource, type ResourceKind } from "@/lib/resources";
+import { RESOURCE_KINDS, allResourcesFor, lessonUrl, plainLevel, topicsIn, TOPIC_BY_ID, type Resource, type ResourceKind } from "@/lib/resources";
 import { addDays, type Data } from "@/lib/store";
 
 /** One step of the daily mission. `id` stays the same all day, so ticking it survives reloads. */
@@ -60,7 +60,7 @@ export function buildMission(data: Data, lang: Lang, day: string, book?: Book): 
     const doing = ofKind.filter((r) => data.resources[r.id]?.st === "doing");
     const r: Resource = (doing.length ? doing : ofKind)[(seed >> 3) % (doing.length || ofKind.length)];
     const lesson = data.resources[r.id]?.lesson;
-    items.push({ id: `res-${r.id}`, title: r.name, detail: lesson ? `continuar na aula ${lesson}` : r.note.split(". ")[0], area: KIND_LABEL[r.kind], minutes: r.minutes ?? 10, href: r.url });
+    items.push({ id: `res-${r.id}`, title: r.name, detail: lesson ? `continuar na aula ${lesson}` : r.note.split(". ")[0], area: KIND_LABEL[r.kind], minutes: r.minutes ?? 10, href: lessonUrl(r, lesson) });
   }
 
   const due = data.words.filter((w) => (w.ln ?? "en") === lang && w.due <= day).length;

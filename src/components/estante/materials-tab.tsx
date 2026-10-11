@@ -23,7 +23,7 @@ import {
   TrashIcon,
 } from "@phosphor-icons/react";
 import { langInfo, type Book } from "@/lib/books";
-import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, allResourcesFor, siteOf } from "@/lib/resources";
+import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, allResourcesFor, lessonUrl, siteOf } from "@/lib/resources";
 import { learnerLevel } from "@/lib/recommend";
 import { useEstante, type ResourceMark, type ResourceStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -111,7 +111,7 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
               return (
                 <a
                   key={r.id}
-                  href={r.url}
+                  href={lessonUrl(r, lesson)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex w-64 shrink-0 snap-start items-center gap-3 rounded-[1.25rem] border border-foreground bg-card p-3 pr-4 transition-colors hover:bg-muted/60"
@@ -279,7 +279,7 @@ function ResourceCard({ r, mark, onMark, onDelete }: { r: Resource; mark?: Resou
 
       <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border pt-3">
         <a
-          href={r.url}
+          href={lessonUrl(r, mark?.lesson)}
           target="_blank"
           rel="noopener noreferrer"
           className={BTN}

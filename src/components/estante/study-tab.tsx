@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { BASE_INFO, BOOKS, BOOK_BY_ID, type Book, baseOf, bookUrl, describeBook, grammarFor, kindOf, langInfo, langOf, questionsFor } from "@/lib/books";
-import { topicsIn } from "@/lib/resources";
+import { topicsIn, videoLessons } from "@/lib/resources";
 import { today, useEstante } from "@/lib/store";
 import { correctText, makeKit } from "@/lib/ai-client";
 import { BookCover, SimpleSelect, StatusPicker, copyText, useBookOptions } from "./common";
@@ -104,14 +104,23 @@ function ListRow({ n, title, sub, example, children }: { n: number; title: strin
 
 /** "Entender isso": the explanation pages for the grammar points named in the text. */
 function TopicLinks({ text, lang }: { text: string; lang: Parameters<typeof topicsIn>[1] }) {
-  const links = topicsIn(text, lang).flatMap((t) => t.links.slice(0, 1).map((l) => ({ ...l, label: t.label })));
+  const topics = topicsIn(text, lang);
+  const links = topics.flatMap((t) => {
+    const page = t.links[0];
+    const video = videoLessons(t.id, lang)[0];
+    const name = topics.length > 1 ? `${t.label}: ` : "";
+    return [
+      { url: page.url, label: `${name}${page.name}` },
+      ...(video ? [{ url: video.url, label: `${name}vídeo, aula ${video.lesson}` }] : []),
+    ];
+  });
   if (!links.length) return null;
   return (
     <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
       <span className="text-muted-foreground">Entender isso:</span>
       {links.map((l) => (
         <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium underline-offset-2 hover:underline">
-          {links.length > 1 ? l.label : l.name} <ArrowSquareOutIcon weight="bold" className="size-3" />
+          {l.label} <ArrowSquareOutIcon weight="bold" className="size-3" />
         </a>
       ))}
     </p>

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { BOOK_BY_ID, BOOKS, grammarFor, langInfo, langOf } from "@/lib/books";
 import { brDate, today, useEstante, type QuizQuestion, type Word } from "@/lib/store";
 import { makeQuiz } from "@/lib/ai-client";
-import { topicsIn } from "@/lib/resources";
+import { topicsIn, videoLessons } from "@/lib/resources";
 import { quizPrompt } from "@/lib/ai/prompts";
 import { cn } from "@/lib/utils";
 import { BookCover, SimpleSelect, copyText, useBookOptions, useLang } from "./common";
@@ -227,11 +227,21 @@ function Player({ run, onExit, onAgain }: { run: Run; onExit: () => void; onAgai
                   {m.options[m.answer]}
                 </p>
                 {m.why && <p className="text-muted-foreground">{m.why}</p>}
-                {topicsOf(m).map((t) => (
-                  <a key={t.id} href={t.links[0].url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex w-fit items-center gap-1 text-xs font-semibold underline-offset-2 hover:underline">
-                    Revisar: {t.label} <ArrowSquareOutIcon weight="bold" className="size-3" />
-                  </a>
-                ))}
+                {topicsOf(m).map((t) => {
+                  const video = videoLessons(t.id, lang)[0];
+                  return (
+                    <p key={t.id} className="mt-1 flex flex-wrap gap-x-3 text-xs font-semibold">
+                      <a href={t.links[0].url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline-offset-2 hover:underline">
+                        Revisar: {t.label} <ArrowSquareOutIcon weight="bold" className="size-3" />
+                      </a>
+                      {video && (
+                        <a href={video.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline-offset-2 hover:underline">
+                          vídeo, aula {video.lesson} <ArrowSquareOutIcon weight="bold" className="size-3" />
+                        </a>
+                      )}
+                    </p>
+                  );
+                })}
               </div>
             ))}
             {missed.some((m) => m.wordId) && <p className="text-xs text-muted-foreground">As palavras que você errou voltaram para as revisões de hoje.</p>}
