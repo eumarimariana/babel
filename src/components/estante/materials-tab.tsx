@@ -12,9 +12,11 @@ import {
   GameControllerIcon,
   HeadphonesIcon,
   LightbulbIcon,
+  MinusIcon,
   NotePencilIcon,
   PenNibIcon,
   PlayCircleIcon,
+  PlusIcon,
   SpeakerHighIcon,
   StarIcon,
   TextAaIcon,
@@ -167,7 +169,6 @@ export function MaterialsTab({ level }: { level?: string }) {
         <h3 className="text-sm font-semibold">Em breve nesta aba</h3>
         <ul className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
           <li>· Missão do dia: livro, gramática, escuta e revisão</li>
-          <li>· Playlists com a aula em que você parou</li>
           <li>· Pacotes de palavras frequentes para as Revisões</li>
           <li>· Teste de nível e adicionar seus próprios links</li>
         </ul>
@@ -240,6 +241,8 @@ function ResourceCard({ r, mark, onMark }: { r: Resource; mark?: ResourceMark; o
         )
       )}
 
+      {r.playlist && <LessonCounter name={r.name} lesson={mark?.lesson} onChange={(lesson) => onMark(lesson && !mark?.st ? { lesson, st: "doing" } : { lesson })} />}
+
       <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
         <a
           href={r.url}
@@ -247,7 +250,7 @@ function ResourceCard({ r, mark, onMark }: { r: Resource; mark?: ResourceMark; o
           rel="noopener noreferrer"
           className="inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-4 text-sm font-semibold text-background transition-transform hover:scale-[1.03]"
         >
-          {r.playlist ? "Abrir no YouTube" : "Abrir"} <ArrowSquareOutIcon weight="bold" className="size-3.5" />
+          {r.playlist ? (mark?.lesson ? `Continuar na aula ${mark.lesson}` : "Abrir no YouTube") : "Abrir"} <ArrowSquareOutIcon weight="bold" className="size-3.5" />
         </a>
         <div role="radiogroup" aria-label={`Status de ${r.name}`} className="inline-flex rounded-full border border-border p-0.5">
           {STATUS.map((s) => {
@@ -281,5 +284,31 @@ function ResourceCard({ r, mark, onMark }: { r: Resource; mark?: ResourceMark; o
         )}
       </div>
     </article>
+  );
+}
+
+/** "Parei na aula N": YouTube has no stable link to a playlist position without the video id, so the app just remembers the number. */
+function LessonCounter({ name, lesson, onChange }: { name: string; lesson?: number; onChange: (lesson: number | undefined) => void }) {
+  const step = "grid size-7 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground disabled:opacity-40";
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-xl bg-muted/70 px-3 py-2">
+      <p className="text-sm" aria-live="polite">
+        {lesson ? (
+          <>
+            Parei na <span className="font-bold tabular">aula {lesson}</span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">Ainda não comecei</span>
+        )}
+      </p>
+      <div className="flex items-center gap-1.5">
+        <button aria-label={`Voltar uma aula em ${name}`} disabled={!lesson} onClick={() => onChange(lesson && lesson > 1 ? lesson - 1 : undefined)} className={step}>
+          <MinusIcon weight="bold" className="size-3.5" />
+        </button>
+        <button aria-label={`Avançar uma aula em ${name}`} onClick={() => onChange((lesson ?? 0) + 1)} className={step}>
+          <PlusIcon weight="bold" className="size-3.5" />
+        </button>
+      </div>
+    </div>
   );
 }
