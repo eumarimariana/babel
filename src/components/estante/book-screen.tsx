@@ -7,6 +7,7 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/compone
 import { BASE_INFO, BOOK_BY_ID, type Book, baseBooks, baseOf, bookLinks, bookNumber, bookUrl, isFree, kindOf, levelNote } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { BookWords } from "./book-words";
 import { BookCover, StatusPicker, useMediaQuery } from "./common";
 
 type Props = {
@@ -174,6 +175,8 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onQuiz, onGo, wide,
             <p className="text-sm text-ink-muted">Nenhuma ainda. Use “Anotar palavra” enquanto lê.</p>
           )}
         </section>
+
+        <BookWords key={b.id} book={b} />
 
         {quotes.length > 0 && (
           <section className="grid gap-2.5">
