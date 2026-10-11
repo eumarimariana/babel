@@ -3,8 +3,8 @@
 import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { BookOpenIcon, BookmarkSimpleIcon, CheckIcon, CircleIcon, SpeakerHighIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { BookOpenIcon, BookOpenTextIcon, BookmarkSimpleIcon, CheckIcon, CircleIcon, SpeakerHighIcon } from "@phosphor-icons/react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { basesFor, coverUrl, langInfo, levelColor, type Book, type Lang } from "@/lib/books";
@@ -114,6 +114,30 @@ export function SpeakButton({ text, lang }: { text: string; lang?: Lang }) {
     <Button variant="ghost" size="icon-sm" aria-label={`Ouvir ${text}`} onClick={(e) => (e.stopPropagation(), speak(text, lang ?? current))}>
       <SpeakerHighIcon />
     </Button>
+  );
+}
+
+/** Cambridge dataset per language: English → Portuguese, the others into English (Cambridge has no FR/DE/ES → PT). */
+const CAMBRIDGE: Record<Lang, string> = { en: "english-portuguese", fr: "french-english", de: "german-english", es: "spanish-english" };
+
+/** Cambridge's search jumps straight to the entry, works for phrases ("look forward to") and suggests spellings otherwise. */
+export const cambridgeUrl = (word: string, lang: Lang) =>
+  `https://dictionary.cambridge.org/search/direct/?datasetsearch=${CAMBRIDGE[lang]}&q=${encodeURIComponent(word.trim())}`;
+
+export function DictButton({ word, lang, className }: { word: string; lang?: Lang; className?: string }) {
+  const current = useLang();
+  return (
+    <a
+      href={cambridgeUrl(word, lang ?? current)}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`Abrir ${word} no Cambridge`}
+      title="Abrir no Cambridge"
+      onClick={(e) => e.stopPropagation()}
+      className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), className)}
+    >
+      <BookOpenTextIcon />
+    </a>
   );
 }
 

@@ -7,7 +7,7 @@ import { BOOK_BY_ID } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { langInfo } from "@/lib/books";
-import { Segmented, SpeakButton, useLang } from "./common";
+import { DictButton, Segmented, SpeakButton, useLang } from "./common";
 
 type Mode = "en" | "pt";
 
@@ -174,7 +174,10 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
                 ) : (
                   <div className="grid justify-items-center gap-2 pt-2">
                     <p className={cn("rounded-full px-3 py-1 text-xs", right ? "bg-[#9cb88f] text-ink" : "bg-[#d07a64] text-ink")}>{right ? "Certo!" : `Você escreveu “${typed || "…"}”`}</p>
-                    <p className="text-3xl font-bold">{current.w}</p>
+                    <p className="flex items-center gap-1 text-3xl font-bold">
+                      {current.w}
+                      <DictButton word={current.w} lang={current.ln} className="text-ink-muted hover:bg-white/10 hover:text-ink-foreground" />
+                    </p>
                     {current.ex && <p className="max-w-md text-sm text-ink-muted italic">“{current.ex}”</p>}
                     <Grade onGrade={grade} />
                   </div>
@@ -185,7 +188,10 @@ export function ReviewTab({ onGoVocab }: { onGoVocab: () => void }) {
           {/* back (EN mode): sand */}
           {mode === "en" && (
             <div className="absolute inset-0 grid content-center justify-items-center gap-3 rounded-[2rem] bg-sand p-6 text-center text-sand-foreground [backface-visibility:hidden] [transform:rotateY(180deg)]">
-              <p className="text-xs text-[#6b6863] tabular">{current.w}</p>
+              <p className="flex items-center gap-0.5 text-xs text-[#6b6863] tabular">
+                {current.w}
+                <DictButton word={current.w} lang={current.ln} className="size-6 text-[#6b6863] hover:bg-[#1c1d1f]/10 hover:text-sand-foreground" />
+              </p>
               <p className="text-4xl leading-tight font-bold tracking-tight">{current.pt || "—"}</p>
               {current.en && <p className="max-w-md text-[#45474b]">{current.en}</p>}
               {current.ex && <p className="max-w-md border-l-2 border-[#1c1d1f]/20 pl-3 text-left text-sm italic">“{current.ex}”</p>}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { BookOpenIcon, MagnifyingGlassIcon, NotePencilIcon, TranslateIcon, TrashIcon } from "@phosphor-icons/react";
+import { ArrowSquareOutIcon, BookOpenIcon, MagnifyingGlassIcon, NotePencilIcon, TranslateIcon, TrashIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { BOOK_BY_ID, langInfo } from "@/lib/books";
 import { addDays, today, useEstante, type Word } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { explainWord } from "@/lib/ai-client";
-import { MemoryBoxes, Segmented, SimpleSelect, SpeakButton, useBookOptions, useLang } from "./common";
+import { cambridgeUrl, DictButton, MemoryBoxes, Segmented, SimpleSelect, SpeakButton, useBookOptions, useLang } from "./common";
 
 export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; bookId: string; onBookChange: (v: string) => void }) {
   const { data: all, addWord, deleteWord } = useEstante();
@@ -84,6 +84,11 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
         <form onSubmit={save} className="mt-5 grid gap-3.5">
           <Field id="w-word" label="Palavra ou expressão">
             <Input id="w-word" value={form.w} onChange={set("w")} placeholder="ex.: gloomy, look forward to" autoComplete="off" required className={field} />
+            {form.w.trim() && (
+              <a href={cambridgeUrl(form.w, lang)} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1 text-xs text-sand hover:underline">
+                Conferir “{form.w.trim()}” no Cambridge <ArrowSquareOutIcon weight="bold" className="size-3" />
+              </a>
+            )}
           </Field>
           {aiName && (
             <button type="button" onClick={fill} disabled={busy} className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-sand/40 text-sm font-medium text-sand hover:bg-white/5 disabled:opacity-60">
@@ -184,7 +189,8 @@ export function WordCard({ word: w, onDelete, action }: { word: Pick<Word, "w" |
           {w.pos && <p className="text-xs text-muted-foreground tabular">{w.pos}</p>}
         </div>
         <div className="-mt-1 -mr-1 flex shrink-0">
-          <SpeakButton text={w.w} />
+          <SpeakButton text={w.w} lang={w.ln} />
+          <DictButton word={w.w} lang={w.ln} />
           {onDelete && (
             <Button variant="ghost" size="icon-sm" aria-label={`Apagar ${w.w}`} onClick={onDelete} className="text-muted-foreground hover:text-destructive">
               <TrashIcon />

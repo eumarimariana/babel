@@ -4,6 +4,7 @@ Plano para aproveitar a sua lista de sites, playlists e dicionários no app. A i
 
 > **Status:**
 > - **Etapa 1 feita:** aba Materiais com 45 materiais grátis (os 21 da sua lista e mais 24 sugeridos depois, ver o passo 14) (`src/data/recursos-en.json`), filtro de nível que começa no nível do mapa, filtro por habilidade e por status, nota de 1 a 5 e anotação em cada material, salvos no backup.
+> - **Etapa 2 feita:** botão do Cambridge (ícone de livro aberto) em cada palavra do Vocabulário, do Estudar e das Revisões (só depois de ver a resposta), e o link "Conferir no Cambridge" ao anotar. Usa a busca do Cambridge, que abre o verbete e aceita expressões. Inglês abre o inglês–português; francês, alemão e espanhol abrem o dicionário para inglês, porque o Cambridge não tem esses idiomas para português.
 > - **Ficaram de fora ao conferir os links:** Jogos para Aprender Inglês (o endereço redireciona para propaganda), 5 Minute English (site fora do ar), Cursodeingles.online (o domínio não existe mais) e o curso do IFRS (Moodle, precisa de matrícula).
 > - **Entraram a mais:** os 100 textos para iniciantes do Aulas de Inglês Grátis, ao lado dos 110 avançados.
 >
