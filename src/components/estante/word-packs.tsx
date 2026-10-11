@@ -49,7 +49,7 @@ export function WordPacks({ onGoReview }: { onGoReview: () => void }) {
   }
 
   return (
-    <section className="grid gap-3">
+    <section id="word-packs" className="grid scroll-mt-4 gap-3">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h3 className="flex items-center gap-2 font-display text-xl">

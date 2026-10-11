@@ -123,6 +123,10 @@ function Shell() {
     setQuizId(id);
     go("quiz");
   };
+  const goPacks = () => {
+    go("materials");
+    setTimeout(() => document.getElementById("word-packs")?.scrollIntoView({ behavior: "smooth" }), 400);
+  };
   const goAddQuote = (id: number) => {
     setQuoteBook(String(id));
     go("quotes");
@@ -269,7 +273,7 @@ function Shell() {
                 <TabsContent value="materials">
                   <MaterialsTab book={nextBook} onGo={go} onOpen={setOpenBook} />
                 </TabsContent>
-                <TabsContent value="review">{ready && <ReviewTab key={`${ready}-${lang}`} onGoVocab={() => go("vocab")} onGoPacks={lang === "en" ? () => go("materials") : undefined} />}</TabsContent>
+                <TabsContent value="review">{ready && <ReviewTab key={`${ready}-${lang}`} onGoVocab={() => go("vocab")} onGoPacks={lang === "en" ? goPacks : undefined} />}</TabsContent>
                 <TabsContent value="study">
                   <StudyTab aiName={aiName} bookId={studyBook} onBookChange={setStudyId} />
                 </TabsContent>
