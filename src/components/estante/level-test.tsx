@@ -33,28 +33,26 @@ export function LevelTest({ lang, onOpen }: { lang: Lang; onOpen: (id: number) =
         </span>
         <div>
           <h2 className="font-display text-lg leading-tight">Descobrir meu nível</h2>
-          <p className="text-xs text-muted-foreground">{result ? `Seu teste deu ${result.lv} em ${brDate(result.at)}` : "faça um teste grátis e conte o resultado"}</p>
+          <p className="text-xs text-muted-foreground">{result ? `Seu teste deu ${result.lv} em ${brDate(result.at)}` : "o app sugere por onde começar o mapa"}</p>
         </div>
       </div>
 
       {tests.length > 0 && (
-        <ul className="grid gap-2">
-          {tests.map((t) => (
-            <li key={t.url}>
-              <a href={t.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-3 rounded-2xl bg-muted/60 p-3 hover:bg-muted">
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold">{t.name}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{t.detail}</span>
-                </span>
-                <ArrowSquareOutIcon className="size-4 shrink-0 text-muted-foreground" />
+        <div className="grid gap-2">
+          <p className="text-xs text-muted-foreground">1. Faça um teste grátis</p>
+          <div className="flex flex-wrap gap-2">
+            {tests.map((t) => (
+              <a key={t.url} href={t.url} target="_blank" rel="noopener noreferrer" title={t.detail} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold hover:border-foreground">
+                {t.name} <ArrowSquareOutIcon className="size-3.5 text-muted-foreground" />
               </a>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground">{tests.map((t) => `${t.name}: ${t.detail}`).join(" · ")}</p>
+        </div>
       )}
 
       <div className="grid gap-2">
-        <p className="text-xs text-muted-foreground">Qual nível o teste deu?</p>
+        <p className="text-xs text-muted-foreground">{tests.length ? "2. Conte o resultado" : "Qual nível o teste deu?"}</p>
         <div role="radiogroup" aria-label="Resultado do teste" className="flex flex-wrap gap-1.5">
           {RESOURCE_LEVELS.map((l) => {
             const on = result?.lv === l;

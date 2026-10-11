@@ -20,12 +20,13 @@ import {
   SpeakerHighIcon,
   StarIcon,
   TextAaIcon,
+  TrashIcon,
 } from "@phosphor-icons/react";
 import { langInfo, type Book } from "@/lib/books";
 import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, allResourcesFor, plainLevel, siteOf } from "@/lib/resources";
 import { useEstante, type ResourceMark, type ResourceStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { Segmented, useLang } from "./common";
+import { useLang } from "./common";
 import { MissionCard } from "./mission-card";
 import { WordPacks } from "./word-packs";
 import { AddLink } from "./add-link";
@@ -84,101 +85,121 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
     );
   }
 
-  return (
-    <div className="grid grid-cols-1 gap-5">
-      {/* level and totals, on graphite */}
-      <section className="grid gap-5 rounded-[1.75rem] bg-ink p-5 text-ink-foreground sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <Header />
-          <dl className="flex gap-6">
-            {[
-              { label: shownLevel === "all" ? "materiais" : "no nível", value: atLevel.length },
-              { label: "usando", value: count("doing") },
-              { label: "feitos", value: count("done") },
-            ].map((x) => (
-              <div key={x.label}>
-                <dt className="sr-only">{x.label}</dt>
-                <dd className="text-3xl leading-none font-bold tabular">{x.value}</dd>
-                <p className="mt-1 text-xs text-ink-muted">{x.label}</p>
-              </div>
-            ))}
-          </dl>
-        </div>
-        <div className="grid gap-2">
-          <p className="text-xs text-ink-muted">{mapLevel ? `Seu nível no mapa de leitura é ${mapLevel}. Troque para ver outros materiais.` : "Escolha um nível."}</p>
-          <div role="radiogroup" aria-label="Nível" className="-mx-5 flex gap-1.5 overflow-x-auto px-5 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
-            {["all", ...RESOURCE_LEVELS].map((l) => {
-              const on = shownLevel === l;
-              return (
-                <button
-                  key={l}
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => (setLv(l), setKind("all"))}
-                  className={cn("h-9 shrink-0 rounded-full border px-4 text-[13px] transition-colors", on ? "border-sand bg-sand font-semibold text-sand-foreground" : "border-ink-border text-ink-muted hover:text-ink-foreground")}
-                >
-                  {l === "all" ? "Todos" : l}
-                  {l === mapLevel && <span className={cn("ml-1.5 text-[11px]", on ? "text-sand-foreground/70" : "text-ink-muted")}>· mapa</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+  const doing = all.filter((r) => data.resources[r.id]?.st === "doing");
+  const clearFilters = () => (setLv(null), setKind("all"), setSt("all"));
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+  return (
+    <div className="grid grid-cols-1 gap-6">
+      {/* today */}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <MissionCard book={book} onGo={onGo} onOpen={onOpen} />
         <LevelTest lang={lang} onOpen={onOpen} />
       </div>
 
-      {/* skills */}
-      <section className="grid gap-3">
-        <h2 className="text-sm font-semibold">Habilidades</h2>
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
-          {[{ value: "all" as const, label: "Todas" }, ...kinds].map((k) => (
-            <button
-              key={k.value}
-              onClick={() => setKind(k.value)}
-              aria-pressed={kind === k.value}
-              className={cn("h-9 shrink-0 rounded-full border px-4 text-[13px] transition-colors", kind === k.value ? "border-ink bg-ink text-ink-foreground" : "border-border bg-card hover:border-foreground")}
-            >
-              {k.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Segmented id="res-status" label="Status" value={st} onChange={setSt} options={[{ value: "all", label: "Todos" }, ...STATUS]} />
-        <p className="text-xs text-muted-foreground tabular">
-          {list.length} {list.length === 1 ? "material" : "materiais"}
-        </p>
-      </div>
-
-      {groups.length ? (
-        groups.map((g) => {
-          const Icon = KIND_ICON[g.value];
-          return (
-            <section key={g.value} className="grid gap-3">
-              <h3 className="flex items-center gap-2 font-display text-xl">
-                <Icon className="size-5" /> {g.label}
-                <span className="text-xs font-normal text-muted-foreground tabular">{g.items.length}</span>
-              </h3>
-              <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
-                {g.items.map((r) => (
-                  <ResourceCard key={r.id} r={r} mark={data.resources[r.id]} onMark={(patch) => markResource(r.id, patch)} onDelete={r.mine ? () => deleteResource(r.id) : undefined} />
-                ))}
-              </div>
-            </section>
-          );
-        })
-      ) : (
-        <p className="rounded-[1.25rem] bg-muted/70 p-5 text-sm text-muted-foreground">Nenhum material com esses filtros.</p>
+      {/* what you are using now, one tap away */}
+      {doing.length > 0 && (
+        <section className="grid gap-3">
+          <SectionTitle title="Continuando" count={doing.length} />
+          <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:px-0">
+            {doing.map((r) => {
+              const Icon = KIND_ICON[r.kind];
+              const lesson = data.resources[r.id]?.lesson;
+              return (
+                <a
+                  key={r.id}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-64 shrink-0 snap-start items-center gap-3 rounded-[1.25rem] bg-ink p-3 pr-4 text-ink-foreground transition-transform hover:-translate-y-0.5"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sand text-sand-foreground">
+                    <Icon weight="bold" className="size-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">{r.name}</span>
+                    <span className="block truncate text-xs text-ink-muted">{lesson ? `continuar na aula ${lesson}` : `${KIND_LABEL[r.kind]} · ${siteOf(r.url)}`}</span>
+                  </span>
+                  <ArrowSquareOutIcon className="size-4 shrink-0 text-ink-muted" />
+                </a>
+              );
+            })}
+          </div>
+        </section>
       )}
 
-      {lang === "en" && <WordPacks onGoReview={() => onGo("review")} />}
+      {/* catalog: every filter in one panel */}
+      <section className="grid gap-5">
+        <div className="grid gap-4 rounded-[1.75rem] bg-ink p-5 text-ink-foreground sm:p-6">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+            <div>
+              <h2 className="font-display text-2xl leading-tight">Catálogo grátis</h2>
+              <p className="mt-0.5 text-xs text-ink-muted">sites, vídeos e dicionários para estudar além dos livros</p>
+            </div>
+            <p className="text-xs text-ink-muted tabular">
+              <span className="text-ink-foreground">{count("doing")}</span> usando · <span className="text-ink-foreground">{count("done")}</span> feitos · {all.length} no total
+            </p>
+          </div>
+          <FilterRow label="Nível">
+            {["all", ...RESOURCE_LEVELS].map((l) => (
+              <Chip key={l} on={shownLevel === l} onClick={() => (setLv(l), setKind("all"))}>
+                {l === "all" ? "Todos" : l}
+                {l === mapLevel && <span className="ml-1 opacity-60">· mapa</span>}
+              </Chip>
+            ))}
+          </FilterRow>
+          <FilterRow label="Habilidade">
+            {[{ value: "all" as const, label: "Todas" }, ...kinds].map((k) => (
+              <Chip key={k.value} on={kind === k.value} onClick={() => setKind(k.value)}>
+                {k.label}
+              </Chip>
+            ))}
+          </FilterRow>
+          <FilterRow label="Status">
+            {[{ value: "all" as const, label: "Todos" }, ...STATUS].map((s) => (
+              <Chip key={s.value} on={st === s.value} onClick={() => setSt(s.value)}>
+                {s.label}
+              </Chip>
+            ))}
+          </FilterRow>
+        </div>
 
-      <AddLink lang={lang} level={shownLevel === "all" ? undefined : shownLevel} />
+        <p className="-mt-1 text-sm text-muted-foreground tabular">
+          {list.length} {list.length === 1 ? "material" : "materiais"}
+          {shownLevel !== "all" && ` no ${shownLevel}`}
+          {kind !== "all" && ` · ${KIND_LABEL[kind].toLowerCase()}`}
+        </p>
+
+        {groups.length ? (
+          // columns instead of a grid: sections of 1 or 3 cards pack together without empty half-rows
+          <div className="gap-5 md:columns-2 2xl:columns-3">
+            {groups.map((g, i) => (
+              <section key={g.value} className="contents">
+                {kind === "all" && (
+                  <div className={cn("mb-3 break-after-avoid", i > 0 && "pt-4")}>
+                    <SectionTitle icon={KIND_ICON[g.value]} title={g.label} count={g.items.length} />
+                  </div>
+                )}
+                {g.items.map((r) => (
+                  <div key={r.id} className="mb-3 break-inside-avoid">
+                    <ResourceCard r={r} mark={data.resources[r.id]} onMark={(patch) => markResource(r.id, patch)} onDelete={r.mine ? () => deleteResource(r.id) : undefined} />
+                  </div>
+                ))}
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="grid justify-items-center gap-3 rounded-[1.5rem] border-2 border-dashed border-border px-6 py-10 text-center">
+            <p className="text-sm text-muted-foreground">Nenhum material com esses filtros.</p>
+            <button onClick={clearFilters} className="h-9 rounded-full bg-ink px-4 text-xs font-semibold text-ink-foreground">
+              Limpar filtros
+            </button>
+          </div>
+        )}
+
+        <AddLink lang={lang} level={shownLevel === "all" ? undefined : shownLevel} />
+      </section>
+
+      {lang === "en" && <WordPacks onGoReview={() => onGo("review")} />}
     </div>
   );
 }
@@ -197,34 +218,74 @@ function Header() {
   );
 }
 
+function SectionTitle({ title, count, icon: Icon }: { title: string; count: number; icon?: typeof CompassIcon }) {
+  return (
+    <h3 className="flex items-center gap-2 font-display text-lg">
+      {Icon && <Icon className="size-5" />} {title}
+      <span className="text-xs font-normal text-muted-foreground tabular">{count}</span>
+    </h3>
+  );
+}
+
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid gap-2 border-t border-ink-border pt-4 sm:grid-cols-[6.5rem_minmax(0,1fr)] sm:items-center">
+      <p className="text-xs text-ink-muted">{label}</p>
+      <div className="-mx-5 flex gap-1.5 overflow-x-auto px-5 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">{children}</div>
+    </div>
+  );
+}
+
+function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      aria-pressed={on}
+      onClick={onClick}
+      className={cn("h-8 shrink-0 rounded-full border px-3.5 text-[13px] transition-colors", on ? "border-sand bg-sand font-semibold text-sand-foreground" : "border-ink-border text-ink-muted hover:text-ink-foreground")}
+    >
+      {children}
+    </button>
+  );
+}
+
 const levelRange = (levels: string[]) => (levels.length >= RESOURCE_LEVELS.length ? "todos os níveis" : levels.length === 1 ? levels[0] : `${levels[0]}–${levels[levels.length - 1]}`);
 
 function ResourceCard({ r, mark, onMark, onDelete }: { r: Resource; mark?: ResourceMark; onMark: (patch: Partial<Omit<ResourceMark, "d">>) => void; onDelete?: () => void }) {
   const Icon = KIND_ICON[r.kind];
   const [editing, setEditing] = useState(false);
-  const tags = [levelRange(r.levels), !r.mine && (r.siteLang === "pt" ? "site em português" : "site em inglês"), r.minutes && `~${r.minutes} min`, r.signup && "cadastro grátis", r.mine && "seu link"].filter(Boolean) as string[];
+  const meta = [levelRange(r.levels), !r.mine && (r.siteLang === "pt" ? "em português" : "em inglês"), r.minutes && `~${r.minutes} min`, r.signup && "cadastro grátis"].filter(Boolean).join(" · ");
+  const rating = mark?.rating ?? 0;
 
   return (
-    <article className={cn("grid content-start gap-3 rounded-[1.25rem] border bg-card p-4", mark?.st === "doing" ? "border-foreground" : "border-border")}>
+    <article className={cn("grid content-start gap-3 rounded-[1.25rem] border bg-card p-4 transition-colors", mark?.st === "doing" ? "border-foreground" : "border-border hover:border-foreground/40")}>
       <div className="flex items-start gap-3">
-        <span className={cn("grid size-10 shrink-0 place-items-center rounded-full", mark?.st === "done" ? "bg-ink text-ink-foreground" : "bg-muted")}>
+        <span className={cn("grid size-10 shrink-0 place-items-center rounded-full", mark?.st === "done" ? "bg-ink text-ink-foreground" : mark?.st === "doing" ? "bg-sand text-sand-foreground" : "bg-muted")}>
           {mark?.st === "done" ? <CheckIcon weight="bold" className="size-4" /> : <Icon className="size-5" />}
         </span>
-        <div className="min-w-0">
-          <h4 className="leading-snug font-bold">{r.name}</h4>
-          <p className="truncate text-xs text-muted-foreground">
-            {siteOf(r.url)} · {KIND_LABEL[r.kind].toLowerCase()}
-          </p>
+        <div className="min-w-0 flex-1">
+          <h4 className="leading-snug font-bold">
+            <a href={r.url} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
+              {r.name}
+            </a>
+            {r.mine && <span className="ml-2 rounded-full bg-sand px-2 py-0.5 align-middle text-[10px] font-semibold text-sand-foreground">seu link</span>}
+          </h4>
+          <p className="truncate text-xs text-muted-foreground">{siteOf(r.url)}</p>
+        </div>
+        <div role="radiogroup" aria-label={`Nota para ${r.name}`} className="-mt-0.5 -mr-1 flex shrink-0">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button key={n} role="radio" aria-checked={mark?.rating === n} aria-label={`${n} de 5`} onClick={() => onMark({ rating: mark?.rating === n ? undefined : n })} className="p-0.5 text-muted-foreground/60 hover:text-foreground">
+              <StarIcon weight={rating >= n ? "fill" : "regular"} className={cn("size-3.5", rating >= n && "text-foreground")} />
+            </button>
+          ))}
         </div>
       </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">{r.note}</p>
-      <div className="flex flex-wrap gap-1.5">
-        {tags.map((t) => (
-          <span key={t} className="rounded-full border border-border px-2 py-0.5 text-[11px]">
-            {t}
-          </span>
-        ))}
-      </div>
+
+      <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground" title={r.note}>
+        {r.note}
+      </p>
+      <p className="text-[11px] text-muted-foreground tabular">{meta}</p>
+
+      {r.playlist && <LessonCounter name={r.name} lesson={mark?.lesson} onChange={(lesson) => onMark(lesson && !mark?.st ? { lesson, st: "doing" } : { lesson })} />}
 
       {editing ? (
         <input
@@ -241,24 +302,23 @@ function ResourceCard({ r, mark, onMark, onDelete }: { r: Resource; mark?: Resou
         />
       ) : (
         mark?.note && (
-          <button onClick={() => setEditing(true)} className="rounded-xl bg-muted/70 px-3 py-2 text-left text-sm">
+          <button onClick={() => setEditing(true)} className="flex items-start gap-2 rounded-xl bg-muted/70 px-3 py-2 text-left text-sm">
+            <NotePencilIcon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
             {mark.note}
           </button>
         )
       )}
 
-      {r.playlist && <LessonCounter name={r.name} lesson={mark?.lesson} onChange={(lesson) => onMark(lesson && !mark?.st ? { lesson, st: "doing" } : { lesson })} />}
-
-      <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
+      <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border pt-3">
         <a
           href={r.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-4 text-sm font-semibold text-background transition-transform hover:scale-[1.03]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-foreground px-3.5 text-[13px] font-semibold text-background transition-transform hover:scale-[1.03]"
         >
-          {r.playlist ? (mark?.lesson ? `Continuar na aula ${mark.lesson}` : "Abrir no YouTube") : "Abrir"} <ArrowSquareOutIcon weight="bold" className="size-3.5" />
+          {r.playlist ? (mark?.lesson ? `Aula ${mark.lesson}` : "YouTube") : "Abrir"} <ArrowSquareOutIcon weight="bold" className="size-3.5" />
         </a>
-        <div role="radiogroup" aria-label={`Status de ${r.name}`} className="inline-flex rounded-full border border-border p-0.5">
+        <div role="radiogroup" aria-label={`Status de ${r.name}`} className="inline-flex rounded-full bg-muted p-0.5">
           {STATUS.map((s) => {
             const on = mark?.st === s.value;
             return (
@@ -267,32 +327,25 @@ function ResourceCard({ r, mark, onMark, onDelete }: { r: Resource; mark?: Resou
                 role="radio"
                 aria-checked={on}
                 onClick={() => onMark({ st: on ? undefined : s.value })}
-                className={cn("h-7 rounded-full px-2.5 text-xs transition-colors", on ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
+                className={cn("h-7 rounded-full px-2.5 text-xs transition-colors", on ? "bg-card font-semibold text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
               >
                 {s.label}
               </button>
             );
           })}
         </div>
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <div role="radiogroup" aria-label={`Nota para ${r.name}`} className="flex">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} role="radio" aria-checked={mark?.rating === n} aria-label={`${n} de 5`} onClick={() => onMark({ rating: mark?.rating === n ? undefined : n })} className="p-0.5 text-muted-foreground hover:text-foreground">
-              <StarIcon weight={(mark?.rating ?? 0) >= n ? "fill" : "regular"} className={cn("size-4", (mark?.rating ?? 0) >= n && "text-foreground")} />
+        <div className="ml-auto flex">
+          {!editing && (
+            <button onClick={() => setEditing(true)} aria-label={mark?.note ? `Editar nota de ${r.name}` : `Anotar sobre ${r.name}`} title={mark?.note ? "Editar nota" : "Anotar"} className="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+              <NotePencilIcon className="size-4" />
             </button>
-          ))}
+          )}
+          {onDelete && (
+            <button onClick={() => confirm(`Apagar “${r.name}” dos seus links?`) && onDelete()} aria-label={`Apagar ${r.name}`} title="Apagar" className="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-destructive">
+              <TrashIcon className="size-4" />
+            </button>
+          )}
         </div>
-        {onDelete && (
-          <button onClick={() => confirm(`Apagar “${r.name}” dos seus links?`) && onDelete()} className="ml-auto text-xs text-muted-foreground underline-offset-2 hover:text-destructive hover:underline">
-            Apagar
-          </button>
-        )}
-        {!editing && (
-          <button onClick={() => setEditing(true)} className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
-            {mark?.note ? "Editar nota" : "Anotar"}
-          </button>
-        )}
       </div>
     </article>
   );
