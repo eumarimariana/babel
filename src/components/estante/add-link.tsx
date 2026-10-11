@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LinkIcon, PlusIcon, YoutubeLogoIcon } from "@phosphor-icons/react";
+import { LinkIcon, YoutubeLogoIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import type { Lang } from "@/lib/books";
 import { RESOURCE_KINDS, RESOURCE_LEVELS, type ResourceKind, siteOf, youtubePlaylist } from "@/lib/resources";
@@ -11,9 +11,8 @@ import { cn } from "@/lib/utils";
 const input = "h-10 w-full rounded-full border border-border bg-background px-4 text-sm outline-none focus-visible:border-foreground";
 
 /** A link of your own: becomes a card like the catalog ones. A YouTube playlist link becomes a playlist card, with "parei na aula". */
-export function AddLink({ lang, level }: { lang: Lang; level?: string }) {
+export function AddLink({ lang, level, onClose }: { lang: Lang; level?: string; onClose?: () => void }) {
   const { addResource } = useEstante();
-  const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
   const [kind, setKind] = useState<ResourceKind>("grammar");
@@ -51,30 +50,17 @@ export function AddLink({ lang, level }: { lang: Lang; level?: string }) {
     setUrl("");
     setName("");
     setNote("");
-    setOpen(false);
+    onClose?.();
   }
 
-  if (!open)
-    return (
-      <button onClick={() => setOpen(true)} className="flex items-center gap-3 rounded-[1.25rem] border-2 border-dashed border-border p-5 text-left hover:border-foreground">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted">
-          <PlusIcon weight="bold" className="size-5" />
-        </span>
-        <span>
-          <span className="block text-sm font-semibold">Adicionar um link seu</span>
-          <span className="block text-xs text-muted-foreground">um site, um vídeo ou uma playlist do YouTube que você usa para estudar</span>
-        </span>
-      </button>
-    );
-
   return (
-    <form onSubmit={save} className="grid gap-3 rounded-[1.25rem] border border-foreground bg-card p-5">
+    <form onSubmit={save} className="grid gap-3 rounded-[1.25rem] border border-border bg-card p-5">
       <h3 className="flex items-center gap-2 font-semibold">
         <LinkIcon weight="bold" className="size-4" /> Adicionar um link seu
       </h3>
       <label className="grid gap-1.5 text-xs text-muted-foreground">
         Endereço
-        <input autoFocus required value={url} onChange={(e) => changeUrl(e.target.value)} placeholder="https://…" inputMode="url" className={input} />
+        <input autoFocus={!!onClose} required value={url} onChange={(e) => changeUrl(e.target.value)} placeholder="https://…" inputMode="url" className={input} />
       </label>
       {playlist && (
         <p className="flex items-center gap-2 text-xs">
@@ -124,9 +110,11 @@ export function AddLink({ lang, level }: { lang: Lang; level?: string }) {
         <button type="submit" className="h-10 rounded-full bg-foreground px-5 text-sm font-semibold text-background">
           Salvar
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-full border border-border px-5 text-sm hover:border-foreground">
-          Cancelar
-        </button>
+        {onClose && (
+          <button type="button" onClick={onClose} className="h-10 rounded-full border border-border px-5 text-sm hover:border-foreground">
+            Cancelar
+          </button>
+        )}
       </div>
     </form>
   );

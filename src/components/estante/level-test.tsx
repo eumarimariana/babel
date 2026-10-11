@@ -28,7 +28,7 @@ export function LevelTest({ lang, onOpen }: { lang: Lang; onOpen: (id: number) =
   return (
     <article className="grid grid-cols-1 content-start gap-4 rounded-[1.5rem] border border-border bg-card p-5">
       <div className="flex items-center gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted">
+        <span className={cn("grid size-10 shrink-0 place-items-center rounded-full", result ? "bg-ink text-ink-foreground" : "bg-sand text-sand-foreground")}>
           <ClipboardTextIcon weight="bold" className="size-5" />
         </span>
         <div>
@@ -43,11 +43,10 @@ export function LevelTest({ lang, onOpen }: { lang: Lang; onOpen: (id: number) =
           <div className="flex flex-wrap gap-2">
             {tests.map((t) => (
               <a key={t.url} href={t.url} target="_blank" rel="noopener noreferrer" title={t.detail} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-semibold hover:border-foreground">
-                {t.name} <ArrowSquareOutIcon className="size-3.5 text-muted-foreground" />
+                {t.name} <span className="font-normal text-muted-foreground">· {t.detail.split(",")[0]}</span> <ArrowSquareOutIcon className="size-3.5 text-muted-foreground" />
               </a>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground">{tests.map((t) => `${t.name}: ${t.detail}`).join(" · ")}</p>
         </div>
       )}
 

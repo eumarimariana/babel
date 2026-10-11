@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckIcon, PlusIcon, StackIcon } from "@phosphor-icons/react";
+import { CheckIcon, PlusIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { BTN, SectionHead } from "./common";
 
 /** [word, short Portuguese gloss, English definition], most frequent first. */
 type Entry = [string, string, string];
@@ -50,54 +51,40 @@ export function WordPacks({ onGoReview }: { onGoReview: () => void }) {
 
   return (
     <section id="word-packs" className="grid scroll-mt-4 gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h3 className="flex items-center gap-2 font-display text-xl">
-            <StackIcon className="size-5" /> Pacotes de palavras
-            {list && <span className="text-xs font-normal text-muted-foreground tabular">{done}/{packs.length} no caderno</span>}
-          </h3>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            As palavras mais frequentes do inglês, em pacotes de 50, das mais usadas para as menos. Ao importar, elas viram flashcards nas Revisões, com tradução e definição. As que já estão no caderno ficam de fora.
-          </p>
-        </div>
-        {packs.length > 6 && (
-          <button onClick={() => setAll(!all)} className="text-xs underline underline-offset-4 hover:text-muted-foreground">
-            {all ? "Mostrar só os próximos" : `Ver todos os ${packs.length}`}
-          </button>
-        )}
-      </div>
+      <SectionHead title="Pacotes de palavras" count={list ? `${done}/${packs.length} no caderno` : undefined} action={packs.length > 6 ? (all ? "Só os próximos" : `Ver todos os ${packs.length}`) : undefined} onAction={() => setAll(!all)} />
+      <p className="-mt-1 max-w-2xl text-sm text-muted-foreground">
+        As palavras mais frequentes do inglês, em pacotes de 50, das mais usadas para as menos. Ao importar, viram flashcards nas Revisões, com tradução e definição. As que já estão no caderno ficam de fora.
+      </p>
 
       {!list ? (
         <p className="rounded-[1.25rem] bg-muted/70 p-5 text-sm text-muted-foreground">Carregando a lista…</p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
           {shown.map((p) => {
             const label = `${p.n * SIZE + 1}–${p.n * SIZE + p.words.length}`;
             const full = p.have === p.words.length;
             return (
               <article key={p.n} className={cn("grid content-start gap-3 rounded-[1.25rem] border bg-card p-4", p.n === firstOpen ? "border-foreground" : "border-border")}>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="font-bold tabular">Palavras {label}</h4>
-                    <p className="text-xs text-muted-foreground tabular">
-                      {p.have ? `${p.have}/${p.words.length} no caderno` : `${p.words.length} palavras`}
-                      {p.n === firstOpen && " · próximo"}
-                    </p>
-                  </div>
-                  <span className="rounded-full border border-border px-2 py-0.5 text-[11px] tabular">#{p.n + 1}</span>
+                <div>
+                  <h4 className="font-bold tabular">Palavras {label}</h4>
+                  <p className="text-xs text-muted-foreground tabular">
+                    {p.have ? `${p.have}/${p.words.length} no caderno` : `${p.words.length} palavras`}
+                    {p.n === firstOpen && " · próximo"}
+                  </p>
                 </div>
                 <p className="line-clamp-2 text-sm text-muted-foreground">{p.words.map(([w]) => w).join(" · ")}</p>
-                <button
-                  onClick={() => importPack(p.words, label)}
-                  disabled={full}
-                  className={cn(
-                    "mt-auto inline-flex h-9 w-fit items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-transform",
-                    full ? "border border-border text-muted-foreground" : "bg-foreground text-background hover:scale-[1.03]",
+                <div className="mt-auto border-t border-border pt-3">
+                  {full ? (
+                    <p className="inline-flex h-8 items-center gap-1.5 text-[13px] text-muted-foreground">
+                      <CheckIcon weight="bold" className="size-3.5" /> No caderno
+                    </p>
+                  ) : (
+                    <button onClick={() => importPack(p.words, label)} className={BTN}>
+                      <PlusIcon weight="bold" className="size-3.5" />
+                      {p.have ? `Importar as ${p.words.length - p.have} que faltam` : "Importar para as Revisões"}
+                    </button>
                   )}
-                >
-                  {full ? <CheckIcon weight="bold" className="size-3.5" /> : <PlusIcon weight="bold" className="size-3.5" />}
-                  {full ? "No caderno" : p.have ? `Importar as ${p.words.length - p.have} que faltam` : "Importar para as Revisões"}
-                </button>
+                </div>
               </article>
             );
           })}

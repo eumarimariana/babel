@@ -26,7 +26,7 @@ import { langInfo, type Book } from "@/lib/books";
 import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, allResourcesFor, plainLevel, siteOf } from "@/lib/resources";
 import { useEstante, type ResourceMark, type ResourceStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { useLang } from "./common";
+import { BTN, SectionHead, useLang } from "./common";
 import { MissionCard } from "./mission-card";
 import { WordPacks } from "./word-packs";
 import { AddLink } from "./add-link";
@@ -64,42 +64,46 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
   const shownLevel = lv ?? (mapLevel || "all");
   const [kind, setKind] = useState<ResourceKind | "all">("all");
   const [st, setSt] = useState<ResourceStatus | "all">("all");
+  const [adding, setAdding] = useState(false);
 
   const atLevel = useMemo(() => all.filter((r) => shownLevel === "all" || r.levels.includes(shownLevel)), [all, shownLevel]);
-  const list = atLevel.filter((r) => (kind === "all" || r.kind === kind) && (st === "all" || data.resources[r.id]?.st === st));
+  const ofKind = atLevel.filter((r) => kind === "all" || r.kind === kind);
+  const list = ofKind.filter((r) => st === "all" || data.resources[r.id]?.st === st);
   const kinds = RESOURCE_KINDS.filter((k) => atLevel.some((r) => r.kind === k.value));
   const groups = RESOURCE_KINDS.map((k) => ({ ...k, items: list.filter((r) => r.kind === k.value) })).filter((g) => g.items.length);
-  const count = (s: ResourceStatus) => all.filter((r) => data.resources[r.id]?.st === s).length;
+  const doing = all.filter((r) => data.resources[r.id]?.st === "doing");
+  const clearFilters = () => (setLv(null), setKind("all"), setSt("all"));
+  const card = (r: Resource) => <ResourceCard key={r.id} r={r} mark={data.resources[r.id]} onMark={(patch) => markResource(r.id, patch)} onDelete={r.mine ? () => deleteResource(r.id) : undefined} />;
 
   if (!all.length) {
     return (
-      <div className="grid gap-5">
-        <section className="rounded-[1.75rem] bg-ink p-6 text-ink-foreground">
-          <Header />
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-muted">
+      <div className="grid grid-cols-1 gap-6">
+        <section className="grid gap-3">
+          <SectionHead title="Materiais" />
+          <p className="max-w-xl text-sm text-muted-foreground">
             Os materiais de {langInfo(lang).name.toLowerCase()} ainda não foram reunidos. Por enquanto só o inglês tem a lista; troque para EN no menu para ver, ou adicione os seus links abaixo.
           </p>
+          <AddLink lang={lang} level={mapLevel || undefined} />
         </section>
-        <AddLink lang={lang} level={mapLevel || undefined} />
       </div>
     );
   }
 
-  const doing = all.filter((r) => data.resources[r.id]?.st === "doing");
-  const clearFilters = () => (setLv(null), setKind("all"), setSt("all"));
-
   return (
-    <div className="grid grid-cols-1 gap-6">
+    <div className="grid grid-cols-1 gap-8">
       {/* today */}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-        <MissionCard book={book} onGo={onGo} onOpen={onOpen} />
-        <LevelTest lang={lang} onOpen={onOpen} />
-      </div>
+      <section className="grid gap-3">
+        <SectionHead title="Hoje" />
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+          <MissionCard book={book} onGo={onGo} onOpen={onOpen} />
+          <LevelTest lang={lang} onOpen={onOpen} />
+        </div>
+      </section>
 
       {/* what you are using now, one tap away */}
       {doing.length > 0 && (
         <section className="grid gap-3">
-          <SectionTitle title="Continuando" count={doing.length} />
+          <SectionHead title="Continuando" count={doing.length} action="Ver todos" onAction={() => (setLv("all"), setKind("all"), setSt("doing"))} />
           <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:px-0">
             {doing.map((r) => {
               const Icon = KIND_ICON[r.kind];
@@ -110,16 +114,16 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
                   href={r.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex w-64 shrink-0 snap-start items-center gap-3 rounded-[1.25rem] bg-ink p-3 pr-4 text-ink-foreground transition-transform hover:-translate-y-0.5"
+                  className="flex w-64 shrink-0 snap-start items-center gap-3 rounded-[1.25rem] border border-foreground bg-card p-3 pr-4 transition-colors hover:bg-muted/60"
                 >
                   <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sand text-sand-foreground">
-                    <Icon weight="bold" className="size-5" />
+                    <Icon className="size-5" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold">{r.name}</span>
-                    <span className="block truncate text-xs text-ink-muted">{lesson ? `continuar na aula ${lesson}` : `${KIND_LABEL[r.kind]} · ${siteOf(r.url)}`}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{lesson ? `continuar na aula ${lesson}` : `${KIND_LABEL[r.kind]} · ${siteOf(r.url)}`}</span>
                   </span>
-                  <ArrowSquareOutIcon className="size-4 shrink-0 text-ink-muted" />
+                  <ArrowSquareOutIcon className="size-4 shrink-0 text-muted-foreground" />
                 </a>
               );
             })}
@@ -127,23 +131,22 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
         </section>
       )}
 
-      {/* catalog: every filter in one panel */}
-      <section className="grid gap-5">
-        <div className="grid gap-4 rounded-[1.75rem] bg-ink p-5 text-ink-foreground sm:p-6">
-          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-            <div>
-              <h2 className="font-display text-2xl leading-tight">Catálogo grátis</h2>
-              <p className="mt-0.5 text-xs text-ink-muted">sites, vídeos e dicionários para estudar além dos livros</p>
-            </div>
-            <p className="text-xs text-ink-muted tabular">
-              <span className="text-ink-foreground">{count("doing")}</span> usando · <span className="text-ink-foreground">{count("done")}</span> feitos · {all.length} no total
-            </p>
-          </div>
+      {/* the catalog */}
+      <section className="grid gap-4">
+        <SectionHead
+          title="Catálogo grátis"
+          count={`${list.length} ${list.length === 1 ? "material" : "materiais"}${shownLevel !== "all" ? ` no ${shownLevel}` : ""}`}
+          action={adding ? undefined : "Adicionar link"}
+          onAction={() => setAdding(true)}
+        />
+        {adding && <AddLink lang={lang} level={shownLevel === "all" ? undefined : shownLevel} onClose={() => setAdding(false)} />}
+
+        <div className="grid gap-3 rounded-[1.5rem] border border-border bg-card p-4 sm:p-5">
           <FilterRow label="Nível">
             {["all", ...RESOURCE_LEVELS].map((l) => (
               <Chip key={l} on={shownLevel === l} onClick={() => (setLv(l), setKind("all"))}>
                 {l === "all" ? "Todos" : l}
-                {l === mapLevel && <span className="ml-1 opacity-60">· mapa</span>}
+                {l === mapLevel && <span className="opacity-60"> · mapa</span>}
               </Chip>
             ))}
           </FilterRow>
@@ -155,48 +158,43 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
             ))}
           </FilterRow>
           <FilterRow label="Status">
-            {[{ value: "all" as const, label: "Todos" }, ...STATUS].map((s) => (
-              <Chip key={s.value} on={st === s.value} onClick={() => setSt(s.value)}>
-                {s.label}
-              </Chip>
-            ))}
+            {[{ value: "all" as const, label: "Todos" }, ...STATUS].map((s) => {
+              const n = s.value === "all" ? ofKind.length : ofKind.filter((r) => data.resources[r.id]?.st === s.value).length;
+              return (
+                <Chip key={s.value} on={st === s.value} onClick={() => setSt(s.value)}>
+                  {s.label} <span className="opacity-60 tabular">{n}</span>
+                </Chip>
+              );
+            })}
           </FilterRow>
         </div>
 
-        <p className="-mt-1 text-sm text-muted-foreground tabular">
-          {list.length} {list.length === 1 ? "material" : "materiais"}
-          {shownLevel !== "all" && ` no ${shownLevel}`}
-          {kind !== "all" && ` · ${KIND_LABEL[kind].toLowerCase()}`}
-        </p>
-
-        {groups.length ? (
-          // columns instead of a grid: sections of 1 or 3 cards pack together without empty half-rows
-          <div className="gap-5 md:columns-2 2xl:columns-3">
-            {groups.map((g, i) => (
-              <section key={g.value} className="contents">
-                {kind === "all" && (
-                  <div className={cn("mb-3 break-after-avoid", i > 0 && "pt-4")}>
-                    <SectionTitle icon={KIND_ICON[g.value]} title={g.label} count={g.items.length} />
-                  </div>
-                )}
-                {g.items.map((r) => (
-                  <div key={r.id} className="mb-3 break-inside-avoid">
-                    <ResourceCard r={r} mark={data.resources[r.id]} onMark={(patch) => markResource(r.id, patch)} onDelete={r.mine ? () => deleteResource(r.id) : undefined} />
-                  </div>
-                ))}
-              </section>
-            ))}
-          </div>
-        ) : (
+        {groups.length === 0 ? (
           <div className="grid justify-items-center gap-3 rounded-[1.5rem] border-2 border-dashed border-border px-6 py-10 text-center">
             <p className="text-sm text-muted-foreground">Nenhum material com esses filtros.</p>
-            <button onClick={clearFilters} className="h-9 rounded-full bg-ink px-4 text-xs font-semibold text-ink-foreground">
+            <button onClick={clearFilters} className={BTN}>
               Limpar filtros
             </button>
           </div>
+        ) : kind !== "all" || groups.length === 1 ? (
+          <div className="grid items-start gap-3 md:grid-cols-2 2xl:grid-cols-3">{list.map(card)}</div>
+        ) : (
+          // each skill stays whole inside one column, and the columns pack without empty half-rows
+          <div className="gap-5 md:columns-2 2xl:columns-3">
+            {groups.map((g) => {
+              const Icon = KIND_ICON[g.value];
+              return (
+                <section key={g.value} className="mb-6 grid break-inside-avoid gap-3">
+                  <h3 className="flex items-center gap-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    <Icon weight="bold" className="size-4" /> {g.label}
+                    <span className="font-normal tabular">{g.items.length}</span>
+                  </h3>
+                  {g.items.map(card)}
+                </section>
+              );
+            })}
+          </div>
         )}
-
-        <AddLink lang={lang} level={shownLevel === "all" ? undefined : shownLevel} />
       </section>
 
       {lang === "en" && <WordPacks onGoReview={() => onGo("review")} />}
@@ -204,34 +202,11 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
   );
 }
 
-function Header() {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="grid size-10 place-items-center rounded-full bg-sand text-sand-foreground">
-        <CompassIcon weight="fill" className="size-5" />
-      </span>
-      <div>
-        <h2 className="font-display text-xl">Materiais grátis</h2>
-        <p className="text-xs text-ink-muted">sites, vídeos e dicionários para estudar além dos livros</p>
-      </div>
-    </div>
-  );
-}
-
-function SectionTitle({ title, count, icon: Icon }: { title: string; count: number; icon?: typeof CompassIcon }) {
-  return (
-    <h3 className="flex items-center gap-2 font-display text-lg">
-      {Icon && <Icon className="size-5" />} {title}
-      <span className="text-xs font-normal text-muted-foreground tabular">{count}</span>
-    </h3>
-  );
-}
-
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-2 border-t border-ink-border pt-4 sm:grid-cols-[6.5rem_minmax(0,1fr)] sm:items-center">
-      <p className="text-xs text-ink-muted">{label}</p>
-      <div className="-mx-5 flex gap-1.5 overflow-x-auto px-5 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">{children}</div>
+    <div className="grid gap-2 sm:grid-cols-[6rem_minmax(0,1fr)] sm:items-center">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">{children}</div>
     </div>
   );
 }
@@ -241,7 +216,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
     <button
       aria-pressed={on}
       onClick={onClick}
-      className={cn("h-8 shrink-0 rounded-full border px-3.5 text-[13px] transition-colors", on ? "border-sand bg-sand font-semibold text-sand-foreground" : "border-ink-border text-ink-muted hover:text-ink-foreground")}
+      className={cn("h-8 shrink-0 rounded-full border px-3.5 text-[13px] transition-colors", on ? "border-ink bg-ink font-semibold text-ink-foreground" : "border-border bg-background hover:border-foreground")}
     >
       {children}
     </button>
@@ -314,7 +289,7 @@ function ResourceCard({ r, mark, onMark, onDelete }: { r: Resource; mark?: Resou
           href={r.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-foreground px-3.5 text-[13px] font-semibold text-background transition-transform hover:scale-[1.03]"
+          className={BTN}
         >
           {r.playlist ? (mark?.lesson ? `Aula ${mark.lesson}` : "YouTube") : "Abrir"} <ArrowSquareOutIcon weight="bold" className="size-3.5" />
         </a>

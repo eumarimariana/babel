@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRightIcon, ArrowUpRightIcon, CaretLeftIcon, CaretRightIcon, QuotesIcon } from "@phosphor-icons/react";
+import { ArrowUpRightIcon, CaretLeftIcon, CaretRightIcon, QuotesIcon } from "@phosphor-icons/react";
 import { ALL_BOOKS, BASE_INFO, basesFor, bookExtra, cefrRank, langOf, type Base, type Book } from "@/lib/books";
 import { addDays, today, useEstante, type Status } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { JourneyProps } from "@/remotion/Journey";
-import { BookCover, STATUS_LABEL, useLang } from "./common";
+import { BookCover, SectionHead, STATUS_LABEL, useLang } from "./common";
 import { MissionCard } from "./mission-card";
 import { JourneyPlayer } from "./players";
 import { QuoteCard } from "./quotes-tab";
@@ -241,17 +241,6 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiN
           </ul>
         </article>
       </aside>
-    </div>
-  );
-}
-
-function SectionHead({ title, action, onAction }: { title: string; action: string; onAction: () => void }) {
-  return (
-    <div className="flex items-center justify-between">
-      <h2 className="font-display text-lg">{title}</h2>
-      <button onClick={onAction} className="flex items-center gap-1 text-xs underline underline-offset-4 hover:text-muted-foreground tabular">
-        {action} <ArrowRightIcon className="size-3" />
-      </button>
     </div>
   );
 }

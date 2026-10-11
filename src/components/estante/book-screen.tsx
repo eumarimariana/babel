@@ -78,7 +78,7 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onQuiz, onGo, wide,
   const Desc = split ? DialogDescription : wide ? "p" : DrawerDescription;
 
   return (
-    <div className={cn("flex min-h-0 flex-col overflow-y-auto overscroll-contain bg-ink", md("md:grid md:grid-cols-[18rem_minmax(0,1fr)] md:overflow-hidden"))}>
+    <div className={cn("flex min-h-0 flex-col overflow-y-auto overscroll-contain bg-ink", md("md:grid md:h-[min(44rem,calc(100dvh-3rem))] md:grid-cols-[18rem_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)] md:overflow-hidden"))}>
       {/* sand half: the cover */}
       <div className={cn("flex shrink-0 justify-center bg-sand px-6 pt-6 pb-14", md("md:items-center md:pb-6"))}>
         <motion.div key={b.id} initial={{ opacity: 0, y: 10, rotate: -3 }} animate={{ opacity: 1, y: 0, rotate: -2 }} transition={{ type: "spring", stiffness: 240, damping: 22 }} className={cn("w-36", md("md:w-52"))}>
@@ -108,7 +108,7 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onQuiz, onGo, wide,
               <BookmarkSimpleIcon weight={status(b.id) === "want" ? "fill" : "regular"} className="size-5" />
             </button>
           </div>
-          <Title className={cn("caps font-sans text-[1.9rem]", md("md:text-[2.2rem]"))}>{b.t}</Title>
+          <Title className={cn("caps font-sans text-[1.9rem] text-ink-foreground", md("md:text-[2.2rem]"))}>{b.t}</Title>
           <Desc className="text-sm text-ink-muted">{b.a}</Desc>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-sand px-3 py-1 text-xs font-bold text-sand-foreground" title={levelNote(b)}>

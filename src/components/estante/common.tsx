@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { BookOpenIcon, BookOpenTextIcon, BookmarkSimpleIcon, CheckIcon, CircleIcon, SpeakerHighIcon } from "@phosphor-icons/react";
+import { ArrowRightIcon, BookOpenIcon, BookOpenTextIcon, BookmarkSimpleIcon, CheckIcon, CircleIcon, SpeakerHighIcon } from "@phosphor-icons/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -266,3 +266,23 @@ export function Segmented<T extends string>({ value, onChange, options, label, i
     </div>
   );
 }
+
+/** The heading every section of a tab uses: title, an optional muted count, an optional link-style action on the right. */
+export function SectionHead({ title, count, action, onAction }: { title: string; count?: React.ReactNode; action?: string; onAction?: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <h2 className="flex min-w-0 flex-wrap items-baseline gap-x-2 font-display text-lg">
+        <span className="whitespace-nowrap">{title}</span>
+        {count != null && <span className="font-sans text-xs text-muted-foreground tabular">{count}</span>}
+      </h2>
+      {action && onAction && (
+        <button onClick={onAction} className="flex shrink-0 items-center gap-1 text-xs underline underline-offset-4 hover:text-muted-foreground tabular">
+          {action} <ArrowRightIcon className="size-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** The small primary button (Abrir, Importar…) used on the cards of the Materials tab. */
+export const BTN = "inline-flex h-8 items-center gap-1.5 rounded-full bg-foreground px-3.5 text-[13px] font-semibold text-background transition-transform hover:scale-[1.03] disabled:pointer-events-none disabled:opacity-50";
