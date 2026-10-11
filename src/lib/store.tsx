@@ -57,11 +57,12 @@ export type Data = {
   quizzes: Record<string, SavedQuiz>; // AI quizzes, by book id
   scores: Record<string, QuizScore>; // by book id, or "words-<lang>" for notebook quizzes
   resources: Record<string, ResourceMark>; // study materials, by resource id
+  missions: Record<string, string[]>; // day → mission items done
   days: string[];
 };
 
 const KEY = "estante-eli-app-v1";
-const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, days: [] };
+const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, missions: {}, days: [] };
 export const INTERVALS = [0, 1, 2, 4, 8, 16, 32];
 
 export function today() {
@@ -94,6 +95,7 @@ export function normalize(input: unknown): Data {
     quizzes: d.quizzes ?? {},
     scores: d.scores ?? {},
     resources: d.resources ?? {},
+    missions: d.missions ?? {},
     days: d.days ?? [],
   };
 }
@@ -126,6 +128,7 @@ type Ctx = {
   saveQuiz: (bookId: number, quiz: SavedQuiz) => void;
   recordScore: (key: string, correct: number, total: number, gaps?: string[]) => void;
   markResource: (id: string, patch: Partial<Omit<ResourceMark, "d">>) => void;
+  toggleMission: (item: string) => void;
   markDay: () => void;
   replaceAll: (d: Data) => void;
   streak: number;
@@ -258,6 +261,19 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
     [],
   );
   const saveEssay = useCallback((bookId: number, text: string) => setData((d) => ({ ...d, essays: { ...d.essays, [bookId]: text } })), []);
+  const toggleMission = useCallback(
+    (item: string) =>
+      setData((d) => {
+        const t = today();
+        const done = d.missions[t] ?? [];
+        const on = !done.includes(item);
+        // keep about three months, enough for the weekly skill balance and the history
+        const kept = Object.fromEntries(Object.entries(d.missions).filter(([day]) => day > addDays(t, -90)));
+        const next = { ...d, missions: { ...kept, [t]: on ? [...done, item] : done.filter((x) => x !== item) } };
+        return on ? withDay(next) : next;
+      }),
+    [],
+  );
   const markDay = useCallback(() => setData(withDay), []);
   const replaceAll = useCallback((d: Data) => setData(d), []);
 
@@ -279,12 +295,13 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       saveQuiz,
       recordScore,
       markResource,
+      toggleMission,
       markDay,
       replaceAll,
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }

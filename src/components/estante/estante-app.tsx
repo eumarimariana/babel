@@ -267,7 +267,7 @@ function Shell() {
                   <QuizTab aiName={aiName} bookId={quizId && BOOK_BY_ID.get(quizId) && langOf(BOOK_BY_ID.get(quizId)!) === lang ? quizId : studyBook} onBookChange={setQuizId} onGoVocab={() => go("vocab")} />
                 </TabsContent>
                 <TabsContent value="materials">
-                  <MaterialsTab level={nextBook?.lv} />
+                  <MaterialsTab book={nextBook} onGo={go} onOpen={setOpenBook} />
                 </TabsContent>
                 <TabsContent value="review">{ready && <ReviewTab key={`${ready}-${lang}`} onGoVocab={() => go("vocab")} />}</TabsContent>
                 <TabsContent value="study">

@@ -21,11 +21,12 @@ import {
   StarIcon,
   TextAaIcon,
 } from "@phosphor-icons/react";
-import { langInfo } from "@/lib/books";
+import { langInfo, type Book } from "@/lib/books";
 import { RESOURCE_KINDS, RESOURCE_LEVELS, type Resource, type ResourceKind, plainLevel, resourcesFor, siteOf } from "@/lib/resources";
 import { useEstante, type ResourceMark, type ResourceStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Segmented, useLang } from "./common";
+import { MissionCard } from "./mission-card";
 
 const KIND_ICON: Record<ResourceKind, typeof CompassIcon> = {
   grammar: TextAaIcon,
@@ -49,7 +50,8 @@ const STATUS: { value: ResourceStatus; label: string }[] = [
 ];
 
 /** Free sites, playlists and dictionaries, by skill and level. Later stages (daily mission, playlists, word packs) also live here. */
-export function MaterialsTab({ level }: { level?: string }) {
+export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: string) => void; onOpen: (id: number) => void }) {
+  const level = book?.lv;
   const lang = useLang();
   const { data, markResource } = useEstante();
   const all = resourcesFor(lang);
@@ -120,6 +122,8 @@ export function MaterialsTab({ level }: { level?: string }) {
         </div>
       </section>
 
+      <MissionCard book={book} onGo={onGo} onOpen={onOpen} />
+
       {/* skills */}
       <section className="grid gap-3">
         <h2 className="text-sm font-semibold">Habilidades</h2>
@@ -168,7 +172,6 @@ export function MaterialsTab({ level }: { level?: string }) {
       <section className="rounded-[1.25rem] border border-dashed border-border p-5">
         <h3 className="text-sm font-semibold">Em breve nesta aba</h3>
         <ul className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-          <li>· Missão do dia: livro, gramática, escuta e revisão</li>
           <li>· Pacotes de palavras frequentes para as Revisões</li>
           <li>· Teste de nível e adicionar seus próprios links</li>
         </ul>

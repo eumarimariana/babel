@@ -7,6 +7,7 @@ import { addDays, today, useEstante, type Status } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { JourneyProps } from "@/remotion/Journey";
 import { BookCover, STATUS_LABEL, useLang } from "./common";
+import { MissionCard } from "./mission-card";
 import { JourneyPlayer } from "./players";
 import { QuoteCard } from "./quotes-tab";
 
@@ -188,6 +189,7 @@ export function HomeTab({ journey, nextBook, reading, onGo, onOpen, onStudy, aiN
 
       {/* right column */}
       <aside className="grid content-start gap-5 md:grid-cols-2 xl:grid-cols-1">
+        <MissionCard book={nextBook} onGo={onGo} onOpen={onOpen} className="md:col-span-2 xl:col-span-1" />
         {nextBook && (
           <article className="relative overflow-hidden rounded-[1.5rem] bg-ink p-5 text-ink-foreground md:col-span-2 xl:col-span-1">
             <p className="text-xs text-ink-muted tabular">{reading.length ? "Lendo agora" : "Próxima parada"}</p>
