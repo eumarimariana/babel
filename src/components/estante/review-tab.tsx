@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { CardsIcon, CheckCircleIcon, EarIcon, LinkSimpleIcon, PencilLineIcon } from "@phosphor-icons/react";
+import { CardsIcon, CheckCircleIcon, EarIcon, LinkSimpleIcon, MicrophoneIcon, PencilLineIcon } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input";
 import { BOOK_BY_ID } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
@@ -18,6 +18,7 @@ const TRAININGS: { value: "cards" | PracticeKind; label: string; detail: string;
   { value: "dictation", label: "Ditado", detail: "ouça e escreva", icon: EarIcon, min: 1 },
   { value: "pairs", label: "Pares", detail: "ligue à tradução", icon: LinkSimpleIcon, min: 4 },
   { value: "write", label: "Escrever", detail: "crie uma frase", icon: PencilLineIcon, min: 1 },
+  { value: "speak", label: "Falar", detail: "repita e compare", icon: MicrophoneIcon, min: 1 },
 ];
 
 /** Reviews (spaced repetition) plus three other ways to practise the notebook's words. */
@@ -34,7 +35,7 @@ export function ReviewTab({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onG
   return (
     <div className="mx-auto grid max-w-3xl gap-5">
       {words.length > 0 && (
-        <div role="radiogroup" aria-label="Tipo de treino" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div role="radiogroup" aria-label="Tipo de treino" className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {TRAININGS.map((t) => {
             const on = kind === t.value;
             return (

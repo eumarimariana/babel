@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ArrowClockwiseIcon, ArrowRightIcon, CheckIcon, CopyIcon, SpeakerHighIcon, SpeakerSimpleLowIcon, XIcon } from "@phosphor-icons/react";
+import { ArrowClockwiseIcon, ArrowRightIcon, CheckIcon, CopyIcon, MicrophoneIcon, PlayIcon, SpeakerHighIcon, SpeakerSimpleLowIcon, StopIcon, XIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { langInfo, type Lang } from "@/lib/books";
 import { checkSentence } from "@/lib/ai-client";
@@ -10,8 +10,9 @@ import { sentencePrompt } from "@/lib/ai/prompts";
 import { today, useEstante, type Word } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { DictButton, SpeakButton, copyText, speak } from "./common";
+import { pronounce } from "@/lib/pronounce";
 
-export type PracticeKind = "dictation" | "pairs" | "write";
+export type PracticeKind = "dictation" | "pairs" | "write" | "speak";
 
 /** Words for a practice round: today's reviews first, then the weakest, a little shuffled. */
 function pickWords(words: Word[], n: number, needPt = false) {
@@ -32,11 +33,12 @@ const normalize = (s: string) =>
 /** Practice outside the spaced repetition: a miss sends the word back to today's reviews; a hit changes nothing. */
 export function Practice({ kind, words, lang, aiName, onExit }: { kind: PracticeKind; words: Word[]; lang: Lang; aiName: string; onExit: () => void }) {
   const [round, setRound] = useState(0); // bump to start over with new words
-  const n = kind === "pairs" ? 10 : kind === "write" ? 5 : 10;
-  const list = useMemo(() => pickWords(words, n, kind !== "dictation"), [words.length, kind, round]); // eslint-disable-line react-hooks/exhaustive-deps -- new words only when a round starts
+  const n = kind === "pairs" ? 10 : kind === "write" || kind === "speak" ? 6 : 10;
+  const list = useMemo(() => pickWords(words, n, kind === "pairs" || kind === "write"), [words.length, kind, round]); // eslint-disable-line react-hooks/exhaustive-deps -- new words only when a round starts
   const props = { key: `${kind}-${round}`, words: list, lang, onAgain: () => setRound((r) => r + 1), onExit };
   if (kind === "dictation") return <Dictation {...props} />;
   if (kind === "pairs") return <Pairs {...props} />;
+  if (kind === "speak") return <Shadow {...props} />;
   return <Write {...props} aiName={aiName} />;
 }
 
@@ -320,6 +322,98 @@ function Write({ words, lang, onAgain, onExit, aiName }: RoundProps & { aiName: 
           </button>
         )}
       </div>
+    </Card>
+  );
+}
+
+/* ---------- Falar: hear the word, record yourself, compare ---------- */
+
+function Shadow({ words, lang, onAgain, onExit }: RoundProps) {
+  const { markDay } = useEstante();
+  const [i, setI] = useState(0);
+  const [rec, setRec] = useState<MediaRecorder | null>(null);
+  const [mine, setMine] = useState<string | null>(null); // object URL of the learner's take
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(0);
+  const w = words[i];
+
+  useEffect(() => () => {
+    if (mine) URL.revokeObjectURL(mine);
+  }, [mine]);
+  useEffect(() => {
+    if (w) speak(w.w, lang);
+  }, [w, lang]);
+
+  if (!w) return <Done right={done} total={words.length} missed={[]} note={`${done} ${done === 1 ? "palavra gravada" : "palavras gravadas"}. Repetir em voz alta todo dia ajuda muito a pronúncia.`} onAgain={onAgain} onExit={onExit} />;
+
+  async function record() {
+    setError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const r = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+      r.ondataavailable = (e) => chunks.push(e.data);
+      r.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setMine(URL.createObjectURL(new Blob(chunks, { type: r.mimeType })));
+        setRec(null);
+      };
+      r.start();
+      setRec(r);
+      // stop by itself after 4 s: one word or expression fits
+      setTimeout(() => r.state === "recording" && r.stop(), 4000);
+    } catch {
+      setError("Não consegui usar o microfone. Permita o acesso no navegador e tente de novo.");
+    }
+  }
+  const playMine = () => mine && new Audio(mine).play();
+  async function both() {
+    await pronounce(w.w, lang);
+    setTimeout(playMine, 1400);
+  }
+  function next() {
+    if (mine) setDone((n) => n + 1);
+    if (i + 1 === words.length) markDay();
+    setI(i + 1);
+    setMine(null);
+  }
+
+  const btn = "inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-bold";
+  return (
+    <Card step={i} total={words.length} title="Ouça, repita em voz alta e compare">
+      <div className="grid justify-items-center gap-1">
+        <p className="text-4xl leading-none font-bold tracking-tight sm:text-5xl">{w.w}</p>
+        <p className="text-sm text-ink-muted">{w.pt || w.en}</p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        <button onClick={() => speak(w.w, lang)} className={cn(btn, "border border-ink-border font-medium hover:bg-white/5")}>
+          <SpeakerHighIcon weight="bold" className="size-5" /> Ouvir
+        </button>
+        {rec ? (
+          <button onClick={() => rec.stop()} className={cn(btn, "bg-[#d07a64] text-ink")}>
+            <StopIcon weight="fill" className="size-5" /> Parar
+          </button>
+        ) : (
+          <button onClick={record} className={cn(btn, "bg-sand text-sand-foreground")}>
+            <MicrophoneIcon weight="bold" className="size-5" /> {mine ? "Gravar de novo" : "Gravar"}
+          </button>
+        )}
+      </div>
+      {rec && <p className="animate-pulse text-xs text-[#e3a08e]">gravando… fale a palavra</p>}
+      {error && <p className="text-xs text-[#e3a08e]">{error}</p>}
+      {mine && !rec && (
+        <div className="flex flex-wrap justify-center gap-2">
+          <button onClick={playMine} className={cn(btn, "h-10 border border-ink-border font-medium hover:bg-white/5")}>
+            <PlayIcon weight="bold" className="size-4" /> Minha voz
+          </button>
+          <button onClick={both} className={cn(btn, "h-10 border border-ink-border font-medium hover:bg-white/5")}>
+            <SpeakerHighIcon weight="bold" className="size-4" /> Comparar as duas
+          </button>
+        </div>
+      )}
+      <button onClick={next} className={cn(btn, "h-10 bg-white/10 font-medium hover:bg-white/15")}>
+        {i + 1 < words.length ? "Próxima palavra" : "Terminar"} <ArrowRightIcon weight="bold" className="size-4" />
+      </button>
     </Card>
   );
 }
