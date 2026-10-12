@@ -7,11 +7,11 @@ import { BOOK_BY_ID } from "@/lib/books";
 import { brDate, useEstante } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { langInfo } from "@/lib/books";
-import { DictButton, Segmented, SpeakButton, useLang } from "./common";
+import { DictButton, EditMeaning, Segmented, SpeakButton, useLang } from "./common";
 import { activeProviderName, subscribeAi } from "@/lib/ai-client";
 import { Practice, type PracticeKind } from "./practice";
 
-type Mode = "en" | "pt";
+type Mode = "en" | "pt" | "ex"; // ex = the example sentence with the word blanked out
 
 const TRAININGS: { value: "cards" | PracticeKind; label: string; detail: string; icon: typeof CardsIcon; min: number }[] = [
   { value: "cards", label: "Flashcards", detail: "repetição espaçada", icon: CardsIcon, min: 1 },
@@ -85,6 +85,7 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
   const [shown, setShown] = useState(false);
   const [typed, setTyped] = useState("");
   const [doneCount, setDoneCount] = useState(0);
+  const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const current = useMemo(() => all.words.find((w) => w.id === queue[0]), [all.words, queue]);
@@ -97,6 +98,7 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
     if (g === 0) setTotal((t) => t + 1);
     setShown(false);
     setTyped("");
+    setEditing(false);
   }
 
   function restartAll() {
@@ -111,7 +113,7 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || !current) return;
-      if (!shown && mode === "en" && (e.key === " " || e.key === "Enter")) {
+      if (!shown && mode !== "pt" && (e.key === " " || e.key === "Enter")) {
         e.preventDefault();
         setShown(true);
       } else if (shown && ["1", "2", "3"].includes(e.key)) grade((Number(e.key) - 1) as 0 | 1 | 2);
@@ -161,6 +163,7 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
   }
 
   const book = current.book ? BOOK_BY_ID.get(current.book) : undefined;
+  const cloze = mode === "ex" ? blankOut(current.ex, current.w) : null;
   const right = typed.trim().toLowerCase() === current.w.toLowerCase();
 
   const left = Math.max(0, total - doneCount);
@@ -181,6 +184,7 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
           options={[
             { value: "en", label: `${langInfo(lang).name} → PT` },
             { value: "pt", label: `PT → ${name}` },
+            { value: "ex", label: "Frase" },
           ]}
         />
         <div className="flex min-w-[10rem] flex-1 items-center gap-3 sm:max-w-xs">
@@ -194,14 +198,23 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
       </div>
 
       <div className="[perspective:1400px]">
-        <div className={cn("relative min-h-[22rem] transition-transform duration-500 [transform-style:preserve-3d]", shown && mode === "en" && "[transform:rotateY(180deg)]")}>
+        <div className={cn("relative min-h-[22rem] transition-transform duration-500 [transform-style:preserve-3d]", shown && mode !== "pt" && "[transform:rotateY(180deg)]")}>
           {/* front: graphite */}
           <div className="absolute inset-0 grid content-center justify-items-center gap-4 rounded-[2rem] bg-ink p-6 text-center text-ink-foreground [backface-visibility:hidden]">
-            <p className="text-xs text-ink-muted tabular">{mode === "en" ? (book?.t ?? "Caderno") : `Como se diz em ${name}?`}</p>
-            {mode === "en" ? (
+            <p className="text-xs text-ink-muted tabular">{mode === "pt" ? `Como se diz em ${name}?` : cloze ? "Qual palavra completa a frase?" : (book?.t ?? "Caderno")}</p>
+            {mode !== "pt" ? (
               <>
-                <p className="text-5xl leading-none font-bold tracking-tight sm:text-6xl">{current.w}</p>
-                {current.pos && <p className="text-xs text-ink-muted tabular">{current.pos}</p>}
+                {cloze ? (
+                  <>
+                    <p className="max-w-xl text-2xl leading-snug font-bold sm:text-3xl">{cloze}</p>
+                    <p className="text-xs text-ink-muted">começa com “{current.w[0]}”</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-5xl leading-none font-bold tracking-tight sm:text-6xl">{current.w}</p>
+                    {current.pos && <p className="text-xs text-ink-muted tabular">{current.pos}</p>}
+                  </>
+                )}
                 <div className="flex items-center gap-2 pt-3">
                   <span className="rounded-full bg-white/10 text-ink-foreground [&_button]:text-ink-foreground [&_button:hover]:bg-white/10">
                     <SpeakButton text={current.w} />
@@ -252,15 +265,24 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
               </>
             )}
           </div>
-          {/* back (EN mode): sand */}
-          {mode === "en" && (
+          {/* back (flip modes): sand */}
+          {mode !== "pt" && (
             <div className="absolute inset-0 grid content-center justify-items-center gap-3 rounded-[2rem] bg-sand p-6 text-center text-sand-foreground [backface-visibility:hidden] [transform:rotateY(180deg)]">
               <p className="flex items-center gap-0.5 text-xs text-[#6b6863] tabular">
                 {current.w}
                 <DictButton word={current.w} lang={current.ln} className="size-6 text-[#6b6863] hover:bg-[#1c1d1f]/10 hover:text-sand-foreground" />
               </p>
-              <p className="text-4xl leading-tight font-bold tracking-tight">{current.pt || "—"}</p>
-              {current.en && <p className="max-w-md text-[#45474b]">{current.en}</p>}
+              {editing ? (
+                <EditMeaning id={current.id} pt={current.pt} en={current.en} onDone={() => setEditing(false)} />
+              ) : (
+                <>
+                  <p className="text-4xl leading-tight font-bold tracking-tight">{current.pt || "—"}</p>
+                  {current.en && <p className="max-w-md text-[#45474b]">{current.en}</p>}
+                  <button onClick={() => setEditing(true)} className="text-xs text-[#6b6863] underline underline-offset-4 hover:text-sand-foreground">
+                    Corrigir tradução
+                  </button>
+                </>
+              )}
               {current.ex && <p className="max-w-md border-l-2 border-[#1c1d1f]/20 pl-3 text-left text-sm italic">“{current.ex}”</p>}
               {shown && <Grade onGrade={grade} light />}
             </div>
@@ -315,4 +337,12 @@ function shuffleIds(ids: string[]) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+/** The example sentence with the word (or a form of it: "go" in "going") replaced by a blank, or null. */
+function blankOut(ex: string, word: string) {
+  if (!ex) return null;
+  const stem = word.toLowerCase().slice(0, Math.max(3, word.length - 2)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(^|[^\\p{L}])(${stem}\\p{L}*)`, "iu");
+  return re.test(ex) ? ex.replace(re, "$1_____") : null;
 }

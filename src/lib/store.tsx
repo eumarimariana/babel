@@ -147,6 +147,7 @@ type Ctx = {
   addWords: (ws: (Partial<Word> & { w: string })[]) => number;
   gradeWord: (id: string, grade: 0 | 1 | 2) => void;
   deleteWord: (id: string) => void;
+  updateWord: (id: string, patch: Partial<Pick<Word, "w" | "pt" | "en" | "ex" | "pos">>) => void;
   saveKit: (bookId: number, kit: Kit) => void;
   saveEssay: (bookId: number, text: string) => void;
   addQuote: (q: Pick<Quote, "text" | "pt" | "book" | "page" | "note"> & { ln?: Lang }) => void;
@@ -246,6 +247,10 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const updateWord = useCallback(
+    (id: string, patch: Partial<Pick<Word, "w" | "pt" | "en" | "ex" | "pos">>) => setData((d) => ({ ...d, words: d.words.map((w) => (w.id === id ? { ...w, ...patch } : w)) })),
+    [],
+  );
   const deleteWord = useCallback((id: string) => setData((d) => ({ ...d, words: d.words.filter((w) => w.id !== id) })), []);
   const saveKit = useCallback((bookId: number, kit: Kit) => setData((d) => withDay({ ...d, kits: { ...d.kits, [bookId]: kit } })), []);
   const addQuote = useCallback(
@@ -336,6 +341,7 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       addWords,
       gradeWord,
       deleteWord,
+      updateWord,
       saveKit,
       saveEssay,
       addQuote,
@@ -353,7 +359,7 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, addResource, deleteResource, setPlacement, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, updateWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, addResource, deleteResource, setPlacement, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }

@@ -8,7 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { basesFor, coverUrls, langInfo, levelColor, type Book, type Lang } from "@/lib/books";
-import type { Status } from "@/lib/store";
+import { useEstante as useEstanteForEdit, type Status } from "@/lib/store";
 import { pronounce } from "@/lib/pronounce";
 import { toast } from "sonner";
 
@@ -366,5 +366,34 @@ export function ScrollRow({ title, icon: Icon, meta, count, children, startAt = 
         {children}
       </div>
     </section>
+  );
+}
+
+/** "Corrigir tradução": edit the Portuguese meaning (and the definition) of a notebook word in place. */
+export function EditMeaning({ id, pt, en, tone = "light", onDone }: { id: string; pt: string; en: string; tone?: "light" | "ink"; onDone?: () => void }) {
+  const { updateWord } = useEstanteForEdit();
+  const [a, setA] = useState(pt);
+  const [b, setB] = useState(en);
+  const field = cn("h-9 w-full rounded-full border px-3.5 text-sm outline-none", tone === "ink" ? "border-ink-border bg-white/5 text-ink-foreground focus-visible:border-sand" : "border-border bg-background focus-visible:border-foreground");
+  return (
+    <form
+      className="grid w-full max-w-sm gap-2 text-left"
+      onSubmit={(e) => {
+        e.preventDefault();
+        updateWord(id, { pt: a.trim(), en: b.trim() });
+        onDone?.();
+      }}
+    >
+      <input autoFocus value={a} onChange={(e) => setA(e.target.value)} aria-label="Significado em português" placeholder="significado em português" className={field} />
+      <input value={b} onChange={(e) => setB(e.target.value)} aria-label="Definição" placeholder="definição (opcional)" className={field} />
+      <div className="flex gap-2">
+        <button type="submit" className={cn("h-8 rounded-full px-3.5 text-xs font-bold", tone === "ink" ? "bg-sand text-sand-foreground" : "bg-foreground text-background")}>
+          Salvar
+        </button>
+        <button type="button" onClick={onDone} className={cn("h-8 rounded-full border px-3.5 text-xs", tone === "ink" ? "border-ink-border" : "border-border")}>
+          Cancelar
+        </button>
+      </div>
+    </form>
   );
 }

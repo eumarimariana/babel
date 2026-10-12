@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ArrowSquareOutIcon, BookOpenIcon, MagnifyingGlassIcon, NotePencilIcon, TranslateIcon, TrashIcon } from "@phosphor-icons/react";
+import { ArrowSquareOutIcon, BookOpenIcon, MagnifyingGlassIcon, NotePencilIcon, PencilSimpleIcon, TranslateIcon, TrashIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,8 @@ import { BOOK_BY_ID, langInfo } from "@/lib/books";
 import { addDays, today, useEstante, type Word } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { explainWord } from "@/lib/ai-client";
-import { cambridgeUrl, DictButton, MemoryBoxes, Segmented, SimpleSelect, SpeakButton, useBookOptions, useLang } from "./common";
+import { cambridgeUrl, DictButton, EditMeaning, MemoryBoxes, Segmented, SimpleSelect, SpeakButton, useBookOptions, useLang } from "./common";
+import { useNgslIf } from "./word-packs";
 
 export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; bookId: string; onBookChange: (v: string) => void }) {
   const { data: all, addWord, deleteWord } = useEstante();
@@ -60,12 +61,17 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
   }, [langWords, q, sort]);
 
   const t = today();
+  const ngsl = useNgslIf(lang === "en");
+  const frequent = useMemo(() => (ngsl ? new Set(ngsl.map(([w]) => w.toLowerCase())) : null), [ngsl]);
+  const mastered = frequent ? langWords.filter((w) => w.box >= 5 && frequent.has(w.w.toLowerCase())).length : 0;
+  const inNotebook = frequent ? langWords.filter((w) => frequent.has(w.w.toLowerCase())).length : 0;
   const stats = [
     { label: "no caderno", value: data.words.length },
     { label: "para hoje", value: data.words.filter((w) => w.due <= t).length },
     { label: "dominadas", value: data.words.filter((w) => w.box >= 5).length },
     { label: "esta semana", value: data.words.filter((w) => w.created.slice(0, 10) > addDays(t, -7)).length },
   ];
+  const share = Math.round((mastered / 2809) * 100);
   const field = "h-10 border-ink-border bg-white/5 text-ink-foreground placeholder:text-ink-muted focus-visible:border-sand focus-visible:ring-sand/30 dark:bg-white/5";
 
   return (
@@ -115,6 +121,23 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
       </section>
 
       <div className="grid min-w-0 gap-5">
+        {frequent && (
+          <div className="grid gap-2 rounded-[1.25rem] border border-border bg-card p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-sm font-semibold">Vocabulário estimado</p>
+              <p className="text-xs text-muted-foreground tabular">
+                {inNotebook} das 2.809 mais usadas no caderno · {mastered} dominadas
+              </p>
+            </div>
+            <span className="h-2 overflow-hidden rounded-full bg-muted">
+              <span className="block h-full rounded-full bg-ink" style={{ width: `${Math.max(share, mastered ? 1 : 0)}%` }} />
+            </span>
+            <p className="text-xs text-muted-foreground">
+              Você domina cerca de <strong className="text-foreground tabular">{share}%</strong> das palavras mais frequentes do inglês, que cobrem a maior parte de qualquer texto do dia a dia. Uma palavra conta como dominada quando chega à memória 5 nas revisões.
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {stats.map((x) => (
             <div key={x.label} className="rounded-[1.25rem] border border-border bg-card p-4">
@@ -159,7 +182,7 @@ export function VocabTab({ aiName, bookId, onBookChange }: { aiName: string; boo
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {words.map((w) => (
-              <WordCard key={w.id} word={w} onDelete={() => deleteWord(w.id)} />
+              <WordCard key={w.id} word={w} onDelete={() => deleteWord(w.id)} editable />
             ))}
           </div>
         )}
@@ -179,8 +202,9 @@ function Field({ id, label, children }: { id?: string; label: string; children: 
   );
 }
 
-export function WordCard({ word: w, onDelete, action }: { word: Pick<Word, "w" | "pt" | "en" | "ex" | "pos"> & Partial<Word>; onDelete?: () => void; action?: React.ReactNode }) {
+export function WordCard({ word: w, onDelete, action, editable }: { word: Pick<Word, "w" | "pt" | "en" | "ex" | "pos"> & Partial<Word>; onDelete?: () => void; action?: React.ReactNode; editable?: boolean }) {
   const book = w.book ? BOOK_BY_ID.get(w.book) : undefined;
+  const [editing, setEditing] = useState(false);
   return (
     <article className="grid content-start gap-2 rounded-[1.25rem] border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-2">
@@ -191,6 +215,11 @@ export function WordCard({ word: w, onDelete, action }: { word: Pick<Word, "w" |
         <div className="-mt-1 -mr-1 flex shrink-0">
           <SpeakButton text={w.w} lang={w.ln} />
           <DictButton word={w.w} lang={w.ln} />
+          {editable && w.id && (
+            <Button variant="ghost" size="icon-sm" aria-label={`Corrigir a tradução de ${w.w}`} title="Corrigir tradução" onClick={() => setEditing(!editing)} className="text-muted-foreground">
+              <PencilSimpleIcon />
+            </Button>
+          )}
           {onDelete && (
             <Button variant="ghost" size="icon-sm" aria-label={`Apagar ${w.w}`} onClick={onDelete} className="text-muted-foreground hover:text-destructive">
               <TrashIcon />
@@ -198,8 +227,14 @@ export function WordCard({ word: w, onDelete, action }: { word: Pick<Word, "w" |
           )}
         </div>
       </div>
-      {w.pt && <p className="w-fit rounded-full bg-sand px-3 py-1 text-sm font-medium text-sand-foreground">{w.pt}</p>}
-      {w.en && <p className="text-sm text-muted-foreground">{w.en}</p>}
+      {editing && w.id ? (
+        <EditMeaning id={w.id} pt={w.pt} en={w.en} onDone={() => setEditing(false)} />
+      ) : (
+        <>
+          {w.pt && <p className="w-fit rounded-full bg-sand px-3 py-1 text-sm font-medium text-sand-foreground">{w.pt}</p>}
+          {w.en && <p className="text-sm text-muted-foreground">{w.en}</p>}
+        </>
+      )}
       {w.ex && <p className="border-l-2 border-border pl-3 text-sm italic">“{w.ex}”</p>}
       {(w.box !== undefined || book) && (
         <div className="mt-1 flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground tabular">

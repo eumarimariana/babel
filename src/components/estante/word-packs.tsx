@@ -15,9 +15,13 @@ const SIZE = 50;
 let ngslCache: Entry[] | null = null;
 /** The NGSL list (~200 KB), loaded the first time a component asks for it. */
 export function useNgsl() {
+  return useNgslIf(true);
+}
+/** Same, but only loads when `need` is true (e.g. only for English). */
+export function useNgslIf(need: boolean) {
   const [list, setList] = useState<Entry[] | null>(ngslCache);
   useEffect(() => {
-    if (ngslCache) return;
+    if (!need || ngslCache) return;
     let live = true;
     import("@/data/ngsl-en.json").then((m) => {
       ngslCache = m.default as Entry[];
@@ -26,8 +30,8 @@ export function useNgsl() {
     return () => {
       live = false;
     };
-  }, []);
-  return list;
+  }, [need]);
+  return need ? list : null;
 }
 
 /** English words already in the notebook, lower-cased. */
