@@ -251,3 +251,54 @@ Os 24 materiais sugeridos depois da primeira lista já estão na aba Materiais, 
 | Oxford 3000/5000 e English Vocabulary Profile | Mostrar o nível CEFR das palavras do caderno e montar os pacotes por nível. As listas não podem ser copiadas; usar só como link ou conferir a licença | Vocabulário e etapa 6 |
 | Rachel's English, English with Lucy, Easy British English | Mesmo formato das playlists (abrir no YouTube e "onde parei") | Materiais, etapa 3 |
 
+
+---
+
+## 15. Próximas ideias (levantadas em 11/10/2026)
+
+Hoje a parte de inglês é forte em leitura e vocabulário. Escuta, fala e escrita quase só aparecem como links para fora. Em ordem de prioridade:
+
+### 15.1 Leitor dentro do app (em andamento)
+
+- Ler as histórias do Global Storybooks (EN, FR, DE, ES) sem sair do app, página por página, com a ilustração.
+- Tocar numa palavra mostra a tradução (do NGSL, sem IA; ou pela IA, se ligada), o botão de ouvir, o Cambridge e "Anotar", que manda a palavra ao caderno já com o livro e a frase como exemplo.
+- Palavras que já estão no caderno aparecem marcadas no texto.
+- O MP3 da narração toca junto.
+- Depois: os livros do Gutenberg (textos longos, carregar sob demanda) e marcar onde você parou.
+
+### 15.2 Pacotes feitos para brasileiros
+
+- **Falsos cognatos:** actually, pretend, push, library, parents, exquisite, assist…
+- **Phrasal verbs mais comuns:** get up, look for, find out, give up…
+- **Pronúncia difícil para brasileiros:** "th", o "-ed" (worked / wanted / played), vogais curtas e longas (ship/sheep, live/leave, full/fool), em pares tocados com as gravações do Wiktionary.
+
+### 15.3 Exercícios de gramática dentro do app
+
+- 5 a 10 exercícios curtos por tema (completar, escolher, reescrever), pelos temas de `GRAMMAR_TOPICS`.
+- Com a IA, gerados na hora; sem a IA, um banco fixo para os temas principais (tempos verbais, condicionais, comparativos, modais).
+- Os temas errados entram na Missão do dia, como já acontece com o quiz.
+
+### 15.4 Escrita: diário curto
+
+- 3 a 5 frases por dia sobre um tema do seu nível ("o que você fez no fim de semana", "descreva sua casa").
+- Correção da IA linha a linha; as palavras novas da correção vão para o caderno.
+
+### 15.5 Fala: "repita depois de mim"
+
+- O app toca a gravação (Wiktionary ou narração do livro), você grava a sua voz pelo microfone (MediaRecorder) e as duas tocam lado a lado para comparar.
+- Funciona em qualquer navegador, sem depender da voz do sistema nem de reconhecimento de fala.
+
+### 15.6 Escuta: leituras do dia
+
+- Um link por nível no Início: VOA Learning English, News in Levels, BBC 6 Minute English (já no plano de idiomas, passo 7).
+
+### 15.7 Vocabulário
+
+- **Tamanho estimado do vocabulário:** "você conhece ~X das 2.809 palavras mais usadas", pelas palavras dominadas (caixa 5–6) nos flashcards.
+- **Cartões de frase:** o flashcard mostra a frase do livro com a palavra em branco.
+- **Corrigir tradução:** botão no flashcard para consertar as traduções dos pacotes (feitas para o app e ainda não revisadas).
+
+### 15.8 Progresso
+
+- Lista de "consigo…" do CEFR por nível (apresentar-me, contar o que fiz no fim de semana, dar minha opinião…), marcada aos poucos.
+- Teste de nível próprio do app, montado com as perguntas de gramática de cada nível.
