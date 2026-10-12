@@ -266,39 +266,39 @@ Hoje a parte de inglês é forte em leitura e vocabulário. Escuta, fala e escri
 - O MP3 da narração toca junto.
 - Chegou a ser feito para o Global Storybooks e foi retirado a pedido; os textos das histórias (CC BY sem os créditos) não ficaram no histórico do git.
 
-### 15.2 Pacotes feitos para brasileiros
+### 15.2 Pacotes feitos para brasileiros (feito: `src/data/br-packs-en.json`, seção "Feito para brasileiros" em Materiais)
 
 - **Falsos cognatos:** actually, pretend, push, library, parents, exquisite, assist…
 - **Phrasal verbs mais comuns:** get up, look for, find out, give up…
 - **Pronúncia difícil para brasileiros:** "th", o "-ed" (worked / wanted / played), vogais curtas e longas (ship/sheep, live/leave, full/fool), em pares tocados com as gravações do Wiktionary.
 
-### 15.3 Exercícios de gramática dentro do app
+### 15.3 Exercícios de gramática dentro do app (feito: 95 exercícios em 19 temas em `src/data/grammar-en.json`, mais 8 pela IA)
 
 - 5 a 10 exercícios curtos por tema (completar, escolher, reescrever), pelos temas de `GRAMMAR_TOPICS`.
 - Com a IA, gerados na hora; sem a IA, um banco fixo para os temas principais (tempos verbais, condicionais, comparativos, modais).
 - Os temas errados entram na Missão do dia, como já acontece com o quiz.
 
-### 15.4 Escrita: diário curto
+### 15.4 Escrita: diário curto (feito: seção "Diário" em Materiais)
 
 - 3 a 5 frases por dia sobre um tema do seu nível ("o que você fez no fim de semana", "descreva sua casa").
 - Correção da IA linha a linha; as palavras novas da correção vão para o caderno.
 
-### 15.5 Fala: "repita depois de mim"
+### 15.5 Fala: "repita depois de mim" (feito: treino "Falar" em Revisar)
 
 - O app toca a gravação (Wiktionary ou narração do livro), você grava a sua voz pelo microfone (MediaRecorder) e as duas tocam lado a lado para comparar.
 - Funciona em qualquer navegador, sem depender da voz do sistema nem de reconhecimento de fala.
 
-### 15.6 Escuta: leituras do dia
+### 15.6 Escuta: leituras do dia (feito: card "Leitura do dia" no Início, fontes em `DAILY_EN`)
 
 - Um link por nível no Início: VOA Learning English, News in Levels, BBC 6 Minute English (já no plano de idiomas, passo 7).
 
-### 15.7 Vocabulário
+### 15.7 Vocabulário (feito: vocabulário estimado no caderno, modo "Frase" nos flashcards, "Corrigir tradução")
 
 - **Tamanho estimado do vocabulário:** "você conhece ~X das 2.809 palavras mais usadas", pelas palavras dominadas (caixa 5–6) nos flashcards.
 - **Cartões de frase:** o flashcard mostra a frase do livro com a palavra em branco.
 - **Corrigir tradução:** botão no flashcard para consertar as traduções dos pacotes (feitas para o app e ainda não revisadas).
 
-### 15.8 Progresso
+### 15.8 Progresso (feito: "Teste do app" e "O que eu já consigo" no card de nível)
 
 - Lista de "consigo…" do CEFR por nível (apresentar-me, contar o que fiz no fim de semana, dar minha opinião…), marcada aos poucos.
 - Teste de nível próprio do app, montado com as perguntas de gramática de cada nível.

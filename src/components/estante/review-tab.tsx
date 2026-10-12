@@ -47,7 +47,7 @@ export function ReviewTab({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onG
                 title={enough(t) ? undefined : `Precisa de ${t.min} palavras com tradução`}
                 onClick={() => setKind(t.value)}
                 className={cn(
-                  "flex items-center gap-3 rounded-[1.25rem] border p-3 text-left transition-colors disabled:opacity-40",
+                  "flex items-center gap-3 rounded-[1.25rem] border p-3 text-left transition-colors disabled:opacity-40 sm:flex-col sm:items-start sm:gap-2",
                   on ? "border-ink bg-ink text-ink-foreground" : "border-border bg-card hover:border-foreground",
                 )}
               >
@@ -56,7 +56,7 @@ export function ReviewTab({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onG
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-semibold">{t.label}</span>
-                  <span className={cn("block truncate text-xs", on ? "text-ink-muted" : "text-muted-foreground")}>{t.detail}</span>
+                  <span className={cn("block text-xs", on ? "text-ink-muted" : "text-muted-foreground")}>{t.detail}</span>
                 </span>
               </button>
             );
@@ -214,6 +214,7 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
                   <>
                     <p className="text-5xl leading-none font-bold tracking-tight sm:text-6xl">{current.w}</p>
                     {current.pos && <p className="text-xs text-ink-muted tabular">{current.pos}</p>}
+                    {mode === "ex" && <p className="text-xs text-ink-muted">esta palavra não tem frase de exemplo no caderno</p>}
                   </>
                 )}
                 <div className="flex items-center gap-2 pt-3">

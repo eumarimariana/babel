@@ -117,3 +117,28 @@ export function topicsIn(text: string, lang: Lang) {
   // "must have" is deduction, not the general modals page
   return found.some((t) => t.id === "deduction") ? found.filter((t) => t.id !== "modals") : found;
 }
+
+/** "Leitura do dia": sites that publish new graded texts or audio every day, by level (English only for now). */
+export type DailySource = { name: string; url: string; levels: string[]; what: string };
+export const DAILY_EN: DailySource[] = [
+  { name: "News in Levels · nível 1", url: "https://www.newsinlevels.com/level/level-1/", levels: ["Pre-A1", "A1"], what: "notícia curtinha com áudio, em inglês bem simples" },
+  { name: "ESL Fast", url: "https://www.eslfast.com/index.htm", levels: ["Pre-A1", "A1", "A2"], what: "histórias e diálogos fáceis, com áudio" },
+  { name: "News in Levels · nível 2", url: "https://www.newsinlevels.com/level/level-2/", levels: ["A1", "A2"], what: "a notícia do dia reescrita para o seu nível, com áudio" },
+  { name: "Breaking News English", url: "https://breakingnewsenglish.com/", levels: ["A2", "B1", "B2"], what: "cada notícia em vários níveis, com exercícios" },
+  { name: "VOA60: Watch & Learn", url: "https://learningenglish.voanews.com/z/3613", levels: ["A2", "B1"], what: "notícias em vídeo de 1 minuto, narradas devagar" },
+  { name: "News in Levels · nível 3", url: "https://www.newsinlevels.com/level/level-3/", levels: ["B1"], what: "notícia mais longa, com áudio" },
+  { name: "VOA · As It Is", url: "https://learningenglish.voanews.com/z/3521", levels: ["B1", "B2"], what: "reportagens em inglês mais lento, com áudio e texto" },
+  { name: "BBC 6 Minute English", url: "https://www.bbc.co.uk/learningenglish/english/features/6-minute-english", levels: ["B1", "B2", "C1"], what: "conversa de 6 minutos com transcrição e vocabulário" },
+  { name: "BBC Lingohack", url: "https://www.bbc.co.uk/learningenglish/english/features/lingohack", levels: ["B2"], what: "trecho do noticiário da BBC com as palavras explicadas" },
+  { name: "BBC News", url: "https://www.bbc.com/news", levels: ["B2", "C1"], what: "o noticiário de verdade, sem adaptação" },
+  { name: "The Conversation", url: "https://theconversation.com/global", levels: ["C1"], what: "artigos de pesquisadores em linguagem acessível" },
+];
+
+/** Today's pick for a level (changes every day), plus the other sources of that level. */
+export function dailyRead(level: string, day: string) {
+  const fit = DAILY_EN.filter((d) => d.levels.includes(level));
+  const list = fit.length ? fit : DAILY_EN.slice(0, 3);
+  const seed = [...day].reduce((n, c) => n * 31 + c.charCodeAt(0), 7) >>> 0;
+  const pick = list[seed % list.length];
+  return { pick, others: list.filter((d) => d !== pick) };
+}

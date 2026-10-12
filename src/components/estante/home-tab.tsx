@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils";
 import type { JourneyProps } from "@/remotion/Journey";
 import { BookCover, SectionHead, STATUS_LABEL, useLang } from "./common";
 import { MissionCard } from "./mission-card";
+import { DailyRead } from "./daily-read";
 import { JourneyPlayer } from "./players";
-import { sourceLine } from "@/lib/recommend";
+import { learnerLevel, sourceLine } from "@/lib/recommend";
 import { QuoteCard } from "./quotes-tab";
 
 type Props = {
@@ -191,6 +192,7 @@ export function HomeTab({ journey, nextBook, suggested, reading, onGo, onOpen, o
       {/* right column */}
       <aside className="grid content-start gap-5 md:grid-cols-2 xl:grid-cols-1">
         <MissionCard book={nextBook} onGo={onGo} onOpen={onOpen} className="md:col-span-2 xl:col-span-1" />
+        {lang === "en" && <DailyRead level={learnerLevel(all, lang)} className="md:col-span-2 xl:col-span-1" />}
         {nextBook && (
           <article className="relative overflow-hidden rounded-[1.5rem] bg-ink p-5 text-ink-foreground md:col-span-2 xl:col-span-1">
             <p className="text-xs text-ink-muted tabular">{reading.length ? "Lendo agora" : "Sugestão para ler"}</p>
