@@ -3,8 +3,8 @@
 import { useSyncExternalStore } from "react";
 import type { Book } from "@/lib/books";
 import type { KitResult, QuizResult, WordInfo } from "@/lib/ai-schemas";
-import { anthropicCorrect, anthropicDrill, anthropicSentence, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
-import { freeCorrect, freeDrill, freeSentence, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
+import { anthropicCorrect, anthropicDrill, anthropicJournal, anthropicSentence, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
+import { freeCorrect, freeDrill, freeJournal, freeSentence, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
 import { suggestTaskModels, type AiTask } from "@/lib/ai/task-models";
 
 /**
@@ -195,6 +195,12 @@ export async function makeKit(book: Book, signal?: AbortSignal): Promise<KitResu
 export async function makeQuiz(book: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
   const a = active("quiz");
   return a.id === "anthropic" ? anthropicQuiz(a.key, a.model, book, words, grammar, signal) : freeQuiz(a.id, a.key, a.models, book, words, grammar, signal);
+}
+
+/** Correction of a diary entry: corrected text, mistakes and words to note, in Portuguese. */
+export async function correctJournal(task: string, text: string, level: string, signal?: AbortSignal): Promise<string> {
+  const a = active("correct");
+  return a.id === "anthropic" ? anthropicJournal(a.key, a.model, task, text, level, signal) : freeJournal(a.id, a.key, a.models, task, text, level, signal);
 }
 
 /** Eight more multiple-choice exercises on one grammar topic. */

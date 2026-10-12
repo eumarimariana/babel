@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Book } from "@/lib/books";
 import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
-import { SYSTEM, cleanTranslation, correctPrompt, drillPrompt, kitPrompt, quizPrompt, quotePrompt, sentencePrompt, wordPrompt } from "./prompts";
+import { SYSTEM, cleanTranslation, correctPrompt, drillPrompt, journalPrompt, kitPrompt, quizPrompt, quotePrompt, sentencePrompt, wordPrompt } from "./prompts";
 
 /** The Claude models a key can pick per task; Opus is the default for everything. */
 export const CLAUDE_MODELS = [
@@ -145,6 +145,28 @@ export async function anthropicSentence(apiKey: string, model: string, word: str
     if (res.stop_reason === "refusal") throw new Error("O Claude não pôde comentar esta frase.");
     const out = res.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("").trim();
     if (!out) throw new Error("A resposta veio vazia. Tente de novo.");
+    return out;
+  } catch (e) {
+    throw friendly(e);
+  }
+}
+
+export async function anthropicJournal(apiKey: string, model: string, task: string, text: string, level: string, signal?: AbortSignal) {
+  try {
+    const res = await client(apiKey).beta.messages.create(
+      {
+        ...fallback(model),
+        model,
+        max_tokens: 6000,
+        system: SYSTEM,
+        output_config: { effort: "medium" },
+        messages: [{ role: "user", content: journalPrompt(task, text, level) }],
+      },
+      { signal },
+    );
+    if (res.stop_reason === "refusal") throw new Error("O Claude não pôde corrigir este texto.");
+    const out = res.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("").trim();
+    if (!out) throw new Error("A correção veio vazia. Tente de novo.");
     return out;
   } catch (e) {
     throw friendly(e);

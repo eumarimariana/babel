@@ -77,6 +77,19 @@ export function sentencePrompt(word: string, meaning: string, sentence: string) 
   );
 }
 
+/** Feedback on a diary entry: corrected text, the main mistakes and words worth noting down. */
+export function journalPrompt(task: string, text: string, level: string) {
+  return [
+    `A Brazilian learner of ${L()} (around CEFR ${level}) wrote this short diary entry for the task "${task}":`,
+    `"""${text.slice(0, 3000)}"""`,
+    "Reply in Brazilian Portuguese, using exactly these three short headings:",
+    `Versão corrigida — the text rewritten in natural, correct ${L()}, keeping the learner's ideas and level.`,
+    `Erros — up to 6 lines, each "errado → certo: explicação curta". If there are none, say so.`,
+    `Palavras para anotar — 3 to 5 useful ${L()} words or expressions from the corrected text, one per line as "palavra = tradução".`,
+    "No preamble and no closing remarks.",
+  ].join("\n");
+}
+
 /** Grammar exercises on one topic, in the shape of a quiz (all questions of kind "grammar"). */
 export function drillPrompt(topic: string, level: string) {
   return [

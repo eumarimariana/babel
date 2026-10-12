@@ -32,6 +32,7 @@ import { MissionCard } from "./mission-card";
 import { WordPacks } from "./word-packs";
 import { BrazilPacks } from "./br-packs";
 import { GrammarPractice } from "./grammar-practice";
+import { Journal } from "./journal";
 import { AddLink } from "./add-link";
 import { LevelTest } from "./level-test";
 
@@ -101,6 +102,8 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
           <LevelTest lang={lang} onOpen={onOpen} />
         </div>
       </section>
+
+      <Journal lang={lang} level={mapLevel} />
 
       {/* what you are using now, one tap away */}
       {doing.length > 0 && (
