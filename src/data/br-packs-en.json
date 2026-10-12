@@ -1,0 +1,135 @@
+{
+  "falsos-cognatos": {
+    "title": "Falsos cognatos",
+    "detail": "parecem português, mas querem dizer outra coisa",
+    "words": [
+      ["actually", "na verdade", "não é \"atualmente\" (= currently, nowadays)"],
+      ["pretend", "fingir", "não é \"pretender\" (= intend, plan to)"],
+      ["push", "empurrar", "não é \"puxar\" (= pull)"],
+      ["pull", "puxar", "não é \"pular\" (= jump)"],
+      ["library", "biblioteca", "não é \"livraria\" (= bookstore)"],
+      ["parents", "pais (pai e mãe)", "não é \"parentes\" (= relatives)"],
+      ["exquisite", "requintado, refinado", "não é \"esquisito\" (= weird, strange)"],
+      ["assist", "ajudar", "não é \"assistir\" (= watch)"],
+      ["attend", "comparecer, frequentar", "não é \"atender\" (= answer, serve)"],
+      ["college", "faculdade", "não é \"colégio\" (= school, high school)"],
+      ["costume", "fantasia (roupa)", "não é \"costume\" (= habit, custom)"],
+      ["eventually", "finalmente, com o tempo", "não é \"eventualmente\" (= occasionally)"],
+      ["fabric", "tecido", "não é \"fábrica\" (= factory)"],
+      ["lunch", "almoço", "não é \"lanche\" (= snack)"],
+      ["novel", "romance (livro)", "não é \"novela\" (= soap opera)"],
+      ["prejudice", "preconceito", "não é \"prejuízo\" (= loss, damage)"],
+      ["realize", "perceber, dar-se conta", "não é \"realizar\" (= carry out, achieve)"],
+      ["resume", "retomar, recomeçar", "não é \"resumir\" (= summarize)"],
+      ["sensible", "sensato", "não é \"sensível\" (= sensitive)"],
+      ["sympathetic", "compreensivo, solidário", "não é \"simpático\" (= nice, friendly)"],
+      ["comprehensive", "abrangente, completo", "não é \"compreensivo\" (= understanding)"],
+      ["intend", "pretender, ter a intenção de", "não é \"entender\" (= understand)"],
+      ["lecture", "palestra, aula", "não é \"leitura\" (= reading)"],
+      ["data", "dados", "não é \"data\" (= date)"],
+      ["policy", "política, norma (de uma empresa)", "não é \"polícia\" (= police)"],
+      ["mayor", "prefeito", "não é \"maior\" (= bigger, larger)"],
+      ["injury", "ferimento, lesão", "não é \"injúria\" (= insult)"],
+      ["exit", "saída", "não é \"êxito\" (= success)"],
+      ["cigar", "charuto", "não é \"cigarro\" (= cigarette)"],
+      ["collar", "gola, coleira", "não é \"colar\" (= necklace)"],
+      ["deception", "engano, fraude", "não é \"decepção\" (= disappointment)"],
+      ["large", "grande", "não é \"largo\" (= wide)"],
+      ["office", "escritório", "não é \"ofício\" (= trade, craft)"],
+      ["pasta", "macarrão", "não é \"pasta\" (= folder, paste)"],
+      ["retired", "aposentado", "não é \"retirado\" (= removed, taken out)"],
+      ["tenant", "inquilino", "não é \"tenente\" (= lieutenant)"],
+      ["legend", "lenda; legenda de mapa", "não é a legenda do filme (= subtitles)"],
+      ["argument", "discussão, briga; argumento", "no dia a dia quase sempre é \"briga\""],
+      ["enroll", "matricular-se, inscrever-se", "não é \"enrolar\" (= roll up, stall)"],
+      ["grip", "aperto, firmeza", "não é \"gripe\" (= flu)"]
+    ]
+  },
+  "phrasal-verbs": {
+    "title": "Phrasal verbs do dia a dia",
+    "detail": "verbo + partícula que muda o sentido",
+    "words": [
+      ["get up", "levantar-se (da cama)", "to rise from bed after sleeping"],
+      ["wake up", "acordar", "to stop sleeping"],
+      ["look for", "procurar", "to try to find something"],
+      ["look after", "cuidar de", "to take care of someone or something"],
+      ["look up", "procurar (no dicionário, na internet)", "to search for information"],
+      ["look forward to", "aguardar ansiosamente", "to feel happy about something that will happen"],
+      ["find out", "descobrir", "to learn a fact you did not know"],
+      ["figure out", "entender, resolver", "to understand or solve something after thinking"],
+      ["give up", "desistir; parar de", "to stop trying, or stop a habit"],
+      ["give back", "devolver", "to return something to its owner"],
+      ["turn on", "ligar", "to start a machine or light"],
+      ["turn off", "desligar", "to stop a machine or light"],
+      ["turn up", "aumentar (volume); aparecer", "to make louder; to arrive"],
+      ["turn down", "recusar; abaixar (volume)", "to refuse; to make quieter"],
+      ["put on", "vestir, colocar", "to dress yourself in something"],
+      ["take off", "tirar (roupa); decolar", "to remove clothes; to leave the ground (a plane)"],
+      ["try on", "experimentar (roupa)", "to put on clothes to see if they fit"],
+      ["go on", "continuar; acontecer", "to continue; to happen"],
+      ["carry on", "continuar", "to continue doing something"],
+      ["come back", "voltar", "to return"],
+      ["set up", "montar, configurar", "to prepare or start something"],
+      ["pick up", "pegar; buscar (alguém)", "to lift; to collect someone"],
+      ["run out of", "ficar sem", "to have none left"],
+      ["get along", "dar-se bem", "to have a friendly relationship"],
+      ["get on", "embarcar, subir (em ônibus, trem)", "to enter a bus, train or plane"],
+      ["get off", "descer (de ônibus, trem)", "to leave a bus, train or plane"],
+      ["get over", "superar", "to recover from something bad"],
+      ["break down", "quebrar, enguiçar; desabar (emocionalmente)", "to stop working; to lose control of your feelings"],
+      ["bring up", "mencionar; criar (filhos)", "to mention a subject; to raise a child"],
+      ["call off", "cancelar", "to decide that something will not happen"],
+      ["fill in", "preencher", "to write information in a form"],
+      ["hang out", "sair, passar tempo junto", "to spend time with friends"],
+      ["hold on", "esperar um pouco; segurar firme", "to wait; to hold something tightly"],
+      ["make up", "inventar; fazer as pazes", "to invent; to become friends again"],
+      ["put off", "adiar", "to delay something until later"],
+      ["show up", "aparecer, chegar", "to arrive, often late or unexpectedly"],
+      ["throw away", "jogar fora", "to put something in the rubbish"],
+      ["work out", "malhar; dar certo", "to exercise; to end well"],
+      ["grow up", "crescer (virar adulto)", "to become an adult"],
+      ["come up with", "ter (uma ideia), inventar", "to think of an idea or plan"]
+    ]
+  },
+  "pronuncia": {
+    "title": "Pronúncia difícil",
+    "detail": "pares que brasileiros costumam confundir",
+    "groups": [
+      {
+        "title": "Vogal curta × vogal longa",
+        "tip": "A primeira é curta e relaxada (quase um \"ê\" fechado); a segunda é longa, como um \"i\" esticado.",
+        "pairs": [["ship", "sheep"], ["live", "leave"], ["sit", "seat"], ["fill", "feel"], ["hit", "heat"]]
+      },
+      {
+        "title": "\"u\" curto × \"u\" longo",
+        "tip": "A primeira é curta, com a boca relaxada; a segunda é longa, com os lábios arredondados.",
+        "pairs": [["full", "fool"], ["pull", "pool"]]
+      },
+      {
+        "title": "\"a\" aberto × \"é\"",
+        "tip": "Em \"bad\" e \"man\" a boca abre mais, entre o nosso \"é\" e o \"a\".",
+        "pairs": [["bad", "bed"], ["man", "men"], ["sad", "said"]]
+      },
+      {
+        "title": "\"a\" curto × \"ó\"",
+        "tip": "Em \"cut\" e \"luck\" o som é curto e central, quase um \"â\"; não é \"ó\".",
+        "pairs": [["cut", "cat"], ["luck", "lock"], ["hut", "hot"]]
+      },
+      {
+        "title": "\"th\" × \"s\", \"t\" e \"d\"",
+        "tip": "No \"th\", a ponta da língua fica entre os dentes e o ar passa por ela.",
+        "pairs": [["think", "sink"], ["three", "tree"], ["thank", "tank"], ["they", "day"], ["mouth", "mouse"]]
+      },
+      {
+        "title": "\"r\" × \"h\" no começo",
+        "tip": "O \"r\" inglês não é o nosso \"rr\": a língua não encosta em nada. O \"h\" é que soa como o nosso \"r\" de \"rato\".",
+        "pairs": [["red", "head"], ["rat", "hat"], ["rope", "hope"], ["rate", "hate"]]
+      },
+      {
+        "title": "Terminação \"-ed\"",
+        "tip": "Só vira sílaba (\"id\") depois de t ou d. Depois de som surdo (k, p, s, sh, ch) soa \"t\"; nos outros, \"d\". Nunca \"ê-di\".",
+        "pairs": [["worked", "played"], ["stopped", "lived"], ["wanted", "needed"]]
+      }
+    ]
+  }
+}
