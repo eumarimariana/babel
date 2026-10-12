@@ -47,18 +47,6 @@ export function kitPrompt(b: Book) {
     .join("\n");
 }
 
-export function correctPrompt(b: Book, text: string) {
-  return (
-    `Language being studied: ${L(b)}.\nThe learner just read ${bookLine(b)} and wrote this text about it:\n"""${text.slice(0, 5000)}"""\n\n` +
-    "Reply in Portuguese, plain text without markdown symbols, with these sections in this order:\n" +
-    `VERSÃO CORRIGIDA — the corrected ${L(b)} text, changing as little as possible.\n` +
-    'ERROS — one per line as "errado → certo: explicação curta".\n' +
-    "PARA SOAR MAIS NATURAL — 2 or 3 suggestions.\n" +
-    `PALAVRAS NOVAS — 3 useful ${L(b)} words or expressions to talk about this book, with translation.\n` +
-    "NOTA — a score from 0 to 10 and one encouraging sentence."
-  );
-}
-
 export function quotePrompt(text: string, book?: Book) {
   return (
     `Translate this ${L(book)} passage${book ? ` from ${bookLine(book)}` : ""} into natural Brazilian Portuguese, keeping its tone and line breaks.\n` +
@@ -67,28 +55,45 @@ export function quotePrompt(text: string, book?: Book) {
   );
 }
 
-/** Feedback on one sentence the learner wrote to practise a word. */
-export function sentencePrompt(word: string, meaning: string, sentence: string) {
+/** What was written, for the correction prompt. */
+export type WritingContext =
+  | { kind: "summary"; book: Book }
+  | { kind: "diary"; task: string }
+  | { kind: "sentence"; word: string; meaning: string };
+
+const about = (c: WritingContext) =>
+  c.kind === "summary"
+    ? `a short summary of ${bookLine(c.book)} that they just read`
+    : c.kind === "diary"
+      ? `a short diary entry for the task "${c.task}"`
+      : `one sentence to practise the word or expression "${c.word.slice(0, 80)}"${c.meaning ? ` (meaning: ${c.meaning.slice(0, 80)})` : ""}; also check that the word is used in the right sense`;
+
+/** Correction of anything the learner wrote, as structured data (see CorrectionSchema). */
+export function writingPrompt(lang: Lang, c: WritingContext, text: string, level: string) {
+  return [
+    `A Brazilian learner of ${LANG_EN[lang]} (around CEFR ${level}) wrote ${about(c)}:`,
+    `"""${text.slice(0, 5000)}"""`,
+    "Correct it like a kind, precise teacher:",
+    `- corrected: the whole text in correct, natural ${LANG_EN[lang]}, changing as little as possible;`,
+    "- mistakes: each real mistake with the fragment copied exactly from the learner's text, the fix, a short explanation in Brazilian Portuguese, its type and the grammar point;",
+    "- natural: what a native speaker would say differently, even when it is not wrong;",
+    "- words: useful words from the corrected text; praise: one specific compliment; level and score for this text.",
+    "If the text has no mistakes, say so with an empty mistakes list.",
+  ].join("\n");
+}
+
+/** The same request for a chat (no key): plain Portuguese instructions to paste anywhere. */
+export function writingChatPrompt(lang: Lang, c: WritingContext, text: string) {
   return (
-    `The learner is practising the ${L()} word or expression "${word.slice(0, 80)}"${meaning ? ` (meaning: ${meaning.slice(0, 80)})` : ""} and wrote this sentence:\n` +
-    `"""${sentence.slice(0, 600)}"""\n\n` +
-    "Answer in Brazilian Portuguese, in at most 4 short lines, no preamble: first say if the sentence is correct and natural and if the word is used in the right sense; " +
-    `then, if anything should change, give the corrected sentence in ${L()}; end with one short tip.`
+    `Sou brasileiro e estudo ${{ en: "inglês", fr: "francês", de: "alemão", es: "espanhol" }[lang]}. Escrevi ${c.kind === "summary" ? `um resumo de "${c.book.t}"` : c.kind === "diary" ? `um texto de diário sobre: ${c.task}` : `uma frase para treinar "${c.word}"`}. Corrija em português com:\n` +
+    "1) a versão corrigida, mudando o mínimo;\n2) cada erro como \"errado → certo: explicação\", dizendo se é gramática, vocabulário, ortografia, ordem ou pontuação;\n" +
+    "3) até 3 dicas para soar mais natural;\n4) 3 a 5 palavras úteis com tradução;\n5) o que eu fiz bem, o nível CEFR do texto e uma nota de 0 a 10.\n\n" +
+    `"""${text.trim()}"""`
   );
 }
 
-/** Feedback on a diary entry: corrected text, the main mistakes and words worth noting down. */
-export function journalPrompt(task: string, text: string, level: string) {
-  return [
-    `A Brazilian learner of ${L()} (around CEFR ${level}) wrote this short diary entry for the task "${task}":`,
-    `"""${text.slice(0, 3000)}"""`,
-    "Reply in Brazilian Portuguese, using exactly these three short headings:",
-    `Versão corrigida — the text rewritten in natural, correct ${L()}, keeping the learner's ideas and level.`,
-    `Erros — up to 6 lines, each "errado → certo: explicação curta". If there are none, say so.`,
-    `Palavras para anotar — 3 to 5 useful ${L()} words or expressions from the corrected text, one per line as "palavra = tradução".`,
-    "No preamble and no closing remarks.",
-  ].join("\n");
-}
+export const CORRECTION_JSON_SHAPE =
+  'Reply with only a JSON object, no markdown: {"corrected": string, "mistakes": [{"wrong": string, "right": string, "why": string, "type": "gramática" | "vocabulário" | "ortografia" | "ordem das palavras" | "pontuação", "topic": string}], "natural": [string], "words": [{"w": string, "pt": string}], "praise": string, "level": string, "score": number}';
 
 /** Grammar exercises on one topic, in the shape of a quiz (all questions of kind "grammar"). */
 export function drillPrompt(topic: string, level: string) {

@@ -40,7 +40,7 @@ export function buildMission(data: Data, lang: Lang, day: string, book?: Book): 
   const topic = gap ?? levelTopics[seed % Math.max(1, levelTopics.length)];
   if (topic) {
     const link = topic.links[0];
-    items.push({ id: `grammar-${topic.id}`, title: `${topic.label} – ${link.name}`, detail: gap ? "você errou no último quiz" : `gramática do ${book?.lv}`, area: "Gramática", minutes: 5, href: link.url });
+    items.push({ id: `grammar-${topic.id}`, title: `${topic.label} – ${link.name}`, detail: gap ? "você errou recentemente" : `gramática do ${book?.lv}`, area: "Gramática", minutes: 5, href: link.url });
   }
 
   // one material for the skill used least in the last 7 days, preferring the ones marked "Usando"

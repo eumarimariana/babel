@@ -5,11 +5,13 @@ import { Loader2 } from "lucide-react";
 import { ArrowClockwiseIcon, ArrowRightIcon, CheckIcon, CopyIcon, MicrophoneIcon, PlayIcon, SpeakerHighIcon, SpeakerSimpleLowIcon, StopIcon, XIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { langInfo, type Lang } from "@/lib/books";
-import { checkSentence } from "@/lib/ai-client";
-import { sentencePrompt } from "@/lib/ai/prompts";
-import { today, useEstante, type Word } from "@/lib/store";
+import { correctWriting } from "@/lib/ai-client";
+import { writingChatPrompt } from "@/lib/ai/prompts";
+import { learnerLevel } from "@/lib/recommend";
+import { today, useEstante, type SavedCorrection, type Word } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { DictButton, SpeakButton, copyText, speak } from "./common";
+import { CorrectionView } from "./writing-feedback";
 import { pronounce } from "@/lib/pronounce";
 
 export type PracticeKind = "dictation" | "pairs" | "write" | "speak";
@@ -217,10 +219,10 @@ function Pairs({ words, onAgain, onExit }: RoundProps) {
 /* ---------- Escrever: use the word in a sentence of your own ---------- */
 
 function Write({ words, lang, onAgain, onExit, aiName }: RoundProps & { aiName: string }) {
-  const { markDay } = useEstante();
+  const { data, markDay } = useEstante();
   const [i, setI] = useState(0);
   const [text, setText] = useState("");
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<SavedCorrection | "" | null>(null); // "" = checked without AI
   const [busy, setBusy] = useState(false);
   const [written, setWritten] = useState(0);
   const w = words[i];
@@ -237,7 +239,8 @@ function Write({ words, lang, onAgain, onExit, aiName }: RoundProps & { aiName: 
     if (!aiName) return setFeedback("");
     setBusy(true);
     try {
-      setFeedback(await checkSentence(w.w, w.pt, text));
+      const c = await correctWriting(lang, { kind: "sentence", word: w.w, meaning: w.pt }, text.trim(), learnerLevel(data, lang));
+      setFeedback({ text: text.trim(), at: today(), c });
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -272,36 +275,32 @@ function Write({ words, lang, onAgain, onExit, aiName }: RoundProps & { aiName: 
       />
       {text.trim() && !usesWord && <p className="text-xs text-[#e3a08e]">A frase ainda não usa “{w.w}”.</p>}
 
-      {feedback !== null && (
+      {feedback && (
+        <div className="w-full max-w-lg">
+          <CorrectionView saved={feedback} lang={lang} compact />
+        </div>
+      )}
+      {feedback === "" && (
         <div className="grid w-full max-w-lg gap-2 rounded-2xl bg-white/5 p-4 text-left text-sm">
-          {feedback ? (
-            <>
-              <p className="text-xs text-ink-muted">{aiName} comentou</p>
-              <p className="whitespace-pre-line">{feedback}</p>
-            </>
+          {w.ex ? (
+            <p>
+              <span className="text-xs text-ink-muted">Compare com o exemplo do caderno: </span>
+              <span className="italic">“{w.ex}”</span>
+            </p>
           ) : (
-            <>
-              {w.ex ? (
-                <p>
-                  <span className="text-xs text-ink-muted">Compare com o exemplo do caderno: </span>
-                  <span className="italic">“{w.ex}”</span>
-                </p>
-              ) : (
-                <p className="text-ink-muted">Sem IA ligada, compare com um dicionário ou peça uma correção.</p>
-              )}
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={async () => (await copyText(sentencePrompt(w.w, w.pt, text))) && toast.success("Pedido copiado. Cole no claude.ai, Gemini ou outra IA.")}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-ink-border px-3 text-xs hover:bg-white/10"
-                >
-                  <CopyIcon className="size-3.5" /> Copiar pedido de correção
-                </button>
-                <span className="rounded-full border border-ink-border [&_a]:text-ink-foreground">
-                  <DictButton word={w.w} lang={lang} />
-                </span>
-              </div>
-            </>
+            <p className="text-ink-muted">Sem IA ligada, compare com um dicionário ou peça uma correção.</p>
           )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={async () => (await copyText(writingChatPrompt(lang, { kind: "sentence", word: w.w, meaning: w.pt }, text))) && toast.success("Pedido copiado. Cole no claude.ai, Gemini ou outra IA.")}
+              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-ink-border px-3 text-xs hover:bg-white/10"
+            >
+              <CopyIcon className="size-3.5" /> Copiar pedido de correção
+            </button>
+            <span className="rounded-full border border-ink-border [&_a]:text-ink-foreground">
+              <DictButton word={w.w} lang={lang} />
+            </span>
+          </div>
         </div>
       )}
 

@@ -1,10 +1,11 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { Book } from "@/lib/books";
-import type { KitResult, QuizResult, WordInfo } from "@/lib/ai-schemas";
-import { anthropicCorrect, anthropicDrill, anthropicJournal, anthropicSentence, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
-import { freeCorrect, freeDrill, freeJournal, freeSentence, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
+import type { Book, Lang } from "@/lib/books";
+import type { Correction, KitResult, QuizResult, WordInfo } from "@/lib/ai-schemas";
+import { writingPrompt, type WritingContext } from "@/lib/ai/prompts";
+import { anthropicDrill, anthropicWriting, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
+import { freeDrill, freeWriting, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
 import { suggestTaskModels, type AiTask } from "@/lib/ai/task-models";
 
 /**
@@ -197,10 +198,14 @@ export async function makeQuiz(book: Book, words: string[], grammar: string[], s
   return a.id === "anthropic" ? anthropicQuiz(a.key, a.model, book, words, grammar, signal) : freeQuiz(a.id, a.key, a.models, book, words, grammar, signal);
 }
 
-/** Correction of a diary entry: corrected text, mistakes and words to note, in Portuguese. */
-export async function correctJournal(task: string, text: string, level: string, signal?: AbortSignal): Promise<string> {
-  const a = active("correct");
-  return a.id === "anthropic" ? anthropicJournal(a.key, a.model, task, text, level, signal) : freeJournal(a.id, a.key, a.models, task, text, level, signal);
+/**
+ * Structured correction of something the learner wrote. Book summaries and diary entries use the
+ * "correct" task (the strongest model); practice sentences use "sentence".
+ */
+export async function correctWriting(lang: Lang, context: WritingContext, text: string, level: string, signal?: AbortSignal): Promise<Correction> {
+  const a = active(context.kind === "sentence" ? "sentence" : "correct");
+  const prompt = writingPrompt(lang, context, text, level);
+  return a.id === "anthropic" ? anthropicWriting(a.key, a.model, prompt, signal) : freeWriting(a.id, a.key, a.models, prompt, signal);
 }
 
 /** Eight more multiple-choice exercises on one grammar topic. */
@@ -215,13 +220,3 @@ export async function translateQuote(text: string, book?: Book, signal?: AbortSi
   return a.id === "anthropic" ? anthropicTranslate(a.key, a.model, text, book, signal) : freeTranslate(a.id, a.key, a.models, text, book, signal);
 }
 
-/** Short feedback, in Portuguese, on a sentence written to practise a word. */
-export async function checkSentence(word: string, meaning: string, sentence: string, signal?: AbortSignal): Promise<string> {
-  const a = active("sentence");
-  return a.id === "anthropic" ? anthropicSentence(a.key, a.model, word, meaning, sentence, signal) : freeSentence(a.id, a.key, a.models, word, meaning, sentence, signal);
-}
-
-export async function correctText(book: Book, text: string, onText: (t: string) => void, signal?: AbortSignal) {
-  const a = active("correct");
-  return a.id === "anthropic" ? anthropicCorrect(a.key, a.model, book, text, onText, signal) : freeCorrect(a.id, a.key, a.models, book, text, onText, signal);
-}

@@ -2,15 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ArrowSquareOutIcon, CheckIcon, CopyIcon, ListChecksIcon, PencilLineIcon, PlusIcon, StopIcon } from "@phosphor-icons/react";
+import { ArrowSquareOutIcon, CheckIcon, CopyIcon, ListChecksIcon, PlusIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { BASE_INFO, BOOKS, BOOK_BY_ID, type Book, baseOf, bookUrl, describeBook, grammarFor, kindOf, langInfo, langOf, questionsFor } from "@/lib/books";
-import { topicsIn, videoLessons } from "@/lib/resources";
+import { plainLevel, topicsIn, videoLessons } from "@/lib/resources";
 import { today, useEstante } from "@/lib/store";
-import { correctText, makeKit } from "@/lib/ai-client";
+import { makeKit } from "@/lib/ai-client";
+import { WritingBox } from "./writing-feedback";
 import { BookCover, SimpleSelect, StatusPicker, copyText, useBookOptions } from "./common";
 import { WordCard } from "./vocab-tab";
 
@@ -263,15 +263,11 @@ function DuringReading({ book }: { book: Book }) {
   );
 }
 
-function AfterReading({ book, aiName }: { book: Book; aiName: string }) {
-  const { data, saveEssay, markDay } = useEstante();
+function AfterReading({ book }: { book: Book; aiName: string }) {
+  const { data, saveEssay, saveEssayCheck } = useEstante();
   const [text, setText] = useState(data.essays[book.id] ?? "");
-  const [out, setOut] = useState("");
-  const [busy, setBusy] = useState(false);
-  const ctl = useRef<AbortController | null>(null);
   const kitQs = data.kits[book.id]?.questions;
   const questions = kitQs?.length ? kitQs : questionsFor(langOf(book));
-  const count = (text.trim().match(/\S+/g) ?? []).length;
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -279,58 +275,23 @@ function AfterReading({ book, aiName }: { book: Book; aiName: string }) {
     }, 500);
     return () => clearTimeout(t);
   }, [text, book.id, data.essays, saveEssay]);
-  useEffect(() => () => ctl.current?.abort(), []);
-
-  async function correct() {
-    if (text.trim().length < 20) return toast.error("Escreva pelo menos uma ou duas frases.");
-    ctl.current?.abort();
-    ctl.current = new AbortController();
-    setBusy(true);
-    setOut("");
-    try {
-      await correctText(book, text, setOut, ctl.current.signal);
-      markDay();
-    } catch (e) {
-      if ((e as Error).name !== "AbortError") toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const prompt = `Sou brasileiro, estudo ${langInfo(langOf(book)).name.toLowerCase()} e acabei de ler ${describeBook(book)}. Corrija meu texto abaixo. Responda em português com: 1) versão corrigida mudando o mínimo; 2) cada erro no formato "errado → certo: explicação"; 3) 2 sugestões para soar mais natural; 4) 3 palavras novas úteis com tradução; 5) nota de 0 a 10.\n\n"""${text.trim()}"""`;
 
   return (
-    <Step eyebrow="Depois de ler" title={`Responda e escreva um resumo em ${langInfo(langOf(book)).name.toLowerCase()}`} desc="Use as perguntas como roteiro e escreva de 4 a 8 frases. O texto fica salvo.">
+    <Step eyebrow="Depois de ler" title={`Responda e escreva um resumo em ${langInfo(langOf(book)).name.toLowerCase()}`} desc="Use as perguntas como roteiro e escreva de 4 a 8 frases. O texto e a correção ficam salvos.">
       <Questions items={questions} />
-      <Textarea id={`essay-${book.id}`} value={text} onChange={(e) => setText(e.target.value)} rows={7} placeholder="The story is about…" className="rounded-2xl bg-background p-4 leading-relaxed" />
-      <div className="flex flex-wrap items-center gap-2">
-        {aiName ? (
-          busy ? (
-            <Button variant="outline" onClick={() => ctl.current?.abort()}>
-              <StopIcon data-icon="inline-start" /> Parar
-            </Button>
-          ) : (
-            <Button onClick={correct}>
-              <PencilLineIcon data-icon="inline-start" /> Corrigir com {aiName}
-            </Button>
-          )
-        ) : (
-          <Button
-            variant="outline"
-            onClick={async () => {
-              if (text.trim().length < 20) return toast.error("Escreva pelo menos uma ou duas frases.");
-              markDay();
-              if (await copyText(prompt)) toast.success("Texto e pedido copiados. Cole no claude.ai, Gemini ou outra IA.");
-              else toast.error("Não consegui copiar.");
-            }}
-          >
-            <CopyIcon data-icon="inline-start" /> Copiar texto + pedido de correção
-          </Button>
-        )}
-        <span className="text-xs text-muted-foreground tabular">{count} palavras</span>
-        {busy && !out && <span className="text-sm text-muted-foreground">Pensando… (20–40 s)</span>}
-      </div>
-      {out && <div className="rounded-2xl bg-ink p-5 text-sm leading-relaxed whitespace-pre-wrap text-ink-foreground">{out}</div>}
+      <WritingBox
+        lang={langOf(book)}
+        context={{ kind: "summary", book }}
+        level={plainLevel(book.lv) || "A2"}
+        text={text}
+        onText={setText}
+        saved={data.essayChecks[book.id]}
+        onSaved={(c) => saveEssayCheck(book.id, c)}
+        scoreKey={`writing-${book.id}`}
+        placeholder="The story is about…"
+        rows={7}
+        minWords={15}
+      />
     </Step>
   );
 }

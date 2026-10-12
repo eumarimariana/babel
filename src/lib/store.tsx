@@ -2,6 +2,7 @@
 
 import type { Lang } from "@/lib/books";
 import type { Resource } from "@/lib/resources";
+import type { Correction } from "@/lib/ai-schemas";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 export type Status = "want" | "reading" | "done";
@@ -41,7 +42,9 @@ export type SavedQuiz = { questions: QuizQuestion[]; at: string };
 export type QuizScore = { best: number; last: number; total: number; times: number; at: string; gaps?: string[] }; // gaps = grammar topics missed last time
 export type ResourceStatus = "want" | "doing" | "done";
 export type ResourceMark = { st?: ResourceStatus; rating?: number; note?: string; lesson?: number; d: string };
-export type JournalEntry = { id: string; ln: Lang; day: string; task: string; text: string; feedback?: string };
+export type JournalEntry = { id: string; ln: Lang; day: string; task: string; text: string; feedback?: string; correction?: Correction }; // feedback = old free-text corrections
+/** A structured correction and the text it was made for (to tell when the text changed afterwards). */
+export type SavedCorrection = { text: string; at: string; c: Correction };
 export type KitWord = { w: string; pos: string; pt: string; en: string; ex: string };
 export type Kit = {
   words: KitWord[];
@@ -64,11 +67,12 @@ export type Data = {
   placement: Partial<Record<Lang, { lv: string; at: string }>>; // level from a placement test
   cando: Partial<Record<Lang, string[]>>; // CEFR "I can…" statements ticked, as "<level>-<index>"
   journal: JournalEntry[]; // diary entries, newest first
+  essayChecks: Record<string, SavedCorrection>; // latest correction of each book summary, by book id
   days: string[];
 };
 
 const KEY = "estante-eli-app-v1";
-const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, missions: {}, myResources: [], placement: {}, cando: {}, journal: [], days: [] };
+const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, missions: {}, myResources: [], placement: {}, cando: {}, journal: [], essayChecks: {}, days: [] };
 export const INTERVALS = [0, 1, 2, 4, 8, 16, 32];
 
 export function today() {
@@ -106,6 +110,7 @@ export function normalize(input: unknown): Data {
     placement: d.placement ?? {},
     cando: d.cando ?? {},
     journal: (d.journal ?? []).filter((j) => j && j.text),
+    essayChecks: d.essayChecks ?? {},
     days: d.days ?? [],
   };
 }
@@ -167,6 +172,7 @@ type Ctx = {
   setPlacement: (lang: Lang, lv: string | null) => void;
   toggleCando: (lang: Lang, id: string) => void;
   saveJournal: (entry: JournalEntry) => void;
+  saveEssayCheck: (bookId: number, check: SavedCorrection) => void;
   deleteJournal: (id: string) => void;
   markDay: () => void;
   replaceAll: (d: Data) => void;
@@ -343,7 +349,16 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       }),
     [],
   );
-  const saveJournal = useCallback((entry: JournalEntry) => setData((d) => withDay({ ...d, journal: [entry, ...d.journal.filter((j) => j.id !== entry.id)] })), []);
+  // merges into the stored entry, so a late autosave of the text never drops a correction saved in between
+  const saveJournal = useCallback(
+    (entry: JournalEntry) =>
+      setData((d) => {
+        const prev = d.journal.find((j) => j.id === entry.id);
+        return withDay({ ...d, journal: [{ ...prev, ...entry }, ...d.journal.filter((j) => j.id !== entry.id)] });
+      }),
+    [],
+  );
+  const saveEssayCheck = useCallback((bookId: number, check: SavedCorrection) => setData((d) => ({ ...d, essayChecks: { ...d.essayChecks, [bookId]: check } })), []);
   const deleteJournal = useCallback((id: string) => setData((d) => ({ ...d, journal: d.journal.filter((j) => j.id !== id) })), []);
   const markDay = useCallback(() => setData(withDay), []);
   const replaceAll = useCallback((d: Data) => setData(d), []);
@@ -374,13 +389,14 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       setPlacement,
       toggleCando,
       saveJournal,
+      saveEssayCheck,
       deleteJournal,
       markDay,
       replaceAll,
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, updateWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, addResource, deleteResource, setPlacement, toggleCando, saveJournal, deleteJournal, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, updateWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, addResource, deleteResource, setPlacement, toggleCando, saveJournal, saveEssayCheck, deleteJournal, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }

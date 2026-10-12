@@ -3,8 +3,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Book } from "@/lib/books";
-import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
-import { SYSTEM, cleanTranslation, correctPrompt, drillPrompt, journalPrompt, kitPrompt, quizPrompt, quotePrompt, sentencePrompt, wordPrompt } from "./prompts";
+import { CorrectionSchema, KitSchema, QuizSchema, WordInfoSchema, type Correction, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
+import { SYSTEM, cleanTranslation, drillPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt } from "./prompts";
 
 /** The Claude models a key can pick per task; Opus is the default for everything. */
 export const CLAUDE_MODELS = [
@@ -78,6 +78,27 @@ export async function anthropicKit(apiKey: string, model: string, b: Book, signa
   }
 }
 
+/** Structured correction of a text the learner wrote. */
+export async function anthropicWriting(apiKey: string, model: string, prompt: string, signal?: AbortSignal): Promise<Correction> {
+  try {
+    const res = await client(apiKey).beta.messages.parse(
+      {
+        ...fallback(model),
+        model,
+        max_tokens: 10000,
+        system: SYSTEM,
+        output_config: { effort: "medium", format: betaZodOutputFormat(CorrectionSchema) },
+        messages: [{ role: "user", content: prompt }],
+      },
+      { signal },
+    );
+    if (res.stop_reason === "refusal" || !res.parsed_output) throw new Error("Não consegui corrigir este texto agora. Tente de novo.");
+    return res.parsed_output;
+  } catch (e) {
+    throw friendly(e);
+  }
+}
+
 export async function anthropicQuiz(apiKey: string, model: string, b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
   return quizFrom(apiKey, model, quizPrompt(b, words, grammar), signal);
 }
@@ -129,72 +150,3 @@ export async function anthropicTranslate(apiKey: string, model: string, text: st
   }
 }
 
-export async function anthropicSentence(apiKey: string, model: string, word: string, meaning: string, sentence: string, signal?: AbortSignal) {
-  try {
-    const res = await client(apiKey).beta.messages.create(
-      {
-        ...fallback(model),
-        model,
-        max_tokens: 4000,
-        system: SYSTEM,
-        output_config: { effort: "low" },
-        messages: [{ role: "user", content: sentencePrompt(word, meaning, sentence) }],
-      },
-      { signal },
-    );
-    if (res.stop_reason === "refusal") throw new Error("O Claude não pôde comentar esta frase.");
-    const out = res.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("").trim();
-    if (!out) throw new Error("A resposta veio vazia. Tente de novo.");
-    return out;
-  } catch (e) {
-    throw friendly(e);
-  }
-}
-
-export async function anthropicJournal(apiKey: string, model: string, task: string, text: string, level: string, signal?: AbortSignal) {
-  try {
-    const res = await client(apiKey).beta.messages.create(
-      {
-        ...fallback(model),
-        model,
-        max_tokens: 6000,
-        system: SYSTEM,
-        output_config: { effort: "medium" },
-        messages: [{ role: "user", content: journalPrompt(task, text, level) }],
-      },
-      { signal },
-    );
-    if (res.stop_reason === "refusal") throw new Error("O Claude não pôde corrigir este texto.");
-    const out = res.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("").trim();
-    if (!out) throw new Error("A correção veio vazia. Tente de novo.");
-    return out;
-  } catch (e) {
-    throw friendly(e);
-  }
-}
-
-export async function anthropicCorrect(apiKey: string, model: string, b: Book, text: string, onText: (t: string) => void, signal?: AbortSignal) {
-  try {
-    const stream = client(apiKey).beta.messages.stream(
-      {
-        ...fallback(model),
-        model,
-        max_tokens: 8000,
-        system: SYSTEM,
-        output_config: { effort: "medium" },
-        messages: [{ role: "user", content: correctPrompt(b, text) }],
-      },
-      { signal },
-    );
-    let all = "";
-    stream.on("text", (delta) => {
-      all += delta;
-      onText(all);
-    });
-    const msg = await stream.finalMessage();
-    if (msg.stop_reason === "refusal") onText(all + "\n\n[O Claude não pôde corrigir este texto.]");
-    return all;
-  } catch (e) {
-    throw friendly(e);
-  }
-}

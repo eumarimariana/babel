@@ -67,7 +67,7 @@ export function GrammarPractice({ level }: { level: string }) {
                   return (
                     <span key={id} className="inline-flex items-center rounded-full border border-border bg-background">
                       <button onClick={() => start(id)} className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] hover:bg-muted">
-                        {gaps.has(id) && <span className="size-1.5 rounded-full bg-[#d07a64]" title="Você errou no último quiz" />}
+                        {gaps.has(id) && <span className="size-1.5 rounded-full bg-[#d07a64]" title="Você errou recentemente (quiz ou correção de texto)" />}
                         {t.label}
                         {score && <span className="text-[11px] text-muted-foreground tabular">{score.last}/{score.total}</span>}
                       </button>
@@ -83,7 +83,7 @@ export function GrammarPractice({ level }: { level: string }) {
           </div>
         ))}
         <p className="pt-1 text-xs text-muted-foreground">
-          Toque num tema para fazer os exercícios.{aiName ? ` O ✦ ao lado pede mais 8 ao ${aiName}.` : " Com a IA ligada, dá para pedir mais exercícios de cada tema."} O ponto vermelho marca o que você errou no último quiz.
+          Toque num tema para fazer os exercícios.{aiName ? ` O ✦ ao lado pede mais 8 ao ${aiName}.` : " Com a IA ligada, dá para pedir mais exercícios de cada tema."} O ponto vermelho marca o que você errou recentemente, no quiz ou num texto corrigido.
         </p>
       </div>
 

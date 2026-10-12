@@ -1,15 +1,11 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
-import { Loader2 } from "lucide-react";
-import { CheckIcon, CopyIcon, NotebookIcon, PlusIcon, TrashIcon } from "@phosphor-icons/react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { NotebookIcon, TrashIcon } from "@phosphor-icons/react";
 import { langInfo, type Lang } from "@/lib/books";
-import { activeProviderName, correctJournal, subscribeAi } from "@/lib/ai-client";
-import { journalPrompt } from "@/lib/ai/prompts";
 import { brDate, today, useEstante } from "@/lib/store";
-import { cn } from "@/lib/utils";
-import { SectionHead, copyText } from "./common";
+import { SectionHead } from "./common";
+import { CorrectionView, WritingBox } from "./writing-feedback";
 
 // one task a day, rotating within the learner's band
 const TASKS: Record<"start" | "mid" | "high", string[]> = {
@@ -44,50 +40,24 @@ const taskFor = (level: string, day: string) => {
   return list[[...day].reduce((n, c) => n + c.charCodeAt(0), 0) % list.length];
 };
 
-/** "Palavras para anotar" lines from the AI correction: "word = translation". */
-function wordsFrom(feedback: string) {
-  const part = feedback.split(/palavras para anotar/i)[1] ?? "";
-  return part
-    .split("\n")
-    .map((l) => l.replace(/^[\s*•\-–\d.)]+/, "").replace(/\*\*/g, "").trim())
-    .filter((l) => l.includes("="))
-    .map((l) => l.split("=").map((x) => x.trim().replace(/^["“]|["”]$/g, "")) as [string, string])
-    .filter(([w, pt]) => w && pt && w.length < 40)
-    .slice(0, 6);
-}
-
 /** Diário: a few sentences a day on a task of your level, corrected by the AI, with the new words ready to note down. */
 export function Journal({ lang, level }: { lang: Lang; level: string }) {
-  const { data, saveJournal, deleteJournal, addWord } = useEstante();
-  const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
+  const { data, saveJournal, deleteJournal } = useEstante();
   const day = today();
   const task = taskFor(level, day);
   const entries = data.journal.filter((j) => j.ln === lang);
   const todays = entries.find((j) => j.day === day);
   const [text, setText] = useState(todays?.text ?? "");
-  const [busy, setBusy] = useState(false);
-  const [noted, setNoted] = useState<string[]>([]);
   const [past, setPast] = useState(false);
   const [newId] = useState(() => `j${Date.now().toString(36)}`); // id for today's entry if it is new
-  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().split(/\s+/).length >= 2).length;
-  const feedback = todays?.feedback && todays.text === text ? todays.feedback : undefined;
+  const saved = todays?.correction ? { text: todays.text, at: todays.day, c: todays.correction } : undefined;
 
-  function save(fb?: string) {
-    const entry = { id: todays?.id ?? newId, ln: lang, day, task, text: text.trim(), feedback: fb };
-    saveJournal(entry);
-    return entry;
-  }
-  async function correct() {
-    setBusy(true);
-    try {
-      const fb = await correctJournal(task, text.trim(), level);
-      save(fb);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  // the diary saves itself while you write
+  useEffect(() => {
+    if (!text.trim() || text.trim() === todays?.text) return;
+    const t = setTimeout(() => saveJournal({ id: todays?.id ?? newId, ln: lang, day, task, text: text.trim() }), 700);
+    return () => clearTimeout(t);
+  }, [text]); // eslint-disable-line react-hooks/exhaustive-deps -- save only when the text changes
 
   return (
     <section className="grid gap-3">
@@ -99,74 +69,23 @@ export function Journal({ lang, level }: { lang: Lang; level: string }) {
           </span>
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground tabular">
-              Tema de hoje · {level} · escreva de 3 a 5 frases em {langInfo(lang).name.toLowerCase()}
+              Tema de hoje · {level} · escreva de 3 a 5 frases em {langInfo(lang).name.toLowerCase()} · salva sozinho
             </p>
             <p className="font-semibold">{task}</p>
           </div>
         </div>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={5}
+        <WritingBox
+          lang={lang}
+          context={{ kind: "diary", task }}
+          level={level}
+          text={text}
+          onText={setText}
+          saved={saved}
+          onSaved={(s) => saveJournal({ id: todays?.id ?? newId, ln: lang, day, task, text: s.text, correction: s.c })}
+          scoreKey="writing-diary"
           placeholder="Escreva aqui. Erros fazem parte: a correção vem depois."
-          aria-label="Seu texto do diário"
-          className="w-full rounded-2xl border border-border bg-background p-4 text-[15px] leading-relaxed outline-none focus-visible:border-foreground"
+          rows={5}
         />
-        <div className="flex flex-wrap items-center gap-2">
-          {aiName ? (
-            <button onClick={correct} disabled={busy || sentences < 1} className="inline-flex h-10 items-center gap-2 rounded-full bg-ink px-5 text-sm font-bold text-ink-foreground disabled:opacity-40">
-              {busy && <Loader2 className="size-4 animate-spin" />}
-              {busy ? "Corrigindo…" : `Corrigir com ${aiName}`}
-            </button>
-          ) : (
-            <button
-              onClick={async () => {
-                save();
-                if (await copyText(journalPrompt(task, text.trim(), level))) toast.success("Texto e pedido copiados. Cole no claude.ai, Gemini ou outra IA.");
-              }}
-              disabled={sentences < 1}
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-ink px-5 text-sm font-bold text-ink-foreground disabled:opacity-40"
-            >
-              <CopyIcon className="size-4" /> Salvar e copiar pedido de correção
-            </button>
-          )}
-          {aiName && (
-            <button onClick={() => (save(feedback), toast.success("Texto salvo no diário."))} disabled={!text.trim()} className="h-10 rounded-full border border-border px-4 text-sm hover:border-foreground disabled:opacity-40">
-              Só salvar
-            </button>
-          )}
-          <span className="text-xs text-muted-foreground tabular">
-            {sentences} {sentences === 1 ? "frase" : "frases"}
-          </span>
-        </div>
-
-        {feedback && (
-          <div className="grid gap-3 rounded-2xl bg-muted/60 p-4">
-            <p className="text-xs text-muted-foreground">Correção</p>
-            <div className="text-sm leading-relaxed whitespace-pre-line">{feedback.replace(/\*\*/g, "")}</div>
-            {wordsFrom(feedback).length > 0 && (
-              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-                {wordsFrom(feedback).map(([w, pt]) => {
-                  const done = noted.includes(w);
-                  return (
-                    <button
-                      key={w}
-                      disabled={done}
-                      onClick={() => {
-                        addWord({ w, pt, ln: lang, book: null });
-                        setNoted([...noted, w]);
-                      }}
-                      className={cn("inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs", done ? "border-transparent bg-card text-muted-foreground" : "border-border bg-card hover:border-foreground")}
-                    >
-                      {done ? <CheckIcon weight="bold" className="size-3.5" /> : <PlusIcon weight="bold" className="size-3.5" />}
-                      <strong>{w}</strong> {pt}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
 
         {past && (
           <ul className="grid gap-2 border-t border-border pt-3">
@@ -177,17 +96,25 @@ export function Journal({ lang, level }: { lang: Lang; level: string }) {
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-xs text-muted-foreground tabular">
                       {brDate(j.day)} · {j.task}
+                      {j.correction && ` · nota ${Math.round(j.correction.score)}/10`}
                     </p>
                     <button onClick={() => confirm("Apagar este texto do diário?") && deleteJournal(j.id)} aria-label="Apagar" className="text-muted-foreground hover:text-destructive">
                       <TrashIcon className="size-4" />
                     </button>
                   </div>
-                  <p className="whitespace-pre-line">{j.text}</p>
-                  {j.feedback && (
-                    <details className="text-xs text-muted-foreground">
-                      <summary className="cursor-pointer">Ver correção</summary>
-                      <div className="mt-1 whitespace-pre-line">{j.feedback.replace(/\*\*/g, "")}</div>
+                  {(j.correction || j.feedback) ? (
+                    <details>
+                      <summary className="cursor-pointer whitespace-pre-line">{j.text}</summary>
+                      <div className="mt-2">
+                        {j.correction ? (
+                          <CorrectionView saved={{ text: j.text, at: j.day, c: j.correction }} lang={lang} />
+                        ) : (
+                          <div className="text-xs whitespace-pre-line text-muted-foreground">{j.feedback!.replace(/\*\*/g, "")}</div>
+                        )}
+                      </div>
                     </details>
+                  ) : (
+                    <p className="whitespace-pre-line">{j.text}</p>
                   )}
                 </li>
               ))}

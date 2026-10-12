@@ -302,3 +302,9 @@ Hoje a parte de inglês é forte em leitura e vocabulário. Escuta, fala e escri
 
 - Lista de "consigo…" do CEFR por nível (apresentar-me, contar o que fiz no fim de semana, dar minha opinião…), marcada aos poucos.
 - Teste de nível próprio do app, montado com as perguntas de gramática de cada nível.
+
+### 15.9 Correção de textos (feito)
+
+- Uma correção só para o resumo do livro (Estudar), o diário e as frases do treino Escrever: `correctWriting` em `src/lib/ai-client.ts`, resposta estruturada (`CorrectionSchema` em `src/lib/ai-schemas.ts`) e tela comum em `src/components/estante/writing-feedback.tsx`.
+- Mostra o texto com cada erro marcado, a versão corrigida com o que entrou e saiu, os erros por tipo (gramática, vocabulário, ortografia, ordem, pontuação) com "Entender isso" e "Virar flashcard", dicas para soar natural, palavras para anotar, o que ficou bom, nota e nível do texto.
+- As correções ficam salvas (`essayChecks` e `journal[].correction`); os temas de gramática errados entram na Missão do dia e no ponto vermelho da seção Gramática.

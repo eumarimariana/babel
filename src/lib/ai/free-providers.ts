@@ -1,8 +1,8 @@
 "use client";
 
 import type { Book } from "@/lib/books";
-import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
-import { KIT_JSON_SHAPE, QUIZ_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt, sentencePrompt, drillPrompt, journalPrompt } from "./prompts";
+import { CorrectionSchema, KitSchema, QuizSchema, WordInfoSchema, type Correction, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
+import { CORRECTION_JSON_SHAPE, KIT_JSON_SHAPE, QUIZ_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, drillPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt } from "./prompts";
 
 /**
  * Gemini (Google AI Studio), Groq and OpenRouter, called straight from the browser with the
@@ -209,18 +209,6 @@ export async function freeTranslate(provider: FreeProvider, key: string, models:
   return cleanTranslation(out);
 }
 
-export async function freeSentence(provider: FreeProvider, key: string, models: string[], word: string, meaning: string, sentence: string, signal?: AbortSignal) {
-  const out = await withFallback(models, (m) => complete(provider, key, m, sentencePrompt(word, meaning, sentence), false, signal), signal);
-  if (!out.trim()) throw new Error("A resposta veio vazia. Tente de novo ou escolha outro modelo.");
-  return out.trim();
-}
-
-export async function freeJournal(provider: FreeProvider, key: string, models: string[], task: string, text: string, level: string, signal?: AbortSignal) {
-  const out = await withFallback(models, (m) => complete(provider, key, m, journalPrompt(task, text, level), false, signal), signal);
-  if (!out.trim()) throw new Error("A correção veio vazia. Tente de novo ou escolha outro modelo.");
-  return out.trim();
-}
-
 export async function freeQuiz(provider: FreeProvider, key: string, models: string[], b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
   return quizFrom(provider, key, models, quizPrompt(b, words, grammar), signal);
 }
@@ -250,67 +238,35 @@ async function quizFrom(provider: FreeProvider, key: string, models: string[], t
   return parsed.data;
 }
 
-/* ---------- streamed correction ---------- */
+/* ---------- correction of what the learner wrote ---------- */
 
-export async function freeCorrect(provider: FreeProvider, key: string, models: string[], b: Book, text: string, onText: (t: string) => void, signal?: AbortSignal) {
-  const prompt = correctPrompt(b, text);
-  // Fallback only covers the request itself; once text is streaming we keep that model.
-  const r = await withFallback(models, (model) => openCorrectionStream(provider, key, model, prompt, signal), signal);
-  return readCorrection(provider, r, onText);
-}
+const MISTAKES = ["gramática", "vocabulário", "ortografia", "ordem das palavras", "pontuação"];
 
-function openCorrectionStream(provider: FreeProvider, key: string, model: string, prompt: string, signal?: AbortSignal) {
-  return provider === "gemini"
-      ? call(provider, `${GEMINI}/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal,
-          body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM }] }, contents: [{ role: "user", parts: [{ text: prompt }] }] }),
-        })
-      : call(provider, `${OPENAI_BASE[provider]}/chat/completions`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-          signal,
-          body: JSON.stringify({
-            model,
-            stream: true,
-            messages: [
-              { role: "system", content: SYSTEM },
-              { role: "user", content: prompt },
-            ],
-          }),
-        });
-}
-
-async function readCorrection(provider: FreeProvider, r: Response, onText: (t: string) => void) {
-  const reader = r.body!.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let all = "";
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      const data = line.startsWith("data:") ? line.slice(5).trim() : "";
-      if (!data || data === "[DONE]") continue;
-      try {
-        const j = JSON.parse(data);
-        const delta =
-          provider === "gemini"
-            ? ((j.candidates?.[0]?.content?.parts ?? []) as { text?: string }[]).map((p) => p.text ?? "").join("")
-            : (j.choices?.[0]?.delta?.content ?? "");
-        if (delta) {
-          all += delta;
-          onText(all);
-        }
-      } catch {
-        /* keep-alive comments and partial lines */
-      }
-    }
-  }
-  if (!all) throw new Error("O modelo não respondeu. Tente de novo ou escolha outro modelo.");
-  return all;
+/** Structured correction: ask for the JSON shape, then repair what small models get slightly wrong. */
+export async function freeWriting(provider: FreeProvider, key: string, models: string[], task: string, signal?: AbortSignal): Promise<Correction> {
+  const prompt = `${task}\n\n${CORRECTION_JSON_SHAPE}`;
+  const raw = await withFallback(models, async (m) => parseLoose(await complete(provider, key, m, prompt, true, signal)) as Record<string, unknown>, signal);
+  const list = (v: unknown) => (Array.isArray(v) ? v : []);
+  const parsed = CorrectionSchema.safeParse({
+    corrected: str(raw.corrected ?? raw.correction),
+    mistakes: list(raw.mistakes)
+      .map((x: Record<string, unknown>) => ({
+        wrong: str(x.wrong),
+        right: str(x.right ?? x.correct),
+        why: str(x.why ?? x.explanation),
+        type: MISTAKES.includes(str(x.type)) ? str(x.type) : "gramática",
+        topic: str(x.topic),
+      }))
+      .filter((x) => x.wrong && x.right)
+      .slice(0, 12),
+    natural: list(raw.natural).map(str).filter(Boolean).slice(0, 3),
+    words: list(raw.words)
+      .map((x: Record<string, unknown>) => ({ w: str(x.w ?? x.word), pt: str(x.pt ?? x.translation) }))
+      .filter((x) => x.w),
+    praise: str(raw.praise),
+    level: str(raw.level),
+    score: Math.max(0, Math.min(10, Number(raw.score) || 0)),
+  });
+  if (!parsed.success || !parsed.data.corrected) throw new Error("Não consegui corrigir este texto agora. Tente de novo ou escolha outro modelo.");
+  return parsed.data;
 }
