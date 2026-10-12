@@ -61,11 +61,12 @@ export type Data = {
   missions: Record<string, string[]>; // day → mission items done
   myResources: Resource[]; // links added by hand, each with its language in `ln`
   placement: Partial<Record<Lang, { lv: string; at: string }>>; // level from a placement test
+  cando: Partial<Record<Lang, string[]>>; // CEFR "I can…" statements ticked, as "<level>-<index>"
   days: string[];
 };
 
 const KEY = "estante-eli-app-v1";
-const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, missions: {}, myResources: [], placement: {}, days: [] };
+const EMPTY: Data = { v: 1, progress: {}, words: [], kits: {}, essays: {}, quotes: [], quizzes: {}, scores: {}, resources: {}, missions: {}, myResources: [], placement: {}, cando: {}, days: [] };
 export const INTERVALS = [0, 1, 2, 4, 8, 16, 32];
 
 export function today() {
@@ -101,6 +102,7 @@ export function normalize(input: unknown): Data {
     missions: d.missions ?? {},
     myResources: (d.myResources ?? []).filter((r) => r && r.id && r.url),
     placement: d.placement ?? {},
+    cando: d.cando ?? {},
     days: d.days ?? [],
   };
 }
@@ -160,6 +162,7 @@ type Ctx = {
   addResource: (r: Resource) => void;
   deleteResource: (id: string) => void;
   setPlacement: (lang: Lang, lv: string | null) => void;
+  toggleCando: (lang: Lang, id: string) => void;
   markDay: () => void;
   replaceAll: (d: Data) => void;
   streak: number;
@@ -327,6 +330,14 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       }),
     [],
   );
+  const toggleCando = useCallback(
+    (lang: Lang, id: string) =>
+      setData((d) => {
+        const mine = d.cando[lang] ?? [];
+        return { ...d, cando: { ...d.cando, [lang]: mine.includes(id) ? mine.filter((x) => x !== id) : [...mine, id] } };
+      }),
+    [],
+  );
   const markDay = useCallback(() => setData(withDay), []);
   const replaceAll = useCallback((d: Data) => setData(d), []);
 
@@ -354,12 +365,13 @@ export function EstanteProvider({ children }: { children: React.ReactNode }) {
       addResource,
       deleteResource,
       setPlacement,
+      toggleCando,
       markDay,
       replaceAll,
       streak: streakOf(data.days),
       due: data.words.filter((w) => w.due <= t),
     };
-  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, updateWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, addResource, deleteResource, setPlacement, markDay, replaceAll]);
+  }, [data, ready, setStatus, addWord, addWords, gradeWord, deleteWord, updateWord, saveKit, saveEssay, addQuote, updateQuote, deleteQuote, saveQuiz, recordScore, markResource, toggleMission, addResource, deleteResource, setPlacement, toggleCando, markDay, replaceAll]);
 
   return <EstanteContext.Provider value={value}>{children}</EstanteContext.Provider>;
 }
