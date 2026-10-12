@@ -258,13 +258,13 @@ Os 24 materiais sugeridos depois da primeira lista já estão na aba Materiais, 
 
 Hoje a parte de inglês é forte em leitura e vocabulário. Escuta, fala e escrita quase só aparecem como links para fora. Em ordem de prioridade:
 
-### 15.1 Leitor dentro do app (em andamento)
+### 15.1 Leitor dentro do app (feito e retirado em 11/10/2026)
 
 - Ler as histórias do Global Storybooks (EN, FR, DE, ES) sem sair do app, página por página, com a ilustração.
 - Tocar numa palavra mostra a tradução (do NGSL, sem IA; ou pela IA, se ligada), o botão de ouvir, o Cambridge e "Anotar", que manda a palavra ao caderno já com o livro e a frase como exemplo.
 - Palavras que já estão no caderno aparecem marcadas no texto.
 - O MP3 da narração toca junto.
-- Depois: os livros do Gutenberg (textos longos, carregar sob demanda) e marcar onde você parou.
+- Chegou a ser feito para o Global Storybooks e foi retirado a pedido; os textos das histórias (CC BY sem os créditos) não ficaram no histórico do git.
 
 ### 15.2 Pacotes feitos para brasileiros
 
