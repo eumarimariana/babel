@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Book } from "@/lib/books";
 import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
-import { SYSTEM, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, sentencePrompt, wordPrompt } from "./prompts";
+import { SYSTEM, cleanTranslation, correctPrompt, drillPrompt, kitPrompt, quizPrompt, quotePrompt, sentencePrompt, wordPrompt } from "./prompts";
 
 /** The Claude models a key can pick per task; Opus is the default for everything. */
 export const CLAUDE_MODELS = [
@@ -79,6 +79,15 @@ export async function anthropicKit(apiKey: string, model: string, b: Book, signa
 }
 
 export async function anthropicQuiz(apiKey: string, model: string, b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
+  return quizFrom(apiKey, model, quizPrompt(b, words, grammar), signal);
+}
+
+export async function anthropicDrill(apiKey: string, model: string, topic: string, level: string, signal?: AbortSignal): Promise<QuizResult> {
+  return quizFrom(apiKey, model, drillPrompt(topic, level), signal);
+}
+
+/** Any multiple-choice set (book quiz, grammar drill), validated against the quiz schema. */
+async function quizFrom(apiKey: string, model: string, prompt: string, signal?: AbortSignal): Promise<QuizResult> {
   try {
     const res = await client(apiKey).beta.messages.parse(
       {
@@ -87,11 +96,11 @@ export async function anthropicQuiz(apiKey: string, model: string, b: Book, word
         max_tokens: 8000,
         system: SYSTEM,
         output_config: { effort: "medium", format: betaZodOutputFormat(QuizSchema) },
-        messages: [{ role: "user", content: quizPrompt(b, words, grammar) }],
+        messages: [{ role: "user", content: prompt }],
       },
       { signal },
     );
-    if (res.stop_reason === "refusal" || !res.parsed_output) throw new Error("Não consegui montar o quiz agora. Tente de novo.");
+    if (res.stop_reason === "refusal" || !res.parsed_output) throw new Error("Não consegui montar as perguntas agora. Tente de novo.");
     return res.parsed_output;
   } catch (e) {
     throw friendly(e);

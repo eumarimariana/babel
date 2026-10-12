@@ -2,7 +2,7 @@
 
 import type { Book } from "@/lib/books";
 import { KitSchema, QuizSchema, WordInfoSchema, type KitResult, type QuizResult, type WordInfo } from "@/lib/ai-schemas";
-import { KIT_JSON_SHAPE, QUIZ_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt, sentencePrompt } from "./prompts";
+import { KIT_JSON_SHAPE, QUIZ_JSON_SHAPE, SYSTEM, WORD_JSON_SHAPE, cleanTranslation, correctPrompt, kitPrompt, quizPrompt, quotePrompt, wordPrompt, sentencePrompt, drillPrompt } from "./prompts";
 
 /**
  * Gemini (Google AI Studio), Groq and OpenRouter, called straight from the browser with the
@@ -216,7 +216,16 @@ export async function freeSentence(provider: FreeProvider, key: string, models: 
 }
 
 export async function freeQuiz(provider: FreeProvider, key: string, models: string[], b: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
-  const prompt = `${quizPrompt(b, words, grammar)}\n\n${QUIZ_JSON_SHAPE}`;
+  return quizFrom(provider, key, models, quizPrompt(b, words, grammar), signal);
+}
+
+export async function freeDrill(provider: FreeProvider, key: string, models: string[], topic: string, level: string, signal?: AbortSignal): Promise<QuizResult> {
+  return quizFrom(provider, key, models, drillPrompt(topic, level), signal);
+}
+
+/** Any multiple-choice set (book quiz, grammar drill): ask for the JSON shape, then keep only well-formed questions. */
+async function quizFrom(provider: FreeProvider, key: string, models: string[], task: string, signal?: AbortSignal): Promise<QuizResult> {
+  const prompt = `${task}\n\n${QUIZ_JSON_SHAPE}`;
   const raw = await withFallback(models, async (m) => parseLoose(await complete(provider, key, m, prompt, true, signal)) as Record<string, unknown>, signal);
   const kinds = ["story", "vocab", "grammar"];
   const parsed = QuizSchema.safeParse({
@@ -231,7 +240,7 @@ export async function freeQuiz(provider: FreeProvider, key: string, models: stri
       // keep only questions a learner can actually answer
       .filter((x) => x.q && x.options.length === 4 && Number.isInteger(x.answer) && x.answer >= 0 && x.answer < 4),
   });
-  if (!parsed.success || parsed.data.questions.length < 4) throw new Error("Não consegui montar o quiz agora. Tente de novo ou escolha outro modelo.");
+  if (!parsed.success || parsed.data.questions.length < 4) throw new Error("Não consegui montar as perguntas agora. Tente de novo ou escolha outro modelo.");
   return parsed.data;
 }
 

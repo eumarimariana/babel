@@ -21,7 +21,7 @@ const KIND_LABEL: Record<QuizQuestion["kind"], string> = {
   cloze: "Complete a frase",
 };
 
-type Run = { key: string; title: string; questions: QuizQuestion[] };
+export type Run = { key: string; title: string; questions: QuizQuestion[] };
 
 export function QuizTab({ aiName, bookId, onBookChange, onGoVocab }: { aiName: string; bookId: number; onBookChange: (id: number) => void; onGoVocab: () => void }) {
   const { data, saveQuiz } = useEstante();
@@ -173,7 +173,7 @@ function ScoreLine({ score }: { score: { best: number; last: number; total: numb
   );
 }
 
-function Player({ run, onExit, onAgain }: { run: Run; onExit: () => void; onAgain: () => void }) {
+export function Player({ run, onExit, onAgain }: { run: Run; onExit: () => void; onAgain: () => void }) {
   const { recordScore, gradeWord } = useEstante();
   const lang = useLang();
   const topicsOf = (m: QuizQuestion) => (m.kind === "grammar" ? topicsIn(`${m.q} ${m.why} ${m.options[m.answer]}`, lang) : []);
@@ -314,7 +314,7 @@ function Player({ run, onExit, onAgain }: { run: Run; onExit: () => void; onAgai
   );
 }
 
-function shuffle<T>(xs: T[]) {
+export function shuffle<T>(xs: T[]) {
   const a = [...xs];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

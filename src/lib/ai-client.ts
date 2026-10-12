@@ -3,8 +3,8 @@
 import { useSyncExternalStore } from "react";
 import type { Book } from "@/lib/books";
 import type { KitResult, QuizResult, WordInfo } from "@/lib/ai-schemas";
-import { anthropicCorrect, anthropicSentence, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
-import { freeCorrect, freeSentence, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
+import { anthropicCorrect, anthropicDrill, anthropicSentence, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
+import { freeCorrect, freeDrill, freeSentence, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
 import { suggestTaskModels, type AiTask } from "@/lib/ai/task-models";
 
 /**
@@ -195,6 +195,12 @@ export async function makeKit(book: Book, signal?: AbortSignal): Promise<KitResu
 export async function makeQuiz(book: Book, words: string[], grammar: string[], signal?: AbortSignal): Promise<QuizResult> {
   const a = active("quiz");
   return a.id === "anthropic" ? anthropicQuiz(a.key, a.model, book, words, grammar, signal) : freeQuiz(a.id, a.key, a.models, book, words, grammar, signal);
+}
+
+/** Eight more multiple-choice exercises on one grammar topic. */
+export async function makeDrill(topic: string, level: string, signal?: AbortSignal): Promise<QuizResult> {
+  const a = active("quiz");
+  return a.id === "anthropic" ? anthropicDrill(a.key, a.model, topic, level, signal) : freeDrill(a.id, a.key, a.models, topic, level, signal);
 }
 
 /** Translates a saved quote into Brazilian Portuguese. */

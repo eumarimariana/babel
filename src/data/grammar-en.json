@@ -1,0 +1,135 @@
+{
+  "there-is": { "level": "Pre-A1", "items": [
+    { "q": "___ a cat in the garden.", "options": ["There is", "There are", "It is", "They are"], "answer": 0, "why": "There is / there are: \"a cat\" é singular, então \"there is\"." },
+    { "q": "___ three books on the table.", "options": ["There is", "There are", "There be", "It are"], "answer": 1, "why": "There is / there are: \"three books\" é plural, então \"there are\"." },
+    { "q": "Is there a bank near here? — Yes, ___.", "options": ["there is", "it is", "there are", "is there"], "answer": 0, "why": "There is / there are: a resposta curta repete a estrutura: \"Yes, there is.\"" },
+    { "q": "___ any milk in the fridge?", "options": ["Are there", "Is there", "There is", "Has there"], "answer": 1, "why": "There is / there are: \"milk\" é incontável e fica no singular: \"Is there any milk?\"" },
+    { "q": "There ___ any students in the classroom.", "options": ["isn't", "aren't", "not are", "no are"], "answer": 1, "why": "There is / there are: plural na negativa: \"there aren't any students\"." }
+  ]},
+  "present-simple": { "level": "Pre-A1", "items": [
+    { "q": "She ___ in London.", "options": ["live", "lives", "living", "is live"], "answer": 1, "why": "Present simple: com he/she/it o verbo ganha -s: \"she lives\"." },
+    { "q": "___ you like coffee?", "options": ["Does", "Do", "Are", "Is"], "answer": 1, "why": "Present simple: pergunta com I/you/we/they usa \"do\"." },
+    { "q": "My brother ___ watch TV in the morning.", "options": ["don't", "doesn't", "isn't", "not"], "answer": 1, "why": "Present simple: negativa com he/she/it usa \"doesn't\" + verbo sem -s." },
+    { "q": "I ___ a teacher.", "options": ["am", "is", "are", "be"], "answer": 0, "why": "Present simple de be: I am, you are, he/she/it is." },
+    { "q": "Water ___ at 100 degrees.", "options": ["boil", "boils", "is boiling", "boiled"], "answer": 1, "why": "Present simple: usado para fatos e verdades gerais; \"water\" é he/she/it, então \"boils\"." }
+  ]},
+  "can": { "level": "Pre-A1", "items": [
+    { "q": "I ___ swim very well.", "options": ["can", "cans", "can to", "am can"], "answer": 0, "why": "Can (habilidade): \"can\" não muda com a pessoa e vem sem \"to\"." },
+    { "q": "She can ___ the piano.", "options": ["plays", "play", "to play", "playing"], "answer": 1, "why": "Can (habilidade): depois de \"can\", verbo na forma base." },
+    { "q": "___ you speak French?", "options": ["Do", "Can", "Are", "Does"], "answer": 1, "why": "Can (habilidade): na pergunta, \"can\" vem antes do sujeito." },
+    { "q": "My grandfather ___ use a computer. He never learned.", "options": ["can't", "doesn't can", "not can", "isn't can"], "answer": 0, "why": "Can (habilidade): a negativa é \"can't\" (cannot)." },
+    { "q": "Can he drive? — No, he ___.", "options": ["doesn't", "can't", "isn't", "not"], "answer": 1, "why": "Can (habilidade): a resposta curta repete o modal: \"No, he can't.\"" }
+  ]},
+  "present-continuous": { "level": "A1", "items": [
+    { "q": "Look! It ___.", "options": ["rains", "is raining", "rain", "raining"], "answer": 1, "why": "Present continuous: ação acontecendo agora: am/is/are + -ing." },
+    { "q": "They ___ dinner right now.", "options": ["are having", "have", "is having", "having"], "answer": 0, "why": "Present continuous: \"right now\" pede be + -ing; \"they\" usa \"are\"." },
+    { "q": "What ___ you doing?", "options": ["do", "are", "is", "does"], "answer": 1, "why": "Present continuous: pergunta com \"are you\" + -ing." },
+    { "q": "I usually walk to work, but today I ___ the bus.", "options": ["take", "am taking", "takes", "taking"], "answer": 1, "why": "Present simple x present continuous: rotina com o simple; o que é diferente hoje, com o continuous." },
+    { "q": "She ___ to music at the moment.", "options": ["isn't listening", "doesn't listen", "not listening", "don't listen"], "answer": 0, "why": "Present continuous: negativa com \"at the moment\": is not + -ing." }
+  ]},
+  "past-simple": { "level": "A1", "items": [
+    { "q": "Yesterday I ___ to the cinema.", "options": ["go", "went", "gone", "goed"], "answer": 1, "why": "Past simple: \"go\" é irregular; o passado é \"went\"." },
+    { "q": "We ___ a great film last night.", "options": ["watch", "watched", "watching", "have watch"], "answer": 1, "why": "Past simple: verbo regular ganha -ed: \"watched\"." },
+    { "q": "___ you see Tom at the party?", "options": ["Did", "Do", "Were", "Was"], "answer": 0, "why": "Past simple: pergunta com \"did\" + verbo na forma base." },
+    { "q": "She didn't ___ the email.", "options": ["sent", "send", "sends", "sending"], "answer": 1, "why": "Past simple: depois de \"didn't\", verbo na forma base." },
+    { "q": "I ___ tired after the trip.", "options": ["was", "were", "did", "am"], "answer": 0, "why": "Past simple de be: I/he/she/it was; you/we/they were." }
+  ]},
+  "comparatives": { "level": "A1", "items": [
+    { "q": "My house is ___ than yours.", "options": ["big", "bigger", "biggest", "more big"], "answer": 1, "why": "Comparativos: adjetivo curto ganha -er; consoante dobra em \"big → bigger\"." },
+    { "q": "This is the ___ day of the year.", "options": ["hotter", "hottest", "most hot", "hot"], "answer": 1, "why": "Superlativos: adjetivo curto ganha -est, com \"the\" antes." },
+    { "q": "English is ___ than Chinese for me.", "options": ["easyer", "more easy", "easier", "easiest"], "answer": 2, "why": "Comparativos: adjetivo terminado em -y troca por -ier: \"easier\"." },
+    { "q": "This book is ___ than the film.", "options": ["interestinger", "more interesting", "most interesting", "interesting"], "answer": 1, "why": "Comparativos: adjetivo longo usa \"more\": \"more interesting\"." },
+    { "q": "Today is ___ than yesterday.", "options": ["gooder", "better", "best", "more good"], "answer": 1, "why": "Comparativos: \"good\" é irregular: good, better, the best." }
+  ]},
+  "future": { "level": "A2", "items": [
+    { "q": "Look at those clouds. It ___ rain.", "options": ["will", "is going to", "goes to", "is"], "answer": 1, "why": "Will e going to: previsão com evidência no presente usa \"going to\"." },
+    { "q": "The phone is ringing. — I ___ answer it.", "options": ["am going to", "will", "answer", "am"], "answer": 1, "why": "Will e going to: decisão tomada na hora usa \"will\"." },
+    { "q": "We ___ visit my aunt next weekend. We bought the tickets.", "options": ["will", "are going to", "go", "would"], "answer": 1, "why": "Will e going to: plano já decidido usa \"going to\"." },
+    { "q": "I think she ___ like the present.", "options": ["will", "is going", "goes to", "will to"], "answer": 0, "why": "Will e going to: opinião sobre o futuro (I think…) costuma usar \"will\"." },
+    { "q": "I promise I ___ tell anyone.", "options": ["won't", "am not going", "don't", "not will"], "answer": 0, "why": "Will e going to: promessa usa \"will\"; a negativa é \"won't\"." }
+  ]},
+  "past-continuous": { "level": "A2", "items": [
+    { "q": "I ___ TV when you called.", "options": ["watched", "was watching", "am watching", "were watching"], "answer": 1, "why": "Past continuous: ação em andamento no passado (was/were + -ing) interrompida por outra." },
+    { "q": "What ___ you doing at 8 o'clock last night?", "options": ["was", "were", "did", "are"], "answer": 1, "why": "Past continuous: com \"you\" usa \"were\" + -ing." },
+    { "q": "While she ___, the phone rang.", "options": ["cooked", "was cooking", "cooks", "is cooking"], "answer": 1, "why": "Past simple x past continuous: \"while\" acompanha a ação longa (continuous); a curta fica no simple." },
+    { "q": "It ___ when we left the house.", "options": ["was raining", "rained", "rains", "is raining"], "answer": 0, "why": "Past continuous: descreve o cenário no momento de outra ação." },
+    { "q": "They ___ when the teacher came in.", "options": ["weren't talking", "didn't talking", "wasn't talking", "not talked"], "answer": 0, "why": "Past continuous: negativa com \"they\": weren't + -ing." }
+  ]},
+  "present-perfect": { "level": "A2", "items": [
+    { "q": "I ___ never ___ to Japan.", "options": ["have / been", "did / go", "was / been", "have / went"], "answer": 0, "why": "Present perfect: experiência de vida sem tempo definido: have + particípio (been)." },
+    { "q": "___ you ever eaten sushi?", "options": ["Did", "Have", "Do", "Are"], "answer": 1, "why": "Present perfect: pergunta com \"ever\" usa \"have\" + particípio." },
+    { "q": "She has just ___ her homework.", "options": ["finish", "finished", "finishing", "finishes"], "answer": 1, "why": "Present perfect: \"just\" com have/has + particípio: \"has just finished\"." },
+    { "q": "I ___ my keys yesterday.", "options": ["have lost", "lost", "have lose", "losed"], "answer": 1, "why": "Present perfect x past simple: com tempo definido (yesterday) usa o past simple." },
+    { "q": "We have lived here ___ 2015.", "options": ["for", "since", "ago", "from"], "answer": 1, "why": "Present perfect: \"since\" + ponto no tempo; \"for\" + período (for ten years)." }
+  ]},
+  "used-to": { "level": "A2", "items": [
+    { "q": "I ___ play football when I was a child.", "options": ["used to", "use to", "was used to", "usually"], "answer": 0, "why": "Used to: hábito no passado que não existe mais: used to + verbo." },
+    { "q": "Did you ___ live in Rio?", "options": ["used to", "use to", "using to", "uses to"], "answer": 1, "why": "Used to: em pergunta e negativa com \"did\", fica \"use to\" (sem -d)." },
+    { "q": "She ___ like vegetables, but now she loves them.", "options": ["didn't use to", "didn't used to", "not used to", "wasn't use to"], "answer": 0, "why": "Used to: negativa é \"didn't use to\"." },
+    { "q": "There ___ be a cinema here.", "options": ["used to", "use to", "was used to", "uses to"], "answer": 0, "why": "Used to: também descreve situações antigas: \"there used to be\"." },
+    { "q": "I'm ___ waking up early. I do it every day.", "options": ["used to", "use to", "using to", "usually"], "answer": 0, "why": "Be used to + -ing = estar acostumado; é diferente de \"used to\" + verbo (hábito antigo)." }
+  ]},
+  "modals": { "level": "B1", "items": [
+    { "q": "You ___ wear a seatbelt. It's the law.", "options": ["must", "might", "could", "would"], "answer": 0, "why": "Verbos modais: obrigação forte usa \"must\" (ou \"have to\")." },
+    { "q": "You ___ see a doctor about that cough.", "options": ["should", "must to", "would", "can to"], "answer": 0, "why": "Verbos modais: conselho usa \"should\"." },
+    { "q": "You ___ come if you don't want to. It's optional.", "options": ["mustn't", "don't have to", "shouldn't", "can't"], "answer": 1, "why": "Verbos modais: \"don't have to\" = não é necessário; \"mustn't\" = é proibido." },
+    { "q": "Take an umbrella. It ___ rain later.", "options": ["might", "must", "should to", "has"], "answer": 0, "why": "Verbos modais: possibilidade usa \"might\" ou \"may\"." },
+    { "q": "___ you help me with this box, please?", "options": ["Could", "Must", "Should", "Might"], "answer": 0, "why": "Verbos modais: pedido educado usa \"could\" ou \"can\"." }
+  ]},
+  "conditionals": { "level": "B1", "items": [
+    { "q": "If it rains tomorrow, we ___ at home.", "options": ["stay", "will stay", "would stay", "stayed"], "answer": 1, "why": "Conditionals: first conditional (situação possível): if + present, will + verbo." },
+    { "q": "If I ___ rich, I would travel the world.", "options": ["am", "were", "will be", "would be"], "answer": 1, "why": "Conditionals: second conditional (hipótese): if + past, would + verbo; com be, usa-se \"were\"." },
+    { "q": "If you heat ice, it ___.", "options": ["melts", "will melt", "would melt", "melted"], "answer": 0, "why": "Conditionals: zero conditional (verdade geral): if + present, present." },
+    { "q": "If she had studied, she ___ the exam.", "options": ["would pass", "would have passed", "will pass", "passed"], "answer": 1, "why": "Conditionals: third conditional (passado que não aconteceu): if + past perfect, would have + particípio." },
+    { "q": "What would you do if you ___ a million dollars?", "options": ["win", "won", "will win", "would win"], "answer": 1, "why": "Conditionals: second conditional: a oração com \"if\" fica no past simple." }
+  ]},
+  "passive": { "level": "B1", "items": [
+    { "q": "This house ___ in 1920.", "options": ["built", "was built", "is building", "has build"], "answer": 1, "why": "Voz passiva: be + particípio; no passado, \"was built\"." },
+    { "q": "English ___ all over the world.", "options": ["speaks", "is spoken", "is speaking", "spoken"], "answer": 1, "why": "Voz passiva: no presente, is/are + particípio: \"is spoken\"." },
+    { "q": "The letters ___ yesterday.", "options": ["were sent", "was sent", "sent", "are sent"], "answer": 0, "why": "Voz passiva: sujeito plural no passado: \"were sent\"." },
+    { "q": "The new bridge will ___ next year.", "options": ["open", "be opened", "opened", "being opened"], "answer": 1, "why": "Voz passiva: no futuro, will be + particípio." },
+    { "q": "The film was directed ___ Steven Spielberg.", "options": ["from", "by", "of", "with"], "answer": 1, "why": "Voz passiva: quem faz a ação vem depois de \"by\"." }
+  ]},
+  "past-perfect": { "level": "B1", "items": [
+    { "q": "When we arrived, the film ___.", "options": ["already started", "had already started", "has already started", "was already start"], "answer": 1, "why": "Past perfect: ação anterior a outra no passado: had + particípio." },
+    { "q": "She was tired because she ___ all day.", "options": ["had worked", "has worked", "works", "was work"], "answer": 0, "why": "Past perfect: explica a causa, que aconteceu antes: had worked." },
+    { "q": "I ___ never seen snow before I went to Canada.", "options": ["have", "had", "was", "did"], "answer": 1, "why": "Past perfect: experiência anterior a um momento do passado: had never seen." },
+    { "q": "After he ___ dinner, he went to bed.", "options": ["had eaten", "has eaten", "eats", "was eaten"], "answer": 0, "why": "Past perfect: com \"after\", a primeira ação vai para o past perfect." },
+    { "q": "By the time I got to the station, the train ___.", "options": ["left", "had left", "has left", "was leaving"], "answer": 1, "why": "Past perfect: \"by the time\" marca que a ação já tinha terminado." }
+  ]},
+  "gerunds": { "level": "B1", "items": [
+    { "q": "I enjoy ___ books in the evening.", "options": ["read", "to read", "reading", "reads"], "answer": 2, "why": "Gerúndio e infinitivo: depois de \"enjoy\" vem o -ing." },
+    { "q": "She decided ___ a new job.", "options": ["looking for", "to look for", "look for", "looked for"], "answer": 1, "why": "Gerúndio e infinitivo: depois de \"decide\" vem to + verbo." },
+    { "q": "___ is good for your health.", "options": ["Swim", "Swimming", "To swimming", "Swims"], "answer": 1, "why": "Gerúndio e infinitivo: o -ing funciona como sujeito da frase." },
+    { "q": "I'm interested in ___ Spanish.", "options": ["learn", "to learn", "learning", "learned"], "answer": 2, "why": "Gerúndio e infinitivo: depois de preposição (in, at, of…) vem o -ing." },
+    { "q": "They want ___ early tomorrow.", "options": ["leaving", "to leave", "leave", "left"], "answer": 1, "why": "Gerúndio e infinitivo: depois de \"want\" vem to + verbo." }
+  ]},
+  "reported-speech": { "level": "B2", "items": [
+    { "q": "\"I am tired.\" → She said that she ___ tired.", "options": ["is", "was", "has been", "will be"], "answer": 1, "why": "Reported speech: o verbo recua um tempo: am → was." },
+    { "q": "\"I will call you.\" → He said he ___ call me.", "options": ["will", "would", "can", "is going"], "answer": 1, "why": "Reported speech: will → would." },
+    { "q": "\"Where do you live?\" → She asked me where ___.", "options": ["do I live", "I lived", "did I live", "I live"], "answer": 1, "why": "Reported speech: pergunta indireta tem ordem de afirmação (sujeito + verbo) e o tempo recua." },
+    { "q": "\"Don't touch it.\" → He told me ___ it.", "options": ["don't touch", "not to touch", "to not touching", "didn't touch"], "answer": 1, "why": "Reported speech: ordem negativa vira \"tell someone not to + verbo\"." },
+    { "q": "She ___ me that she was leaving.", "options": ["said", "told", "spoke", "talked"], "answer": 1, "why": "Reported speech: \"tell\" pede a pessoa (told me); \"say\" não (said that…)." }
+  ]},
+  "deduction": { "level": "B2", "items": [
+    { "q": "The lights are off. They ___ be at home.", "options": ["can't", "mustn't", "shouldn't", "don't have to"], "answer": 0, "why": "Modais de dedução: certeza de que algo não é verdade usa \"can't\"." },
+    { "q": "She's been working all day. She ___ be exhausted.", "options": ["must", "can't", "should to", "might not"], "answer": 0, "why": "Modais de dedução: certeza de que algo é verdade usa \"must\"." },
+    { "q": "I can't find my phone. I ___ have left it at work.", "options": ["must", "can't", "should", "would"], "answer": 0, "why": "Modais de dedução: sobre o passado, must have + particípio = quase certeza." },
+    { "q": "He ___ have seen us. He didn't say hello.", "options": ["can't", "must", "should", "would"], "answer": 0, "why": "Modais de dedução: can't have + particípio = é impossível que tenha acontecido." },
+    { "q": "They're late. They ___ have missed the bus.", "options": ["might", "must to", "can", "should to"], "answer": 0, "why": "Modais de dedução: possibilidade no passado: might/may/could have + particípio." }
+  ]},
+  "relative-clauses": { "level": "B2", "items": [
+    { "q": "The woman ___ lives next door is a doctor.", "options": ["which", "who", "whose", "where"], "answer": 1, "why": "Orações relativas: para pessoas, \"who\" (ou \"that\")." },
+    { "q": "This is the book ___ I told you about.", "options": ["who", "which", "whose", "where"], "answer": 1, "why": "Orações relativas: para coisas, \"which\" (ou \"that\")." },
+    { "q": "That's the man ___ car was stolen.", "options": ["who", "whose", "which", "that"], "answer": 1, "why": "Orações relativas: posse usa \"whose\"." },
+    { "q": "This is the town ___ I was born.", "options": ["which", "where", "who", "whose"], "answer": 1, "why": "Orações relativas: lugar usa \"where\"." },
+    { "q": "The people ___ the meeting were very angry.", "options": ["attended", "attending", "who attending", "were attending"], "answer": 1, "why": "Orações relativas reduzidas: \"who attended\" pode virar só \"attending\"." }
+  ]},
+  "inversion": { "level": "C1", "items": [
+    { "q": "Never ___ such a beautiful view.", "options": ["I have seen", "have I seen", "I saw", "seen I have"], "answer": 1, "why": "Inversão: depois de \"never\" no começo da frase, auxiliar antes do sujeito." },
+    { "q": "Not only ___ late, but he also forgot the tickets.", "options": ["he was", "was he", "he is", "is he being"], "answer": 1, "why": "Inversão: \"not only\" no começo pede auxiliar + sujeito." },
+    { "q": "Hardly ___ arrived when the phone rang.", "options": ["we had", "had we", "we have", "did we"], "answer": 1, "why": "Inversão: \"hardly… when\" usa had + sujeito + particípio." },
+    { "q": "___ I known, I would have helped.", "options": ["If", "Had", "Have", "Did"], "answer": 1, "why": "Inversão: \"Had I known\" = If I had known (condicional formal)." },
+    { "q": "Only then ___ the truth.", "options": ["I realized", "did I realize", "I did realize", "realized I"], "answer": 1, "why": "Inversão: \"only then\" no começo pede did + sujeito + verbo." }
+  ]}
+}

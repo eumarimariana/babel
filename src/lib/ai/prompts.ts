@@ -77,6 +77,17 @@ export function sentencePrompt(word: string, meaning: string, sentence: string) 
   );
 }
 
+/** Grammar exercises on one topic, in the shape of a quiz (all questions of kind "grammar"). */
+export function drillPrompt(topic: string, level: string) {
+  return [
+    `Language being studied: ${L()}.`,
+    `Write 8 multiple-choice grammar exercises on "${topic}" for a learner at CEFR level ${level}.`,
+    `Each exercise is one short ${L()} sentence with a blank (___) or a short question, exactly 4 options and one correct answer; every question has kind "grammar".`,
+    "Mix forms (affirmative, negative, question) and everyday contexts. Wrong options must be plausible mistakes a Brazilian learner would make. Vary the position of the correct answer.",
+    `Explanations go in Brazilian Portuguese, one sentence, and start with the topic name ("${topic}: …").`,
+  ].join("\n");
+}
+
 /** A 10-question multiple-choice quiz on the book and on the language the learner met in it. */
 export function quizPrompt(b: Book, words: string[], grammar: string[]) {
   return [

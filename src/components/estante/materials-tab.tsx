@@ -31,6 +31,7 @@ import { BTN, ScrollRow, SectionHead, useLang } from "./common";
 import { MissionCard } from "./mission-card";
 import { WordPacks } from "./word-packs";
 import { BrazilPacks } from "./br-packs";
+import { GrammarPractice } from "./grammar-practice";
 import { AddLink } from "./add-link";
 import { LevelTest } from "./level-test";
 
@@ -191,6 +192,7 @@ export function MaterialsTab({ book, onGo, onOpen }: { book?: Book; onGo: (tab: 
         )}
       </section>
 
+      {lang === "en" && <GrammarPractice level={mapLevel} />}
       {lang === "en" && <WordPacks onGoReview={() => onGo("review")} />}
       {lang === "en" && <BrazilPacks onGoReview={() => onGo("review")} />}
     </div>
