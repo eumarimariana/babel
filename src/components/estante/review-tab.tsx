@@ -199,7 +199,8 @@ function Flashcards({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks
       </div>
 
       <div className="[perspective:1400px]">
-        <div className={cn("relative min-h-[22rem] transition-transform duration-500 [transform-style:preserve-3d]", shown && mode !== "pt" && "[transform:rotateY(180deg)]")}>
+        {/* Remount on each grade so the next card starts face up instead of flipping back with its answer showing. */}
+        <div key={doneCount} className={cn("relative min-h-[22rem] transition-transform duration-500 [transform-style:preserve-3d]", shown && mode !== "pt" && "[transform:rotateY(180deg)]")}>
           {/* front: graphite */}
           <div className="absolute inset-0 grid content-center justify-items-center gap-4 rounded-[2rem] bg-ink p-6 text-center text-ink-foreground [backface-visibility:hidden]">
             <p className="text-xs text-ink-muted tabular">{mode === "pt" ? `Como se diz em ${name}?` : cloze ? "Qual palavra completa a frase?" : (book?.t ?? "Caderno")}</p>
