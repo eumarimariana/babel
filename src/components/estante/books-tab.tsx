@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { CaretLeftIcon, CaretRightIcon, RowsIcon, SquaresFourIcon, XIcon } from "@phosphor-icons/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BASE_INFO, type Base, type Book, STAGES, baseBooks, basesFor, bookNumber, cefrRank, kindOf, levelNote } from "@/lib/books";
+import { BASE_INFO, type Base, type Book, STAGES, baseBooks, basesFor, bookNumber, cefrRank, isFree, kindOf, levelNote } from "@/lib/books";
 import { useEstante, type Status } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { BookCover, LevelTag, STATUS_LABEL, Segmented, StatusSelect, useLang } from "./common";
@@ -77,7 +77,7 @@ export function BooksTab({ q, onQ, onOpen, selected, base, onBase }: { q: string
     if (group === "level" && info.kind === "bookdash") return CATEGORIES.map((c) => make(c, c, "", BOOKS.filter((b) => b.cat === c)));
     if (group === "level")
       return base !== "eli"
-        ? levelsOf(BOOKS).map((lv) => make(lv, lv, joinNotes(BOOKS.filter((b) => b.lv === lv).map(levelNote)) + (info.kind === "gutenberg" && LEVEL_META[lv] ? ` · ${LEVEL_META[lv].gutenberg}` : ""), BOOKS.filter((b) => b.lv === lv)))
+        ? levelsOf(BOOKS).map((lv) => make(lv, lv, joinNotes(BOOKS.filter((b) => b.lv === lv).map((b) => (b.pl ? b.pl.split(" · ")[0] : levelNote(b)))) + (info.kind === "gutenberg" && LEVEL_META[lv] ? ` · ${LEVEL_META[lv].gutenberg}` : ""), BOOKS.filter((b) => b.lv === lv)))
         : STAGES.map((s) => make(s.key, s.lv, `${s.label} palavras`, s.ids.map((id) => BOOKS.find((b) => b.id === id)!)));
     if (group === "cat") return CATEGORIES.map((c) => make(c, c, "", BOOKS.filter((b) => b.cat === c)));
     const order: (Status | "")[] = ["reading", "want", "", "done"];
@@ -102,7 +102,7 @@ export function BooksTab({ q, onQ, onOpen, selected, base, onBase }: { q: string
                 {x.name}
                 <span className="flex gap-1">
                   {x.graded && <span className={cn("rounded-full border px-2 py-0.5 text-[11px] font-semibold", on ? "border-ink-border" : "border-border")}>graded</span>}
-                  {x.id !== "eli" && <span className="rounded-full bg-sand px-2 py-0.5 text-[11px] font-semibold text-sand-foreground">grátis</span>}
+                  {x.books.length > 0 && isFree(x.books[0]) && <span className="rounded-full bg-sand px-2 py-0.5 text-[11px] font-semibold text-sand-foreground">grátis</span>}
                 </span>
               </span>
               <span className={cn("text-xs", on ? "text-ink-muted" : "text-muted-foreground")}>

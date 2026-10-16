@@ -44,7 +44,7 @@ export function StudyTab({ aiName, bookId, onBookChange }: { aiName: string; boo
               <span className="rounded-full border border-ink-border px-3 py-1">{book.cat}</span>
             </div>
           </div>
-          <p className="line-clamp-3 max-w-2xl text-sm leading-relaxed text-ink-muted">{book.s}</p>
+          {book.s && <p className="line-clamp-3 max-w-2xl text-sm leading-relaxed text-ink-muted">{book.s}</p>}
           <div className="flex flex-wrap items-center gap-3">
             <div className="w-full max-w-md">
               <StatusPicker tone="ink" value={status(book.id)} onChange={(v) => setStatus(book.id, v)} />
@@ -163,7 +163,7 @@ function BeforeReading({ book, aiName }: { book: Book; aiName: string }) {
     }
   }
 
-  const prompt = `Sou brasileiro e vou ler ${describeBook(book)}. Resumo: ${book.s}\nMe dê 12 palavras/expressões em ${langInfo(langOf(book)).name.toLowerCase()} que provavelmente aparecem no livro e são úteis para o meu nível, cada uma com classe gramatical, tradução, definição simples em ${langInfo(langOf(book)).name.toLowerCase()} e uma frase de exemplo ligada à história. Depois, 3 pontos de gramática típicos do ${book.lv} com explicação curta em português.`;
+  const prompt = `Sou brasileiro e vou ler ${describeBook(book)}.${book.s ? ` Resumo: ${book.s}` : ""}\nMe dê 12 palavras/expressões em ${langInfo(langOf(book)).name.toLowerCase()} que provavelmente aparecem no livro e são úteis para o meu nível, cada uma com classe gramatical, tradução, definição simples em ${langInfo(langOf(book)).name.toLowerCase()} e uma frase de exemplo ligada à história. Depois, 3 pontos de gramática típicos do ${book.lv} com explicação curta em português.`;
 
   return (
     <Step eyebrow="Antes de ler" title="Kit de pré-leitura" desc="Palavras-chave que devem aparecer no livro, a gramática do nível e perguntas para o fim.">

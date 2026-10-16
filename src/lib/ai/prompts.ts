@@ -23,7 +23,7 @@ export const bookLine = (b: Book) => {
     return BASE_INFO[baseOf(b)].graded
       ? `"${b.t}" by ${b.a} (a public-domain ${L(b)} reader for language learners, roughly level ${b.lv})`
       : `"${b.t}" by ${b.a} (the unabridged ${L(b)} original from Project Gutenberg, roughly level ${b.lv}, ${b.cat})`;
-  return `"${b.t}" by ${b.a} (ELi Readers, level ${b.lv}, ${b.hw} headwords, ${b.cat})`;
+  return `"${b.t}" by ${b.a} (${BASE_INFO[baseOf(b)].name}, level ${b.lv}, ${b.hw} headwords, ${b.cat})`;
 };
 
 export function wordPrompt(word: string, book?: Book) {
@@ -37,7 +37,7 @@ export function kitPrompt(b: Book) {
   return [
     `Language being studied: ${L(b)}.`,
     `Prepare the learner to read ${bookLine(b)}.`,
-    `Book summary: ${b.s}`,
+    b.s ? `Book summary: ${b.s}` : "",
     b.voc ? `Publisher vocabulary areas: ${b.voc}` : "",
     b.lang ? `Publisher grammar syllabus: ${b.lang}` : "",
     `Give 12 words or expressions that are likely in this book and useful at ${b.lv} (not trivially easy), each with an example sentence connected to the story;`,

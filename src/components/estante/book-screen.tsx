@@ -126,7 +126,7 @@ function BookBody({ book: b, onStudy, onAddWord, onAddQuote, onQuiz, onGo, wide,
 
         <StatusPicker tone="ink" value={status(b.id)} onChange={(v) => setStatus(b.id, v)} />
 
-        <p className="text-[0.95rem] leading-relaxed text-ink-foreground/85">{b.s}</p>
+        {b.s && <p className="text-[0.95rem] leading-relaxed text-ink-foreground/85">{b.s}</p>}
 
         <div className="flex flex-wrap items-center gap-2">
           {free && b.read && (

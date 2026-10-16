@@ -3,7 +3,7 @@ import { RESOURCE_LEVELS, plainLevel } from "@/lib/resources";
 import type { Data } from "@/lib/store";
 
 // short, free and with audio first; the long originals last
-const KIND_ORDER: Kind[] = ["gsb", "storyweaver", "bookdash", "gutenberg", "librivox", "eli"];
+const KIND_ORDER: Kind[] = ["gsb", "storyweaver", "bookdash", "gutenberg", "librivox", "eli", "publisher"];
 const DONE_TO_MOVE_UP = 3; // books read at a level before suggesting the next one
 const BOOK_LEVEL = new Map(ALL_BOOKS.map((b) => [b.id, { lang: langOf(b), lv: plainLevel(b.lv) }]));
 
@@ -32,7 +32,7 @@ export function learnerLevel(data: Data, lang: Lang): string {
 /**
  * Books to read next, from the free sources (StoryWeaver, Global Storybooks, Book Dash, Gutenberg…):
  * unread books at the learner's level, mixing sources so one series does not take over, then the next level up.
- * ELi books (paid) only come in when nothing free is left.
+ * Paid series (ELi, Oxford) only come in when nothing free is left.
  */
 export function recommendBooks(data: Data, lang: Lang, n = 6, level = learnerLevel(data, lang)): Book[] {
   const unread = (b: Book) => !data.progress[b.id] || data.progress[b.id].st === "want";
