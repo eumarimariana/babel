@@ -189,11 +189,11 @@ export function BooksTab({ q, onQ, onOpen, selected, base, onBase }: { q: string
           {shelves
             .filter((s) => s.books.length)
             .map((s) => (
-              <ShelfRow key={`${group}-${s.key}`} shelf={s} onOpen={onOpen} status={status} selected={selected} />
+              <ShelfRow key={`${base}|${group}-${s.key}|${q}|${st}|${cat}`} shelf={s} onOpen={onOpen} status={status} selected={selected} />
             ))}
         </div>
       ) : (
-        <BookList list={list} onOpen={onOpen} status={status} setStatus={setStatus} />
+        <BookList key={`${base}|${q}|${st}|${cat}`} list={list} onOpen={onOpen} status={status} setStatus={setStatus} />
       )}
     </div>
   );
@@ -204,6 +204,11 @@ function ShelfRow({ shelf, onOpen, status, selected }: { shelf: Shelf; onOpen: (
   const [expanded, setExpanded] = useState(false);
   const scroll = (dir: 1 | -1) => scroller.current?.scrollBy({ left: dir * scroller.current.clientWidth * 0.85, behavior: "smooth" });
   const pct = shelf.total ? shelf.done / shelf.total : 0;
+  const { page, pages, shown, go } = usePaged(shelf.books);
+  const turn = (n: number) => {
+    go(n);
+    scroller.current?.scrollTo({ left: 0 });
+  };
 
   return (
     <section className="grid min-w-0 grid-cols-1 gap-4 rounded-[1.75rem] border border-border bg-card p-5 sm:p-6">
@@ -219,7 +224,7 @@ function ShelfRow({ shelf, onOpen, status, selected }: { shelf: Shelf; onOpen: (
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {!expanded && shelf.books.length > 3 && (
+          {!expanded && shown.length > 3 && (
             <span className="hidden gap-1 sm:flex">
               <button aria-label="Rolar para a esquerda" onClick={() => scroll(-1)} className="grid size-8 place-items-center rounded-full border border-border hover:border-foreground">
                 <CaretLeftIcon weight="bold" className="size-3.5" />
@@ -229,7 +234,7 @@ function ShelfRow({ shelf, onOpen, status, selected }: { shelf: Shelf; onOpen: (
               </button>
             </span>
           )}
-          {shelf.books.length > 3 && (
+          {shown.length > 3 && (
             <button onClick={() => setExpanded((e) => !e)} className="px-2 text-xs underline underline-offset-4 hover:text-muted-foreground tabular">
               {expanded ? "menos" : "mais"}
             </button>
@@ -245,10 +250,11 @@ function ShelfRow({ shelf, onOpen, status, selected }: { shelf: Shelf; onOpen: (
             : "-mx-5 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-1 scrollbar-none sm:-mx-6 sm:scroll-px-6 sm:px-6",
         )}
       >
-        {shelf.books.map((b, i) => (
+        {shown.map((b, i) => (
           <BookTile key={b.id} book={b} status={status(b.id)} onOpen={onOpen} index={i} fixed={!expanded} selected={selected === b.id} />
         ))}
       </div>
+      <Pager page={page} pages={pages} total={shelf.books.length} onPage={turn} />
     </section>
   );
 }
@@ -283,9 +289,15 @@ function BookTile({ book: b, status, onOpen, index, fixed, selected }: { book: B
   );
 }
 
-function BookList({ list, onOpen, status, setStatus }: { list: Book[]; onOpen: (id: number) => void; status: (id: number) => Status | ""; setStatus: (id: number, s: Status | "") => void }) {
+function BookList({ list: all, onOpen, status, setStatus }: { list: Book[]; onOpen: (id: number) => void; status: (id: number) => Status | ""; setStatus: (id: number, s: Status | "") => void }) {
+  const top = useRef<HTMLDivElement>(null);
+  const { page, pages, shown: list, go } = usePaged(all);
+  const turn = (n: number) => {
+    go(n);
+    top.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  };
   return (
-    <>
+    <div ref={top} className="grid scroll-mt-4 gap-4">
       {/* phones: cards instead of a squeezed table */}
       <ul className="grid grid-cols-1 border-t border-border sm:hidden">
         {list.map((b) => {
@@ -349,6 +361,39 @@ function BookList({ list, onOpen, status, setStatus }: { list: Book[]; onOpen: (
           </TableBody>
         </Table>
       </div>
-    </>
+      <Pager page={page} pages={pages} total={all.length} onPage={turn} />
+    </div>
+  );
+}
+
+const PAGE_SIZE = 20;
+
+/** Long shelves and lists show 20 books at a time. */
+function usePaged<T>(items: T[]) {
+  const [page, setPage] = useState(0);
+  const pages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const p = Math.min(page, pages - 1); // the list can shrink under a filter
+  return { page: p, pages, shown: items.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE), go: setPage };
+}
+
+function Pager({ page, pages, total, onPage }: { page: number; pages: number; total: number; onPage: (n: number) => void }) {
+  if (pages < 2) return null;
+  const btn = "inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3.5 text-xs font-medium transition-colors hover:border-foreground disabled:pointer-events-none disabled:opacity-35";
+  return (
+    <nav aria-label="Páginas" className="flex items-center justify-between gap-3">
+      <button onClick={() => onPage(page - 1)} disabled={page === 0} className={btn}>
+        <CaretLeftIcon weight="bold" className="size-3.5" /> Anterior
+      </button>
+      <span className="text-center text-xs text-muted-foreground tabular">
+        Página {page + 1} de {pages}
+        <span className="hidden sm:inline">
+          {" "}
+          · {page * PAGE_SIZE + 1}–{Math.min(total, (page + 1) * PAGE_SIZE)} de {total}
+        </span>
+      </span>
+      <button onClick={() => onPage(page + 1)} disabled={page === pages - 1} className={btn}>
+        Próxima <CaretRightIcon weight="bold" className="size-3.5" />
+      </button>
+    </nav>
   );
 }
