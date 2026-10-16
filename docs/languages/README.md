@@ -15,6 +15,8 @@ A plan to take Babel beyond English (French, German and Spanish), widen the Engl
 > - **Levels:** ELi uses the publisher's CEFR level. StoryWeaver (1–4) and Global Storybooks (1–5) use children's literacy levels; the app maps them to an approximate CEFR level (1 ≈ Pre-A1, 2 ≈ A1, 3 ≈ A2, 4–5 ≈ B1) and shows the original level alongside. Gutenberg, LibriVox and Book Dash have an estimated level.
 > - **About Global Storybooks:** in EN, FR, DE and ES the 40 stories are the same African Storybook titles, translated. That is why Book Dash was added, for more variety.
 > - **Reading map per source:** the map, progress by level and the next stop follow the chosen source (switch on the map itself or on the Shelf).
+> - **Backup and AI per profile:** in Settings, "Export <language>" downloads only the open profile and "Export all" downloads every profile. On import, the app asks whether to merge or replace (the file's profile or everything) (`src/lib/backup.ts`). Study days and the daily mission have no language, so they go into every backup and are always merged. Each profile can use its own AI provider among the connected keys (`byLang` in `src/lib/ai-client.ts`); with no choice, it uses the default.
+> - **Oxford Bookworms (paid):** an "Oxford Bookworms" source for English (`src/data/oxford-en.json`), with metadata only, from Oxford's catalog on 2026-10-16: title, author, ISBN, the CEFR level the publisher states and stage. No synopsis is stored, and covers come from Open Library by ISBN (73 of 91 have one; the rest use the typeset cover). Each book's id is its ISBN-13. To read, the book page links to Oxford's page and to ISBN searches (Amazon, Estante Virtual, WorldCat, Open Library).
 >
 > **Needs a key:** Bloom Library (OPDS feed with levels, but it requires an account and a key issued by their team).
 >
@@ -22,7 +24,7 @@ A plan to take Babel beyond English (French, German and Spanish), widen the Engl
 >
 > **Rejected:** english-e-reader.net (and lists that only point to it): it distributes publishers' graded readers without permission.
 >
-> **Not yet:** paid series (Oxford, Penguin, Hachette, Klett, Edinumen…), since there is no reliable data source for them; they need a hand-made list with ISBNs. Backup and preferred AI per profile are also still missing.
+> **Not yet:** the other paid series (Penguin, Hachette, Klett, Edinumen…). Sources found: Edinumen's PDF catalog (`edinumen.es/descargas/Catalogo_2026_web.pdf`, "Lecturas graduadas" section), with ISBN and level but with columns jumbled in the extracted text; Klett's per-book pages (`klett-sprachen.de/<title>/t-0/<ISBN>`); for Hachette (Lire en français facile) there is no readable catalog yet.
 >
 > The series and sites listed below were gathered from memory. Before using any of them, check each publisher's current catalog, levels and terms of use.
 
