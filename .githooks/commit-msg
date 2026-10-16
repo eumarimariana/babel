@@ -1,0 +1,30 @@
+#!/bin/sh
+# Checks that the commit message follows Conventional Commits (see "Commits" in the README).
+# Turned on by `npm install` (the prepare script points core.hooksPath here).
+
+header=$(grep -v '^#' "$1" | head -n 1)
+
+# messages git writes itself
+case "$header" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *|amend!\ *) exit 0 ;;
+esac
+
+types="feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+
+if ! printf '%s' "$header" | grep -Eq "^($types)(\([a-z0-9-]+\))?!?: [^ ].*[^.]$"; then
+  cat >&2 <<MSG
+Mensagem fora do padrão:
+
+  $header
+
+Use: tipo(escopo opcional): descrição no imperativo, sem ponto final
+Tipos: $(printf '%s' "$types" | tr '|' ' ')
+Exemplo: feat(review): add dictation practice
+MSG
+  exit 1
+fi
+
+if [ "${#header}" -gt 72 ]; then
+  echo "A primeira linha tem ${#header} caracteres; o limite é 72. Detalhes vão no corpo, depois de uma linha em branco." >&2
+  exit 1
+fi
