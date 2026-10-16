@@ -91,7 +91,7 @@ export function WritingBox({
   minWords?: number;
 }) {
   const { recordScore, markDay } = useEstante();
-  const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
+  const aiName = useSyncExternalStore(subscribeAi, () => activeProviderName(lang), () => "");
   const [busy, setBusy] = useState(false);
   const [ctl, setCtl] = useState<AbortController | null>(null);
   const words = (text.trim().match(/\S+/g) ?? []).length;

@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import type { Book, Lang } from "@/lib/books";
 import type { Correction, KitResult, QuizResult, WordInfo } from "@/lib/ai-schemas";
-import { writingPrompt, type WritingContext } from "@/lib/ai/prompts";
+import { getStudyLang, writingPrompt, type WritingContext } from "@/lib/ai/prompts";
 import { anthropicDrill, anthropicWriting, anthropicKit, anthropicModels, anthropicQuiz, anthropicTranslate, anthropicWord } from "@/lib/ai/anthropic";
 import { freeDrill, freeWriting, freeKit, freeQuiz, freeTranslate, freeWord, listModels, type FreeProvider, type ModelOption } from "@/lib/ai/free-providers";
 import { suggestTaskModels, type AiTask } from "@/lib/ai/task-models";
@@ -58,6 +58,7 @@ type AiConfig = {
   models: Partial<Record<ProviderId, string>>;
   modelLists: Partial<Record<ProviderId, ModelOption[]>>;
   taskModels?: Partial<Record<ProviderId, Partial<Record<AiTask, string>>>>; // per-task overrides; missing = the provider's model
+  byLang?: Partial<Record<Lang, ProviderId>>; // a profile's own provider; missing = `active`
 };
 const STORAGE = "estante-eli-ai-v1";
 const OLD_ANTHROPIC_KEY = "estante-eli-anthropic-key";
@@ -111,10 +112,26 @@ export function useAiConfig() {
   return useSyncExternalStore(subscribeAi, getConfig, () => EMPTY);
 }
 
-/** Name of the provider in use ("" when none) — a primitive, so it works with useSyncExternalStore. */
-export function activeProviderName() {
+/** The provider a profile uses: its own pick when that key is still here, otherwise the default one. */
+export function providerFor(c: AiConfig, lang: Lang): ProviderId | null {
+  const own = c.byLang?.[lang];
+  return own && c.keys[own] ? own : c.active;
+}
+
+/** Name of the provider a profile uses ("" when none) — a primitive, so it works with useSyncExternalStore. */
+export function activeProviderName(lang: Lang) {
   const c = getConfig();
-  return c.active && c.keys[c.active] ? providerName(c.active) : "";
+  const id = providerFor(c, lang);
+  return id && c.keys[id] ? providerName(id) : "";
+}
+
+/** Gives a profile its own provider (null = follow the default). */
+export function setLangProvider(lang: Lang, id: ProviderId | null) {
+  const c = getConfig();
+  const byLang = { ...c.byLang };
+  if (id) byLang[lang] = id;
+  else delete byLang[lang];
+  save({ ...c, byLang });
 }
 
 /** Validates the key by listing models, then stores it and makes this provider the active one. */
@@ -163,12 +180,13 @@ export function removeProvider(id: ProviderId) {
   const keys = { ...c.keys };
   delete keys[id];
   const nextActive = c.active === id ? ((Object.keys(keys)[0] as ProviderId | undefined) ?? null) : c.active;
-  save({ ...c, keys, active: nextActive });
+  const byLang = Object.fromEntries(Object.entries(c.byLang ?? {}).filter(([, p]) => p !== id));
+  save({ ...c, keys, active: nextActive, byLang });
 }
 
 function active(task: AiTask) {
   const c = getConfig();
-  const id = c.active;
+  const id = providerFor(c, getStudyLang());
   const key = id ? c.keys[id] : undefined;
   if (!id || !key) throw new Error("Escolha um provedor de IA e cole sua chave nas Configurações.");
   const model = taskModel(c, id, task);

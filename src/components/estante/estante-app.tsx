@@ -11,7 +11,7 @@ import { ALL_BOOKS, BOOKS, BOOK_BY_ID, LANGS, type Base, type Book, type Lang, S
 import { setStudyLang } from "@/lib/ai/prompts";
 import { recommendBooks } from "@/lib/recommend";
 import { EstanteProvider, useEstante } from "@/lib/store";
-import { activeProviderName, subscribeAi, useAiConfig } from "@/lib/ai-client";
+import { activeProviderName, providerFor, subscribeAi, useAiConfig } from "@/lib/ai-client";
 import { BooksTab } from "./books-tab";
 import { VocabTab } from "./vocab-tab";
 import { ReviewTab } from "./review-tab";
@@ -79,11 +79,12 @@ function Shell() {
   const due = allDue.filter(inLang);
   const [tab, setTab] = useState("home");
   const [openBook, setOpenBook] = useState<number | null>(null);
-  const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
+  const aiName = useSyncExternalStore(subscribeAi, () => activeProviderName(lang), () => "");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const aiConfig = useAiConfig();
-  const aiModel = aiConfig.active ? (aiConfig.modelLists[aiConfig.active]?.find((m) => m.id === aiConfig.models[aiConfig.active!])?.label ?? aiConfig.modelLists[aiConfig.active]?.[0]?.label ?? "") : "";
+  const aiProvider = providerFor(aiConfig, lang);
+  const aiModel = aiProvider ? (aiConfig.modelLists[aiProvider]?.find((m) => m.id === aiConfig.models[aiProvider])?.label ?? aiConfig.modelLists[aiProvider]?.[0]?.label ?? "") : "";
   const [studyId, setStudyId] = useState<number | null>(null);
   const [vocabBook, setVocabBook] = useState("none");
   const [quoteBook, setQuoteBook] = useState("none");

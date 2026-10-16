@@ -25,7 +25,7 @@ const TRAININGS: { value: "cards" | PracticeKind; label: string; detail: string;
 export function ReviewTab({ onGoVocab, onGoPacks }: { onGoVocab: () => void; onGoPacks?: () => void }) {
   const { data } = useEstante();
   const lang = useLang();
-  const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
+  const aiName = useSyncExternalStore(subscribeAi, () => activeProviderName(lang), () => "");
   const [kind, setKind] = useState<"cards" | PracticeKind>("cards");
   const words = useMemo(() => data.words.filter((w) => (w.ln ?? "en") === lang), [data.words, lang]);
   const withPt = words.filter((w) => w.pt).length;

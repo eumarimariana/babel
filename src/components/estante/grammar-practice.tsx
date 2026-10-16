@@ -10,7 +10,7 @@ import { activeProviderName, makeDrill, subscribeAi } from "@/lib/ai-client";
 import { RESOURCE_LEVELS, TOPIC_BY_ID } from "@/lib/resources";
 import { useEstante, type QuizQuestion } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { SectionHead } from "./common";
+import { SectionHead, useLang } from "./common";
 import { Player, shuffle, type Run } from "./quiz-tab";
 
 type Item = { q: string; options: string[]; answer: number; why: string };
@@ -20,7 +20,8 @@ const asQuestions = (items: Item[]): QuizQuestion[] => items.map((x) => ({ kind:
 /** Grammar exercises inside the app: a fixed bank of 5 per topic, plus 8 more from the AI when it is on. */
 export function GrammarPractice({ level }: { level: string }) {
   const { data } = useEstante();
-  const aiName = useSyncExternalStore(subscribeAi, activeProviderName, () => "");
+  const lang = useLang();
+  const aiName = useSyncExternalStore(subscribeAi, () => activeProviderName(lang), () => "");
   const [run, setRun] = useState<Run | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   // topics missed in the latest quiz, to flag them

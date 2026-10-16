@@ -10,6 +10,7 @@ let studyLang: Lang = "en";
 export const setStudyLang = (l: Lang) => {
   studyLang = l;
 };
+export const getStudyLang = () => studyLang;
 const L = (b?: Book) => LANG_EN[b ? langOf(b) : studyLang];
 
 export const bookLine = (b: Book) => {
