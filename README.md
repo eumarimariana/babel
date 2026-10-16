@@ -1,136 +1,138 @@
 # Babel
 
-App pessoal para aprender idiomas **lendo**. Começou pelo inglês e hoje tem perfis para inglês, francês, alemão e espanhol. Junta uma estante de *graded readers* e livros grátis, organizada por nível (Pre-A1 → C1), com vocabulário, revisões, quiz, prática escrita e falada e materiais de estudo grátis.
+A personal app for learning languages **by reading**. It started with English and now has profiles for English, French, German and Spanish. It brings together a shelf of graded readers and free books sorted by level (Pre-A1 → C1), with vocabulary, spaced-repetition reviews, quizzes, writing and speaking practice, and free study materials.
 
-Não precisa de conta nem de servidor: o progresso fica no navegador, e a IA é opcional, com a chave de cada pessoa.
+No account and no server: progress stays in the browser, and AI is optional, using each person's own key.
 
-## Sumário
+The interface is in Brazilian Portuguese, since it is built for Portuguese speakers. Tab names below are given in Portuguese with their meaning.
 
-- [O que tem no app](#o-que-tem-no-app)
-- [Bases de livros](#bases-de-livros)
-- [IA: cada pessoa usa a própria chave](#ia-cada-pessoa-usa-a-própria-chave)
-- [Seus dados](#seus-dados)
-- [Rodar no computador](#rodar-no-computador)
-- [Estrutura do projeto](#estrutura-do-projeto)
-- [Deploy na Vercel](#deploy-na-vercel)
+## Contents
+
+- [Features](#features)
+- [Book sources](#book-sources)
+- [AI: bring your own key](#ai-bring-your-own-key)
+- [Your data](#your-data)
+- [Running locally](#running-locally)
+- [Project structure](#project-structure)
+- [Deploying to Vercel](#deploying-to-vercel)
 - [Commits](#commits)
-- [Planos e documentação](#planos-e-documentação)
-- [Licenças](#licenças)
+- [Plans and docs](#plans-and-docs)
+- [License](#license)
 
-## O que tem no app
+## Features
 
-| Aba | O que faz |
+| Tab | What it does |
 |---|---|
-| **Início** | Pilha de leitura, missão do dia, leitura do dia, revisões pendentes, calendário dos dias estudados, progresso por nível e o mapa de leitura animado. |
-| **Estante** | Capas em prateleiras por nível, gênero ou status, com busca, filtros, a ficha de cada livro, "Onde ler e ouvir" e as palavras frequentes dos livros com texto livre. |
-| **Vocabulário** | Caderno de palavras com tradução (editável), definição e exemplo gerados pela IA, botão do Cambridge e vocabulário estimado. |
-| **Citações** | Trechos dos livros guardados com tradução. |
-| **Revisar** | Flashcards de palavras e frases com repetição espaçada (1, 2, 4, 8, 16 e 32 dias) e treinos: Ditado, Pares, Escrever e Falar (grava a sua voz para comparar). |
-| **Estudar** | Kit de pré-leitura do livro (palavras-chave, gramática, perguntas), correção do resumo e diário com tarefa do dia por nível. A correção marca os erros, mostra a diferença e vira flashcards. |
-| **Quiz** | Quiz do livro gerado pela IA (história, palavras no contexto e gramática) e quiz das suas palavras, sem IA. Erros voltam para as revisões e para a gramática a rever. |
-| **Materiais** | Sites e playlists grátis por nível e habilidade, aula em que você parou, pacotes de palavras (NGSL e pacotes para brasileiros: falsos cognatos, phrasal verbs, teste de pronúncia), 95 exercícios de gramática em 19 temas, teste de nível do app com a lista *can-do* do CEFR e links seus. |
+| **Início** (Home) | Reading pile, daily mission, daily reading, due reviews, a calendar of study days, progress by level and the animated reading map. |
+| **Estante** (Shelf) | Covers on shelves by level, genre or status, with search, filters, a page for each book, "where to read and listen" links, and the frequent words of books whose text is free. |
+| **Vocabulário** (Vocabulary) | A word notebook with translation (editable), definition and example written by the AI, a Cambridge Dictionary button and an estimated vocabulary size. |
+| **Citações** (Quotes) | Passages saved from books, with translation. |
+| **Revisar** (Review) | Word and sentence flashcards with spaced repetition (1, 2, 4, 8, 16 and 32 days), plus drills: dictation, pairs, writing and speaking (records your voice so you can compare). |
+| **Estudar** (Study) | A pre-reading kit for each book (key words, grammar, questions), correction of your summary, and a diary with a daily task by level. Corrections mark each mistake, show a diff and turn mistakes into flashcards. |
+| **Quiz** | A book quiz written by the AI (story, words in context and grammar) and a quiz on your own words, with no AI. Mistakes go back into reviews and into the grammar to revisit. |
+| **Materiais** (Materials) | Free sites and playlists by level and skill, the lesson you stopped at, word packs (NGSL, plus packs for Brazilians: false friends, phrasal verbs, a pronunciation ear test), 95 grammar exercises in 19 topics, the app's own level test with the CEFR can-do list, and your own links. |
 
-Também tem animações em [Remotion](https://www.remotion.dev/) (o aviãozinho do mapa de leitura e a comemoração ao terminar um livro), tema claro e escuro e pronúncia pela voz do navegador, com gravações do Wiktionary quando o navegador não tem voz para o idioma.
+There are also [Remotion](https://www.remotion.dev/) animations (a little plane flying along the reading map, and a celebration when you finish a book), light and dark themes, and pronunciation through the browser's voice, falling back to Wiktionary recordings when the browser has no voice for the language.
 
-## Bases de livros
+## Book sources
 
-Cada perfil escolhe a base que vai usar, e o mapa e o progresso seguem essa escolha.
+Each profile picks the source it follows, and the map and progress follow that choice.
 
-| Idioma | Bases |
+| Language | Sources |
 |---|---|
-| Inglês | ELi Readers (177), StoryWeaver, Global Storybooks, Book Dash, Gutenberg Readers, Gutenberg Infantis, LibriVox, Gutenberg Clássicos |
-| Francês, alemão, espanhol | StoryWeaver, Global Storybooks, Gutenberg Readers, Gutenberg Clássicos |
+| English | ELi Readers (177), StoryWeaver, Global Storybooks, Book Dash, Gutenberg Readers, Gutenberg children's books, LibriVox, Gutenberg classics |
+| French, German, Spanish | StoryWeaver, Global Storybooks, Gutenberg Readers, Gutenberg classics |
 
-Os níveis das bases infantis são convertidos para um CEFR aproximado, e o nível original aparece ao lado. Detalhes e fontes avaliadas em [docs/idiomas](docs/idiomas/README.md).
+The children's sources use reading levels that the app maps to an approximate CEFR level, and the original level is shown alongside. Details, and the sources that were evaluated, are in [docs/languages](docs/languages/README.md).
 
-## IA: cada pessoa usa a própria chave
+## AI: bring your own key
 
-O site não tem chave de API embutida. Quem quiser os recursos de IA abre **Configurações**, escolhe um provedor e cola a própria chave:
+The site has no built-in API key. Anyone who wants the AI features opens **Configurações** (Settings), picks a provider and pastes their own key:
 
-| Provedor | Custo | Onde gerar a chave |
+| Provider | Cost | Get a key |
 |---|---|---|
-| Gemini (Google) | grátis, sem cartão | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
-| Groq | grátis | [console.groq.com/keys](https://console.groq.com/keys) |
-| OpenRouter | grátis nos modelos `:free` (cerca de 50 pedidos/dia) | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) |
-| Claude (Anthropic) | pago, poucos centavos por pedido | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
+| Gemini (Google) | free, no card | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| Groq | free | [console.groq.com/keys](https://console.groq.com/keys) |
+| OpenRouter | free on `:free` models (about 50 requests a day) | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) |
+| Claude (Anthropic) | paid, a few cents per request | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
 
-- Ao conectar, o app lista os modelos da chave e sugere o melhor para cada tarefa (dá para trocar).
-- As chamadas vão direto do navegador para o provedor. Nenhuma chave passa pelo servidor do site.
-- No plano grátis do Gemini, o Google pode usar o conteúdo enviado para melhorar os produtos dele.
-- Sem chave, tudo funciona: os botões de IA viram "copiar pedido", para colar em qualquer chat de IA.
+- When you connect, the app lists the key's models and suggests the best one for each task (you can change it).
+- Calls go straight from the browser to the provider. No key ever passes through the site's server.
+- On Gemini's free tier, Google may use what you send to improve its products.
+- Everything works without a key: the AI buttons become "copy request", to paste into any AI chat.
 
-## Seus dados
+## Your data
 
-Tudo fica no `localStorage` do navegador: progresso, palavras, revisões, textos e chaves de IA. Para levar para outro aparelho ou guardar uma cópia, use **Configurações → Exportar** e depois **Importar**.
+Everything is stored in the browser's `localStorage`: progress, words, reviews, texts and AI keys. To move to another device or keep a copy, use **Configurações → Exportar** (Export) and then **Importar** (Import).
 
-## Rodar no computador
+## Running locally
 
-Precisa de Node.js 20 ou mais novo.
+Requires Node.js 20 or newer.
 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
 ```
 
-| Comando | O que faz |
+| Command | What it does |
 |---|---|
-| `npm run dev` | Servidor de desenvolvimento |
-| `npm run build` | Build de produção |
-| `npm run start` | Serve o build |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run start` | Serves the build |
 | `npm run lint` | ESLint |
-| `npm run check-links` | Testa os links do catálogo de Materiais e das páginas de gramática (sai com erro se algum caiu) |
+| `npm run check-links` | Tests the links of the Materials catalog and the grammar pages (exits with an error if any is down) |
 
-## Estrutura do projeto
+## Project structure
 
 ```
 src/
-  app/                  layout e página única (Next.js App Router)
-  components/estante/   as abas e telas do app
-  components/ui/        componentes shadcn/ui
-  data/                 catálogos em JSON: livros, bases, materiais, pacotes de palavras, gramática
-  lib/                  estado e backup, regras dos livros, recomendações, missão, pronúncia
-  lib/ai/               provedores, prompts e escolha de modelo por tarefa
-  remotion/             animações do mapa e da comemoração
-scripts/check-links.mjs verificação dos links
-docs/                   planos de idiomas e de materiais
+  app/                  layout and the single page (Next.js App Router)
+  components/estante/   the app's tabs and screens
+  components/ui/        shadcn/ui components
+  data/                 JSON catalogs: books, sources, materials, word packs, grammar
+  lib/                  state and backup, book rules, recommendations, mission, pronunciation
+  lib/ai/               providers, prompts and per-task model choice
+  remotion/             map and celebration animations
+scripts/check-links.mjs link checker
+docs/                   plans for languages and materials
 ```
 
-Feito com Next.js 16, React 19, [shadcn/ui](https://ui.shadcn.com/), Tailwind 4, Motion, Phosphor Icons, Zod e Remotion.
+Built with Next.js 16, React 19, [shadcn/ui](https://ui.shadcn.com/), Tailwind 4, Motion, Phosphor Icons, Zod and Remotion.
 
-## Deploy na Vercel
+## Deploying to Vercel
 
-1. Em [vercel.com/new](https://vercel.com/new), importe o repositório (a Vercel detecta Next.js sozinha).
-2. Clique em **Deploy**. Não precisa de variável de ambiente.
+1. At [vercel.com/new](https://vercel.com/new), import the repository (Vercel detects Next.js on its own).
+2. Click **Deploy**. No environment variables are needed.
 
-Ou pelo terminal: `npx vercel`. O site é 100% estático, sem rota de servidor, então não gera custo de função.
+Or from the terminal: `npx vercel`. The site is fully static, with no server routes, so it costs nothing in functions.
 
 ## Commits
 
-Os commits seguem o [Conventional Commits](https://www.conventionalcommits.org/pt-br/v1.0.0/), com a descrição em inglês, no imperativo e sem ponto final:
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), with the description in English, in the imperative and without a trailing period:
 
 ```
-tipo(escopo): descrição curta
+type(scope): short description
 
-Corpo opcional explicando o porquê, depois de uma linha em branco.
+Optional body explaining why, after a blank line.
 ```
 
-| Tipo | Quando usar |
+| Type | When to use |
 |---|---|
-| `feat` | recurso novo |
-| `fix` | correção de bug |
-| `docs` | só documentação (README, `docs/`) |
-| `style` | visual ou formatação, sem mudar comportamento |
-| `refactor` | reorganização de código, sem mudar comportamento |
-| `perf` | desempenho |
-| `test` | testes |
-| `build` | dependências, Next.js, configuração de build |
-| `ci` | automações |
-| `chore` | manutenção que não entra nas outras |
-| `revert` | desfaz um commit |
+| `feat` | a new feature |
+| `fix` | a bug fix |
+| `docs` | documentation only (README, `docs/`) |
+| `style` | visuals or formatting, no change in behavior |
+| `refactor` | code reorganization, no change in behavior |
+| `perf` | performance |
+| `test` | tests |
+| `build` | dependencies, Next.js, build setup |
+| `ci` | automation |
+| `chore` | upkeep that fits none of the above |
+| `revert` | undoes a commit |
 
-Escopos sugeridos: `home`, `books`, `vocab`, `quotes`, `review`, `study`, `quiz`, `materials`, `ai`, `backup`, `data`, `ui`.
+Suggested scopes: `home`, `books`, `vocab`, `quotes`, `review`, `study`, `quiz`, `materials`, `ai`, `backup`, `data`, `ui`.
 
-Exemplos:
+Examples:
 
 ```
 feat(review): add dictation, pairs and writing practice
@@ -138,15 +140,15 @@ fix(review): hide the next card's answer while flipping back
 docs: describe the commit convention in the README
 ```
 
-O `npm install` liga o hook `.githooks/commit-msg`, que recusa mensagens fora do padrão ou com a primeira linha acima de 72 caracteres. Se o hook não estiver ativo, rode `npm run prepare`.
+`npm install` turns on the `.githooks/commit-msg` hook, which rejects messages outside this format or with a first line over 72 characters. If the hook is not active, run `npm run prepare`.
 
-## Planos e documentação
+## Plans and docs
 
-- [docs/idiomas](docs/idiomas/README.md): perfis por idioma e bases de livros.
-- [docs/ingles](docs/ingles/README.md): materiais grátis de inglês e o que já foi feito.
+- [docs/languages](docs/languages/README.md): language profiles and book sources.
+- [docs/english](docs/english/README.md): free English materials and what has been built.
 
-## Licenças
+## License
 
-- **Código:** todos os direitos reservados. O repositório está público só para consulta: não é permitido copiar, modificar ou reutilizar o código sem autorização. Veja [LICENSE](LICENSE).
-- Remotion é gratuito para uso individual. Empresas com mais de 3 pessoas precisam de licença: veja [remotion.dev/license](https://remotion.dev/license).
-- Capas e textos dos livros pertencem às editoras e aos projetos de origem; o app só aponta para eles.
+- **Code:** all rights reserved. The repository is public for viewing only: copying, modifying or reusing the code requires permission. See [LICENSE](LICENSE).
+- Remotion is free for individuals. Companies with more than 3 people need a license: see [remotion.dev/license](https://remotion.dev/license).
+- Book covers and texts belong to their publishers and source projects; the app only links to them.
