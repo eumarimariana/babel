@@ -147,5 +147,6 @@ O `npm install` liga o hook `.githooks/commit-msg`, que recusa mensagens fora do
 
 ## Licenças
 
+- **Código:** todos os direitos reservados. O repositório está público só para consulta: não é permitido copiar, modificar ou reutilizar o código sem autorização. Veja [LICENSE](LICENSE).
 - Remotion é gratuito para uso individual. Empresas com mais de 3 pessoas precisam de licença: veja [remotion.dev/license](https://remotion.dev/license).
 - Capas e textos dos livros pertencem às editoras e aos projetos de origem; o app só aponta para eles.
