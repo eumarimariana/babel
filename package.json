@@ -15,6 +15,7 @@
     "@base-ui/react": "^1.8.0",
     "@phosphor-icons/react": "^2.1.10",
     "@remotion/player": "^4.0.533",
+    "@vercel/analytics": "^2.0.1",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "lucide-react": "^1.52.0",
